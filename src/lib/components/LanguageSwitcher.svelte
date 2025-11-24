@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { language, setLanguage, type Language } from '../stores/language';
+  import { language, setLanguage, type Language } from '../utils/language';
 
   const LANGUAGES: { code: Language; name: string }[] = [
     { code: 'en', name: 'EN' },

@@ -170,7 +170,6 @@ body {
 }
 
 .result-card {
-  background: linear-gradient(135deg, var(--success-color), #10b981);
   color: white;
   padding: 1.5rem;
   border-radius: var(--border-radius);

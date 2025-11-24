@@ -2,7 +2,7 @@
   import './app.css';
   import LanguageSwitcher from './lib/components/LanguageSwitcher.svelte';
   import PostageCalculator from './lib/components/PostageCalculator.svelte';
-  import { language } from './lib/stores/language';
+  import { language } from './lib/utils/language';
   import { t } from './lib/data/translations';
 
   // PWA registration
