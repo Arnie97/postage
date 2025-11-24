@@ -74,6 +74,7 @@ export const INTERNATIONAL_REGIONS: Region[] = [
   { code: 'LK', name: { 'zh-CN': '斯里兰卡', 'zh-TW': '斯里蘭卡', en: 'Sri Lanka' }, continent: 'AS' },
   { code: 'NP', name: { 'zh-CN': '尼泊尔', 'zh-TW': '尼泊爾', en: 'Nepal' }, continent: 'AS' },
   { code: 'AF', name: { 'zh-CN': '阿富汗', 'zh-TW': '阿富汗', en: 'Afghanistan' }, continent: 'AS' },
+  { code: 'XA', name: { 'zh-CN': '亚洲其他地区', 'zh-TW': '亞洲其他地區', en: 'Other Asian Countries' }, continent: 'AS' },
 
   // 非洲 (AF)
   { code: 'EG', name: { 'zh-CN': '埃及', 'zh-TW': '埃及', en: 'Egypt' }, continent: 'AF' },
@@ -86,6 +87,7 @@ export const INTERNATIONAL_REGIONS: Region[] = [
   { code: 'DZ', name: { 'zh-CN': '阿尔及利亚', 'zh-TW': '阿爾及利亞', en: 'Algeria' }, continent: 'AF' },
   { code: 'UG', name: { 'zh-CN': '乌干达', 'zh-TW': '烏干達', en: 'Uganda' }, continent: 'AF' },
   { code: 'TZ', name: { 'zh-CN': '坦桑尼亚', 'zh-TW': '坦尚尼亞', en: 'Tanzania' }, continent: 'AF' },
+  { code: 'XF', name: { 'zh-CN': '非洲其他地区', 'zh-TW': '非洲其他地區', en: 'Other Africa' }, continent: 'AF' },
 
   // 欧洲 (EU)
   { code: 'GB', name: { 'zh-CN': '英国', 'zh-TW': '英國', en: 'United Kingdom' }, continent: 'EU' },
@@ -97,11 +99,13 @@ export const INTERNATIONAL_REGIONS: Region[] = [
   { code: 'NL', name: { 'zh-CN': '荷兰', 'zh-TW': '荷蘭', en: 'Netherlands' }, continent: 'EU' },
   { code: 'BE', name: { 'zh-CN': '比利时', 'zh-TW': '比利時', en: 'Belgium' }, continent: 'EU' },
   { code: 'RU', name: { 'zh-CN': '俄罗斯', 'zh-TW': '俄羅斯', en: 'Russia' }, continent: 'EU' },
+  { code: 'XE', name: { 'zh-CN': '欧洲其他地区', 'zh-TW': '歐洲其他地區', en: 'Other Europe' }, continent: 'EU' },
 
   // 北美洲 (NA)
   { code: 'US', name: { 'zh-CN': '美国', 'zh-TW': '美國', en: 'United States' }, continent: 'NA' },
   { code: 'CA', name: { 'zh-CN': '加拿大', 'zh-TW': '加拿大', en: 'Canada' }, continent: 'NA' },
   { code: 'MX', name: { 'zh-CN': '墨西哥', 'zh-TW': '墨西哥', en: 'Mexico' }, continent: 'NA' },
+  { code: 'XN', name: { 'zh-CN': '北美洲其他地区', 'zh-TW': '北美洲其他地區', en: 'Other North America' }, continent: 'NA' },
 
   // 南美洲 (SA)
   { code: 'BR', name: { 'zh-CN': '巴西', 'zh-TW': '巴西', en: 'Brazil' }, continent: 'SA' },
@@ -114,15 +118,17 @@ export const INTERNATIONAL_REGIONS: Region[] = [
   { code: 'UY', name: { 'zh-CN': '乌拉圭', 'zh-TW': '烏拉圭', en: 'Uruguay' }, continent: 'SA' },
   { code: 'PY', name: { 'zh-CN': '巴拉圭', 'zh-TW': '巴拉圭', en: 'Paraguay' }, continent: 'SA' },
   { code: 'BO', name: { 'zh-CN': '玻利维亚', 'zh-TW': '玻利維亞', en: 'Bolivia' }, continent: 'SA' },
+  { code: 'XS', name: { 'zh-CN': '其他南美洲地区', 'zh-TW': '其他南美洲地區', en: 'Other South America' }, continent: 'SA' },
 
   // 大洋洲 (OC)
   { code: 'AU', name: { 'zh-CN': '澳大利亚', 'zh-TW': '澳洲', en: 'Australia' }, continent: 'OC' },
   { code: 'NZ', name: { 'zh-CN': '新西兰', 'zh-TW': '紐西蘭', en: 'New Zealand' }, continent: 'OC' },
   { code: 'FJ', name: { 'zh-CN': '斐济', 'zh-TW': '斐濟', en: 'Fiji' }, continent: 'OC' },
   { code: 'PG', name: { 'zh-CN': '巴布亚新几内亚', 'zh-TW': '巴布亞紐幾內亞', en: 'Papua New Guinea' }, continent: 'OC' },
+  { code: 'XO', name: { 'zh-CN': '其他大洋洲地区', 'zh-TW': '其他大洋洲地區', en: 'Other Oceania' }, continent: 'OC' },
 
-  // 其他 (AN - Antarctica/Other)
-  { code: 'OTHER', name: { 'zh-CN': '其他国家', 'zh-TW': '其他國家', en: 'Other Countries' }, continent: 'AN' },
+  // 南极洲 (AN - Antarctica)
+  { code: 'AQ', name: { 'zh-CN': '南极洲', 'zh-TW': '南極洲', en: 'Antarctica' }, continent: 'AN' },
 ];
 
 // 合并所有地区

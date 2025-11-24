@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { language } from '../stores/language';
+  import { language } from '../utils/language';
   import { t } from '../data/translations';
   import {
     MAINLAND_PROVINCES,
@@ -7,7 +7,7 @@
     INTERNATIONAL_REGIONS,
     type Region,
   } from '../data/regions';
-  import type { Language } from '../stores/language';
+  import type { Language } from '../utils/language';
 
   export let selectedRegion: string = '';
   export let label: string = '';
@@ -29,7 +29,13 @@
   }
 
   function getRegionName(region: Region, lang: Language): string {
-    return region.name[lang] || region.name.en;
+    const name = region.name[lang] || region.name.en;
+    // Add country code before name, separated by dash
+    // For mainland provinces, remove CN- prefix and use just the province code
+    // For international regions, use the country code
+    // For special regions (HK, MO, TW), use the region code
+    const displayCode = region.code.startsWith('CN-') ? region.code.substring(3) : region.code;
+    return `${displayCode} - ${name}`;
   }
 
   function groupRegions(regions: Region[]) {

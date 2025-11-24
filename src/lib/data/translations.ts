@@ -1,12 +1,17 @@
-import type { Language } from '../stores/language';
+import type { Language } from '../utils/language';
 
 export type TranslationKey =
   | 'app.title'
   | 'mail.type'
+  | 'mail.type.postcard'
   | 'mail.type.letter'
   | 'mail.type.parcel'
   | 'mail.type.ems'
   | 'mail.type.epacket'
+  | 'delivery.method'
+  | 'delivery.method.air'
+  | 'delivery.method.sal'
+  | 'delivery.method.surface'
   | 'sender'
   | 'receiver'
   | 'region.select'
@@ -37,10 +42,15 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
   'en': {
     'app.title': 'Postage Calculator',
     'mail.type': 'Mail Type',
+    'mail.type.postcard': 'Postcard',
     'mail.type.letter': 'Letter',
     'mail.type.parcel': 'Parcel',
     'mail.type.ems': 'EMS',
     'mail.type.epacket': 'ePacket',
+    'delivery.method': 'Delivery Method',
+    'delivery.method.air': 'Air Mail',
+    'delivery.method.sal': 'Surface Air Lifted (SAL)',
+    'delivery.method.surface': 'Surface Mail',
     'sender': 'From',
     'receiver': 'To',
     'region.select': 'Select Region',
@@ -70,10 +80,15 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
   'zh-TW': {
     'app.title': '郵費計算',
     'mail.type': '郵件類型',
+    'mail.type.postcard': '明信片',
     'mail.type.letter': '信件',
     'mail.type.parcel': '包裹',
     'mail.type.ems': 'EMS',
     'mail.type.epacket': 'e小包',
+    'delivery.method': '寄送方式',
+    'delivery.method.air': '航空郵件',
+    'delivery.method.sal': '空運水陸路（SAL）',
+    'delivery.method.surface': '水陸路郵件',
     'sender': '寄件地',
     'receiver': '收件地',
     'region.select': '選擇地區',
@@ -103,10 +118,15 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
   'zh-CN': {
     'app.title': '邮费计算',
     'mail.type': '邮件类型',
+    'mail.type.postcard': '明信片',
     'mail.type.letter': '信件',
     'mail.type.parcel': '包裹',
     'mail.type.ems': 'EMS',
     'mail.type.epacket': 'e小包',
+    'delivery.method': '寄送方式',
+    'delivery.method.air': '航空邮件',
+    'delivery.method.sal': '空运水陆路（SAL）',
+    'delivery.method.surface': '水陆路邮件',
     'sender': '寄件地',
     'receiver': '收件地',
     'region.select': '选择地区',
