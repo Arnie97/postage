@@ -5,7 +5,18 @@ export interface Region {
     'zh-TW': string;
     'en': string;
   };
-  continent?: 'AS' | 'AF' | 'EU' | 'NA' | 'SA' | 'OC' | 'AN';
+  continent?: 'AS' | 'EU' | 'AF' | 'NA' | 'SA' | 'OC' | 'AN';
+  chinaPostZone?: {
+    air?: {
+      letter?: 1 | 2 | 3 | 4;
+      other?: 1 | 2 | 3;
+    };
+    sal?: {
+      letter?: 1 | 2 | 3 | 4;
+      other?: 1 | 2 | 3;
+    };
+    surface?: 1 | 2; // 1 = reduced rate (27 Asian countries), 2 = standard rate
+  };
 }
 
 // 中国大陆各省市自治区（按拼音顺序）
@@ -54,81 +65,154 @@ export const SPECIAL_REGIONS: Region[] = [
 // prettier-ignore
 export const INTERNATIONAL_REGIONS: Region[] = [
   // 亚洲 (AS)
-  { code: 'JP', name: { 'zh-CN': '日本', 'zh-TW': '日本', en: 'Japan' }, continent: 'AS' },
-  { code: 'KR', name: { 'zh-CN': '韩国', 'zh-TW': '韓國', en: 'South Korea' }, continent: 'AS' },
-  { code: 'KP', name: { 'zh-CN': '朝鲜', 'zh-TW': '朝鮮', en: 'North Korea' }, continent: 'AS' },
-  { code: 'MN', name: { 'zh-CN': '蒙古', 'zh-TW': '蒙古', en: 'Mongolia' }, continent: 'AS' },
-  { code: 'VN', name: { 'zh-CN': '越南', 'zh-TW': '越南', en: 'Vietnam' }, continent: 'AS' },
-  { code: 'LA', name: { 'zh-CN': '老挝', 'zh-TW': '寮國', en: 'Laos' }, continent: 'AS' },
-  { code: 'KH', name: { 'zh-CN': '柬埔寨', 'zh-TW': '柬埔寨', en: 'Cambodia' }, continent: 'AS' },
-  { code: 'TH', name: { 'zh-CN': '泰国', 'zh-TW': '泰國', en: 'Thailand' }, continent: 'AS' },
-  { code: 'MM', name: { 'zh-CN': '缅甸', 'zh-TW': '緬甸', en: 'Myanmar' }, continent: 'AS' },
-  { code: 'MY', name: { 'zh-CN': '马来西亚', 'zh-TW': '馬來西亞', en: 'Malaysia' }, continent: 'AS' },
-  { code: 'SG', name: { 'zh-CN': '新加坡', 'zh-TW': '新加坡', en: 'Singapore' }, continent: 'AS' },
-  { code: 'ID', name: { 'zh-CN': '印度尼西亚', 'zh-TW': '印尼', en: 'Indonesia' }, continent: 'AS' },
-  { code: 'BN', name: { 'zh-CN': '文莱', 'zh-TW': '汶萊', en: 'Brunei' }, continent: 'AS' },
-  { code: 'PH', name: { 'zh-CN': '菲律宾', 'zh-TW': '菲律賓', en: 'Philippines' }, continent: 'AS' },
-  { code: 'IN', name: { 'zh-CN': '印度', 'zh-TW': '印度', en: 'India' }, continent: 'AS' },
-  { code: 'PK', name: { 'zh-CN': '巴基斯坦', 'zh-TW': '巴基斯坦', en: 'Pakistan' }, continent: 'AS' },
-  { code: 'BD', name: { 'zh-CN': '孟加拉国', 'zh-TW': '孟加拉', en: 'Bangladesh' }, continent: 'AS' },
-  { code: 'LK', name: { 'zh-CN': '斯里兰卡', 'zh-TW': '斯里蘭卡', en: 'Sri Lanka' }, continent: 'AS' },
-  { code: 'NP', name: { 'zh-CN': '尼泊尔', 'zh-TW': '尼泊爾', en: 'Nepal' }, continent: 'AS' },
-  { code: 'AF', name: { 'zh-CN': '阿富汗', 'zh-TW': '阿富汗', en: 'Afghanistan' }, continent: 'AS' },
-  { code: 'XA', name: { 'zh-CN': '亚洲其他地区', 'zh-TW': '亞洲其他地區', en: 'Other Asian Countries' }, continent: 'AS' },
-
-  // 非洲 (AF)
-  { code: 'EG', name: { 'zh-CN': '埃及', 'zh-TW': '埃及', en: 'Egypt' }, continent: 'AF' },
-  { code: 'ZA', name: { 'zh-CN': '南非', 'zh-TW': '南非', en: 'South Africa' }, continent: 'AF' },
-  { code: 'NG', name: { 'zh-CN': '尼日利亚', 'zh-TW': '奈及利亞', en: 'Nigeria' }, continent: 'AF' },
-  { code: 'KE', name: { 'zh-CN': '肯尼亚', 'zh-TW': '肯亞', en: 'Kenya' }, continent: 'AF' },
-  { code: 'ET', name: { 'zh-CN': '埃塞俄比亚', 'zh-TW': '衣索比亞', en: 'Ethiopia' }, continent: 'AF' },
-  { code: 'GH', name: { 'zh-CN': '加纳', 'zh-TW': '迦納', en: 'Ghana' }, continent: 'AF' },
-  { code: 'MA', name: { 'zh-CN': '摩洛哥', 'zh-TW': '摩洛哥', en: 'Morocco' }, continent: 'AF' },
-  { code: 'DZ', name: { 'zh-CN': '阿尔及利亚', 'zh-TW': '阿爾及利亞', en: 'Algeria' }, continent: 'AF' },
-  { code: 'UG', name: { 'zh-CN': '乌干达', 'zh-TW': '烏干達', en: 'Uganda' }, continent: 'AF' },
-  { code: 'TZ', name: { 'zh-CN': '坦桑尼亚', 'zh-TW': '坦尚尼亞', en: 'Tanzania' }, continent: 'AF' },
-  { code: 'XF', name: { 'zh-CN': '非洲其他地区', 'zh-TW': '非洲其他地區', en: 'Other Africa' }, continent: 'AF' },
+  { code: 'JP', name: { 'zh-CN': '日本', 'zh-TW': '日本', en: 'Japan' }, continent: 'AS', chinaPostZone: { air: { letter: 1, other: 1 }, sal: { letter: 1, other: 2 }, surface: 1 } },
+  { code: 'KR', name: { 'zh-CN': '韩国', 'zh-TW': '韓國', en: 'South Korea' }, continent: 'AS', chinaPostZone: { air: { letter: 1, other: 1 }, sal: { letter: 1, other: 2 }, surface: 1 } },
+  { code: 'KP', name: { 'zh-CN': '朝鲜', 'zh-TW': '朝鮮', en: 'North Korea' }, continent: 'AS', chinaPostZone: { air: { letter: 1, other: 1 }, surface: 2 } },
+  { code: 'MN', name: { 'zh-CN': '蒙古', 'zh-TW': '蒙古', en: 'Mongolia' }, continent: 'AS', chinaPostZone: { air: { letter: 1, other: 1 }, surface: 2 } },
+  { code: 'VN', name: { 'zh-CN': '越南', 'zh-TW': '越南', en: 'Vietnam' }, continent: 'AS', chinaPostZone: { air: { letter: 1, other: 1 }, surface: 1 } },
+  { code: 'LA', name: { 'zh-CN': '老挝', 'zh-TW': '寮國', en: 'Laos' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'KH', name: { 'zh-CN': '柬埔寨', 'zh-TW': '柬埔寨', en: 'Cambodia' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'TH', name: { 'zh-CN': '泰国', 'zh-TW': '泰國', en: 'Thailand' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'MM', name: { 'zh-CN': '缅甸', 'zh-TW': '緬甸', en: 'Myanmar' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'MY', name: { 'zh-CN': '马来西亚', 'zh-TW': '馬來西亞', en: 'Malaysia' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'SG', name: { 'zh-CN': '新加坡', 'zh-TW': '新加坡', en: 'Singapore' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'ID', name: { 'zh-CN': '印度尼西亚', 'zh-TW': '印尼', en: 'Indonesia' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'BN', name: { 'zh-CN': '文莱', 'zh-TW': '汶萊', en: 'Brunei' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'PH', name: { 'zh-CN': '菲律宾', 'zh-TW': '菲律賓', en: 'Philippines' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'IN', name: { 'zh-CN': '印度', 'zh-TW': '印度', en: 'India' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'PK', name: { 'zh-CN': '巴基斯坦', 'zh-TW': '巴基斯坦', en: 'Pakistan' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'BD', name: { 'zh-CN': '孟加拉国', 'zh-TW': '孟加拉', en: 'Bangladesh' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'LK', name: { 'zh-CN': '斯里兰卡', 'zh-TW': '斯里蘭卡', en: 'Sri Lanka' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'NP', name: { 'zh-CN': '尼泊尔', 'zh-TW': '尼泊爾', en: 'Nepal' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'AF', name: { 'zh-CN': '阿富汗', 'zh-TW': '阿富汗', en: 'Afghanistan' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'KZ', name: { 'zh-CN': '哈萨克斯坦', 'zh-TW': '哈薩克斯坦', en: 'Kazakhstan' }, continent: 'AS', chinaPostZone: { air: { letter: 1, other: 1 }, surface: 2 } },
+  { code: 'KG', name: { 'zh-CN': '吉尔吉斯斯坦', 'zh-TW': '吉爾吉斯斯坦', en: 'Kyrgyzstan' }, continent: 'AS', chinaPostZone: { air: { letter: 1, other: 1 }, surface: 2 } },
+  { code: 'TJ', name: { 'zh-CN': '塔吉克斯坦', 'zh-TW': '塔吉克斯坦', en: 'Tajikistan' }, continent: 'AS', chinaPostZone: { air: { letter: 1, other: 1 }, surface: 2 } },
+  { code: 'UZ', name: { 'zh-CN': '乌兹别克斯坦', 'zh-TW': '烏茲別克斯坦', en: 'Uzbekistan' }, continent: 'AS', chinaPostZone: { air: { letter: 1, other: 1 }, surface: 2 } },
+  { code: 'TM', name: { 'zh-CN': '土库曼斯坦', 'zh-TW': '土庫曼斯坦', en: 'Turkmenistan' }, continent: 'AS', chinaPostZone: { air: { letter: 1, other: 1 }, surface: 2 } },
+  { code: 'AE', name: { 'zh-CN': '阿联酋', 'zh-TW': '阿聯酋', en: 'United Arab Emirates' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 2 } },
+  { code: 'OM', name: { 'zh-CN': '阿曼', 'zh-TW': '阿曼', en: 'Oman' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 2 } },
+  { code: 'BH', name: { 'zh-CN': '巴林', 'zh-TW': '巴林', en: 'Bahrain' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 2 } },
+  { code: 'QA', name: { 'zh-CN': '卡塔尔', 'zh-TW': '卡塔爾', en: 'Qatar' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 2 } },
+  { code: 'KW', name: { 'zh-CN': '科威特', 'zh-TW': '科威特', en: 'Kuwait' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 2 } },
+  { code: 'MV', name: { 'zh-CN': '马尔代夫', 'zh-TW': '馬爾代夫', en: 'Maldives' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'GE', name: { 'zh-CN': '格鲁吉亚', 'zh-TW': '格魯吉亞', en: 'Georgia' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, sal: { letter: 3, other: 1 }, surface: 2 } },
+  { code: 'AZ', name: { 'zh-CN': '阿塞拜疆', 'zh-TW': '阿塞拜疆', en: 'Azerbaijan' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'TR', name: { 'zh-CN': '土耳其', 'zh-TW': '土耳其', en: 'Turkey' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 2 }, sal: { letter: 2, other: 2 }, surface: 2 } },
+  { code: 'IQ', name: { 'zh-CN': '伊拉克', 'zh-TW': '伊拉克', en: 'Iraq' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 2 }, sal: { letter: 2, other: 2 }, surface: 2 } },
+  { code: 'JO', name: { 'zh-CN': '约旦', 'zh-TW': '約旦', en: 'Jordan' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 2 }, sal: { letter: 2, other: 2 }, surface: 2 } },
+  { code: 'IR', name: { 'zh-CN': '伊朗', 'zh-TW': '伊朗', en: 'Iran' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'CY', name: { 'zh-CN': '塞浦路斯', 'zh-TW': '塞浦路斯', en: 'Cyprus' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 2 }, sal: { letter: 2, other: 2 }, surface: 2 } },
+  { code: 'AM', name: { 'zh-CN': '亚美尼亚', 'zh-TW': '亞美尼亞', en: 'Armenia' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'BT', name: { 'zh-CN': '不丹', 'zh-TW': '不丹', en: 'Bhutan' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 1 }, surface: 1 } },
+  { code: 'XA', name: { 'zh-CN': '亚洲其他地区', 'zh-TW': '亞洲其他地區', en: 'Other Asian Countries' }, continent: 'AS', chinaPostZone: { air: { letter: 2, other: 2 }, surface: 2 } },
 
   // 欧洲 (EU)
-  { code: 'GB', name: { 'zh-CN': '英国', 'zh-TW': '英國', en: 'United Kingdom' }, continent: 'EU' },
-  { code: 'FR', name: { 'zh-CN': '法国', 'zh-TW': '法國', en: 'France' }, continent: 'EU' },
-  { code: 'DE', name: { 'zh-CN': '德国', 'zh-TW': '德國', en: 'Germany' }, continent: 'EU' },
-  { code: 'IT', name: { 'zh-CN': '意大利', 'zh-TW': '義大利', en: 'Italy' }, continent: 'EU' },
-  { code: 'ES', name: { 'zh-CN': '西班牙', 'zh-TW': '西班牙', en: 'Spain' }, continent: 'EU' },
-  { code: 'PT', name: { 'zh-CN': '葡萄牙', 'zh-TW': '葡萄牙', en: 'Portugal' }, continent: 'EU' },
-  { code: 'NL', name: { 'zh-CN': '荷兰', 'zh-TW': '荷蘭', en: 'Netherlands' }, continent: 'EU' },
-  { code: 'BE', name: { 'zh-CN': '比利时', 'zh-TW': '比利時', en: 'Belgium' }, continent: 'EU' },
-  { code: 'RU', name: { 'zh-CN': '俄罗斯', 'zh-TW': '俄羅斯', en: 'Russia' }, continent: 'EU' },
-  { code: 'XE', name: { 'zh-CN': '欧洲其他地区', 'zh-TW': '歐洲其他地區', en: 'Other Europe' }, continent: 'EU' },
+  { code: 'GB', name: { 'zh-CN': '英国', 'zh-TW': '英國', en: 'United Kingdom' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'FR', name: { 'zh-CN': '法国', 'zh-TW': '法國', en: 'France' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'DE', name: { 'zh-CN': '德国', 'zh-TW': '德國', en: 'Germany' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'IT', name: { 'zh-CN': '意大利', 'zh-TW': '義大利', en: 'Italy' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'ES', name: { 'zh-CN': '西班牙', 'zh-TW': '西班牙', en: 'Spain' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'PT', name: { 'zh-CN': '葡萄牙', 'zh-TW': '葡萄牙', en: 'Portugal' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'NL', name: { 'zh-CN': '荷兰', 'zh-TW': '荷蘭', en: 'Netherlands' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'BE', name: { 'zh-CN': '比利时', 'zh-TW': '比利時', en: 'Belgium' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'RU', name: { 'zh-CN': '俄罗斯', 'zh-TW': '俄羅斯', en: 'Russia' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 3 }, surface: 2 } },
+  { code: 'AL', name: { 'zh-CN': '阿尔巴尼亚', 'zh-TW': '阿爾巴尼亞', en: 'Albania' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'AD', name: { 'zh-CN': '安道尔', 'zh-TW': '安道爾', en: 'Andorra' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'AT', name: { 'zh-CN': '奥地利', 'zh-TW': '奧地利', en: 'Austria' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'BY', name: { 'zh-CN': '白俄罗斯', 'zh-TW': '白俄羅斯', en: 'Belarus' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'BA', name: { 'zh-CN': '波斯尼亚和黑塞哥维那', 'zh-TW': '波斯尼亞和黑塞哥維那', en: 'Bosnia and Herzegovina' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'BG', name: { 'zh-CN': '保加利亚', 'zh-TW': '保加利亞', en: 'Bulgaria' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'HR', name: { 'zh-CN': '克罗地亚', 'zh-TW': '克羅地亞', en: 'Croatia' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'CZ', name: { 'zh-CN': '捷克', 'zh-TW': '捷克', en: 'Czech Republic' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'DK', name: { 'zh-CN': '丹麦', 'zh-TW': '丹麥', en: 'Denmark' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'EE', name: { 'zh-CN': '爱沙尼亚', 'zh-TW': '愛沙尼亞', en: 'Estonia' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'FO', name: { 'zh-CN': '法罗群岛', 'zh-TW': '法羅群島', en: 'Faroe Islands' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'FI', name: { 'zh-CN': '芬兰', 'zh-TW': '芬蘭', en: 'Finland' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'GI', name: { 'zh-CN': '直布罗陀', 'zh-TW': '直布羅陀', en: 'Gibraltar' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'GR', name: { 'zh-CN': '希腊', 'zh-TW': '希臘', en: 'Greece' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'HU', name: { 'zh-CN': '匈牙利', 'zh-TW': '匈牙利', en: 'Hungary' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'IE', name: { 'zh-CN': '爱尔兰', 'zh-TW': '愛爾蘭', en: 'Ireland' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'IS', name: { 'zh-CN': '冰岛', 'zh-TW': '冰島', en: 'Iceland' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'LV', name: { 'zh-CN': '拉脱维亚', 'zh-TW': '拉脫維亞', en: 'Latvia' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'LI', name: { 'zh-CN': '列支敦士登', 'zh-TW': '列支敦士登', en: 'Liechtenstein' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'LT', name: { 'zh-CN': '立陶宛', 'zh-TW': '立陶宛', en: 'Lithuania' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'LU', name: { 'zh-CN': '卢森堡', 'zh-TW': '盧森堡', en: 'Luxembourg' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'MT', name: { 'zh-CN': '马耳他', 'zh-TW': '馬耳他', en: 'Malta' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'MD', name: { 'zh-CN': '摩尔多瓦', 'zh-TW': '摩爾多瓦', en: 'Moldova' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'MC', name: { 'zh-CN': '摩纳哥', 'zh-TW': '摩納哥', en: 'Monaco' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'ME', name: { 'zh-CN': '黑山', 'zh-TW': '黑山', en: 'Montenegro' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'MK', name: { 'zh-CN': '北马其顿', 'zh-TW': '北馬其頓', en: 'North Macedonia' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'NO', name: { 'zh-CN': '挪威', 'zh-TW': '挪威', en: 'Norway' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'PL', name: { 'zh-CN': '波兰', 'zh-TW': '波蘭', en: 'Poland' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'RO', name: { 'zh-CN': '罗马尼亚', 'zh-TW': '羅馬尼亞', en: 'Romania' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'SM', name: { 'zh-CN': '圣马力诺', 'zh-TW': '聖馬力諾', en: 'San Marino' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'RS', name: { 'zh-CN': '塞尔维亚', 'zh-TW': '塞爾維亞', en: 'Serbia' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'SK', name: { 'zh-CN': '斯洛伐克', 'zh-TW': '斯洛伐克', en: 'Slovakia' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'SI', name: { 'zh-CN': '斯洛文尼亚', 'zh-TW': '斯洛文尼亞', en: 'Slovenia' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'SE', name: { 'zh-CN': '瑞典', 'zh-TW': '瑞典', en: 'Sweden' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'CH', name: { 'zh-CN': '瑞士', 'zh-TW': '瑞士', en: 'Switzerland' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'UA', name: { 'zh-CN': '乌克兰', 'zh-TW': '烏克蘭', en: 'Ukraine' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'VA', name: { 'zh-CN': '梵蒂冈', 'zh-TW': '梵蒂岡', en: 'Vatican City' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'XE', name: { 'zh-CN': '欧洲其他地区', 'zh-TW': '歐洲其他地區', en: 'Other European Countries' }, continent: 'EU', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+
+  // 非洲 (AF)
+  { code: 'EG', name: { 'zh-CN': '埃及', 'zh-TW': '埃及', en: 'Egypt' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'ZA', name: { 'zh-CN': '南非', 'zh-TW': '南非', en: 'South Africa' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'NG', name: { 'zh-CN': '尼日利亚', 'zh-TW': '奈及利亞', en: 'Nigeria' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'KE', name: { 'zh-CN': '肯尼亚', 'zh-TW': '肯亞', en: 'Kenya' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'ET', name: { 'zh-CN': '埃塞俄比亚', 'zh-TW': '衣索比亞', en: 'Ethiopia' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'GH', name: { 'zh-CN': '加纳', 'zh-TW': '迦納', en: 'Ghana' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'MA', name: { 'zh-CN': '摩洛哥', 'zh-TW': '摩洛哥', en: 'Morocco' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'DZ', name: { 'zh-CN': '阿尔及利亚', 'zh-TW': '阿爾及利亞', en: 'Algeria' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'UG', name: { 'zh-CN': '乌干达', 'zh-TW': '烏干達', en: 'Uganda' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'TZ', name: { 'zh-CN': '坦桑尼亚', 'zh-TW': '坦尚尼亞', en: 'Tanzania' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'KM', name: { 'zh-CN': '科摩罗', 'zh-TW': '科摩羅', en: 'Comoros' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'LS', name: { 'zh-CN': '莱索托', 'zh-TW': '萊索托', en: 'Lesotho' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'ST', name: { 'zh-CN': '圣多美和普林西比', 'zh-TW': '聖多美和普林西比', en: 'Sao Tome and Principe' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'AC', name: { 'zh-CN': '阿松森岛', 'zh-TW': '阿松森島', en: 'Ascension Island' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'TA', name: { 'zh-CN': '特里斯坦-达库尼亚群岛', 'zh-TW': '特里斯坦-達庫尼亞群島', en: 'Tristan da Cunha' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'IC', name: { 'zh-CN': '加那利群岛', 'zh-TW': '加那利群島', en: 'Canary Islands' }, continent: 'AF', chinaPostZone: { air: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'PT-20', name: { 'zh-CN': '亚速尔群岛', 'zh-TW': '亞速爾群島', en: 'Azores Islands' }, continent: 'AF', chinaPostZone: { air: { letter: 2, other: 2 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'PT-30', name: { 'zh-CN': '马德拉群岛', 'zh-TW': '馬德拉群島', en: 'Madeira Islands' }, continent: 'AF', chinaPostZone: { air: { letter: 2, other: 2 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'XF', name: { 'zh-CN': '非洲其他地区', 'zh-TW': '非洲其他地區', en: 'Other African Countries' }, continent: 'AF', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
 
   // 北美洲 (NA)
-  { code: 'US', name: { 'zh-CN': '美国', 'zh-TW': '美國', en: 'United States' }, continent: 'NA' },
-  { code: 'CA', name: { 'zh-CN': '加拿大', 'zh-TW': '加拿大', en: 'Canada' }, continent: 'NA' },
-  { code: 'MX', name: { 'zh-CN': '墨西哥', 'zh-TW': '墨西哥', en: 'Mexico' }, continent: 'NA' },
-  { code: 'XN', name: { 'zh-CN': '北美洲其他地区', 'zh-TW': '北美洲其他地區', en: 'Other North America' }, continent: 'NA' },
+  { code: 'US', name: { 'zh-CN': '美国', 'zh-TW': '美國', en: 'United States' }, continent: 'NA', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'CA', name: { 'zh-CN': '加拿大', 'zh-TW': '加拿大', en: 'Canada' }, continent: 'NA', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 2 } },
+  { code: 'MX', name: { 'zh-CN': '墨西哥', 'zh-TW': '墨西哥', en: 'Mexico' }, continent: 'NA', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'GL', name: { 'zh-CN': '格陵兰', 'zh-TW': '格陵蘭', en: 'Greenland' }, continent: 'NA', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'BM', name: { 'zh-CN': '百慕大', 'zh-TW': '百慕大', en: 'Bermuda' }, continent: 'NA', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'PM', name: { 'zh-CN': '圣皮埃尔和密克隆', 'zh-TW': '聖皮埃爾和密克隆', en: 'Saint Pierre and Miquelon' }, continent: 'NA', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'VI', name: { 'zh-CN': '美属维尔京群岛', 'zh-TW': '美屬維爾京群島', en: 'US Virgin Islands' }, continent: 'NA', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'PR', name: { 'zh-CN': '波多黎各', 'zh-TW': '波多黎各', en: 'Puerto Rico' }, continent: 'NA', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'AI', name: { 'zh-CN': '安圭拉岛', 'zh-TW': '安圭拉島', en: 'Anguilla' }, continent: 'NA', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'XN', name: { 'zh-CN': '北美洲其他地区', 'zh-TW': '北美洲其他地區', en: 'Other N. Am. Countries' }, continent: 'NA', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
 
   // 南美洲 (SA)
-  { code: 'BR', name: { 'zh-CN': '巴西', 'zh-TW': '巴西', en: 'Brazil' }, continent: 'SA' },
-  { code: 'AR', name: { 'zh-CN': '阿根廷', 'zh-TW': '阿根廷', en: 'Argentina' }, continent: 'SA' },
-  { code: 'CL', name: { 'zh-CN': '智利', 'zh-TW': '智利', en: 'Chile' }, continent: 'SA' },
-  { code: 'PE', name: { 'zh-CN': '秘鲁', 'zh-TW': '祕魯', en: 'Peru' }, continent: 'SA' },
-  { code: 'CO', name: { 'zh-CN': '哥伦比亚', 'zh-TW': '哥倫比亞', en: 'Colombia' }, continent: 'SA' },
-  { code: 'VE', name: { 'zh-CN': '委内瑞拉', 'zh-TW': '委內瑞拉', en: 'Venezuela' }, continent: 'SA' },
-  { code: 'EC', name: { 'zh-CN': '厄瓜多尔', 'zh-TW': '厄瓜多', en: 'Ecuador' }, continent: 'SA' },
-  { code: 'UY', name: { 'zh-CN': '乌拉圭', 'zh-TW': '烏拉圭', en: 'Uruguay' }, continent: 'SA' },
-  { code: 'PY', name: { 'zh-CN': '巴拉圭', 'zh-TW': '巴拉圭', en: 'Paraguay' }, continent: 'SA' },
-  { code: 'BO', name: { 'zh-CN': '玻利维亚', 'zh-TW': '玻利維亞', en: 'Bolivia' }, continent: 'SA' },
-  { code: 'XS', name: { 'zh-CN': '其他南美洲地区', 'zh-TW': '其他南美洲地區', en: 'Other South America' }, continent: 'SA' },
+  { code: 'BR', name: { 'zh-CN': '巴西', 'zh-TW': '巴西', en: 'Brazil' }, continent: 'SA', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'AR', name: { 'zh-CN': '阿根廷', 'zh-TW': '阿根廷', en: 'Argentina' }, continent: 'SA', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'CL', name: { 'zh-CN': '智利', 'zh-TW': '智利', en: 'Chile' }, continent: 'SA', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'PE', name: { 'zh-CN': '秘鲁', 'zh-TW': '祕魯', en: 'Peru' }, continent: 'SA', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'CO', name: { 'zh-CN': '哥伦比亚', 'zh-TW': '哥倫比亞', en: 'Colombia' }, continent: 'SA', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'VE', name: { 'zh-CN': '委内瑞拉', 'zh-TW': '委內瑞拉', en: 'Venezuela' }, continent: 'SA', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'EC', name: { 'zh-CN': '厄瓜多尔', 'zh-TW': '厄瓜多', en: 'Ecuador' }, continent: 'SA', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'UY', name: { 'zh-CN': '乌拉圭', 'zh-TW': '烏拉圭', en: 'Uruguay' }, continent: 'SA', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'PY', name: { 'zh-CN': '巴拉圭', 'zh-TW': '巴拉圭', en: 'Paraguay' }, continent: 'SA', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'BO', name: { 'zh-CN': '玻利维亚', 'zh-TW': '玻利維亞', en: 'Bolivia' }, continent: 'SA', chinaPostZone: { air: { letter: 4, other: 3 }, sal: { letter: 4, other: 3 }, surface: 2 } },
+  { code: 'XS', name: { 'zh-CN': '南美洲其他地区', 'zh-TW': '南美洲其他地區', en: 'Other S. Am. Countries' }, continent: 'SA', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
 
   // 大洋洲 (OC)
-  { code: 'AU', name: { 'zh-CN': '澳大利亚', 'zh-TW': '澳洲', en: 'Australia' }, continent: 'OC' },
-  { code: 'NZ', name: { 'zh-CN': '新西兰', 'zh-TW': '紐西蘭', en: 'New Zealand' }, continent: 'OC' },
-  { code: 'FJ', name: { 'zh-CN': '斐济', 'zh-TW': '斐濟', en: 'Fiji' }, continent: 'OC' },
-  { code: 'PG', name: { 'zh-CN': '巴布亚新几内亚', 'zh-TW': '巴布亞紐幾內亞', en: 'Papua New Guinea' }, continent: 'OC' },
-  { code: 'XO', name: { 'zh-CN': '其他大洋洲地区', 'zh-TW': '其他大洋洲地區', en: 'Other Oceania' }, continent: 'OC' },
+  { code: 'AU', name: { 'zh-CN': '澳大利亚', 'zh-TW': '澳洲', en: 'Australia' }, continent: 'OC', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 1 } },
+  { code: 'NZ', name: { 'zh-CN': '新西兰', 'zh-TW': '紐西蘭', en: 'New Zealand' }, continent: 'OC', chinaPostZone: { air: { letter: 3, other: 2 }, sal: { letter: 3, other: 2 }, surface: 1 } },
+  { code: 'FJ', name: { 'zh-CN': '斐济', 'zh-TW': '斐濟', en: 'Fiji' }, continent: 'OC', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 1 } },
+  { code: 'PG', name: { 'zh-CN': '巴布亚新几内亚', 'zh-TW': '巴布亞紐幾內亞', en: 'Papua New Guinea' }, continent: 'OC', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 1 } },
+  { code: 'NR', name: { 'zh-CN': '瑙鲁', 'zh-TW': '瑙魯', en: 'Nauru' }, continent: 'OC', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 1 } },
+  { code: 'SB', name: { 'zh-CN': '所罗门群岛', 'zh-TW': '所羅門群島', en: 'Solomon Islands' }, continent: 'OC', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 1 } },
+  { code: 'XO', name: { 'zh-CN': '大洋洲其他地区', 'zh-TW': '大洋洲其他地區', en: 'Other Oceanian Countries' }, continent: 'OC', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
 
-  // 南极洲 (AN - Antarctica)
-  { code: 'AQ', name: { 'zh-CN': '南极洲', 'zh-TW': '南極洲', en: 'Antarctica' }, continent: 'AN' },
+  // 南极洲 (AN)
+  { code: 'AQ', name: { 'zh-CN': '南极洲', 'zh-TW': '南極洲', en: 'Antarctica' }, continent: 'AN', chinaPostZone: { air: { letter: 4, other: 3 }, surface: 2 } },
 ];
 
 // 合并所有地区
@@ -422,16 +506,54 @@ const MAINLAND_POSTAL_ZONES: Record<string, string[][]> = {
 
 // 邮政分区说明
 export const POSTAL_ZONES = {
-  1: '一档：省份面积小于70万平方公里的省内寄递',
-  2: '二档：相邻省和省会距离不超过500公里',
-  3: '三档：省会距离500-1000公里',
-  4: '四档：省会距离1000-2000公里',
-  5: '五档：省会距离2000-3000公里',
-  6: '六档：省会距离3000公里以上',
+  domestic: {
+    1: '一档：省份面积小于70万平方公里的省内寄递',
+    2: '二档：相邻省和省会距离不超过500公里',
+    3: '三档：省会距离500-1000公里',
+    4: '四档：省会距离1000-2000公里',
+    5: '五档：省会距离2000-3000公里',
+    6: '六档：省会距离3000公里以上',
+  },
+  // 国际航空邮件分组
+  international_air: {
+    letter: {
+      1: '信函一组：东亚、中亚邻近国家',
+      2: '信函二组：其他亚洲国家或地区',
+      3: '信函三组：欧洲各国、美加澳新',
+      4: '信函四组：拉美、非洲、太平洋岛屿',
+    },
+    other: {
+      1: '包裹一组：阿联酋等亚洲 21 国',
+      2: '包裹二组：阿塞拜疆等亚欧 50 个国家和地区、美加澳新',
+      3: '包裹三组：其他国家和地区',
+    },
+  },
+  // 国际空运水陆路邮件分组
+  international_sal: {
+    letter: {
+      1: '信函一组：韩国、日本',
+      2: '信函二组：塞浦路斯',
+      3: '信函三组：亚欧其他国家、美加澳',
+      4: '信函四组：美洲、非洲部分国家和地区',
+    },
+    other: {
+      1: '包裹一组：格鲁吉亚',
+      2: '包裹二组：阿塞拜疆等 40 个国家',
+      3: '包裹三组：俄罗斯等 27 个国家和地区',
+    },
+  },
+  // 国际水陆路邮件分组
+  international_surface: {
+    1: '27 个亚太国家',
+    2: '标准资费',
+  },
 };
 
-// 获取邮政分区（基于官方分区表）
-export function getPostalZone(fromProvince: string, toProvince: string): 1 | 2 | 3 | 4 | 5 | 6 {
+// 获取中国邮政境内分区信息
+export function getChinaPostMainlandZone(
+  fromProvince: string,
+  toProvince: string,
+): 1 | 2 | 3 | 4 | 5 | 6 {
   // 移除CN-前缀进行查找
   const fromCode = fromProvince.replace('CN-', '');
   const toCode = toProvince.replace('CN-', '');
@@ -466,4 +588,14 @@ export function getRegionType(regionCode: string): 'CN' | 'HK' | 'MO' | 'TW' | '
   if (['CN', 'HK', 'MO', 'TW'].includes(regionCode.substring(0, 2)))
     return regionCode.substring(0, 2) as 'CN' | 'HK' | 'MO' | 'TW';
   return 'XX';
+}
+
+// 获取中国邮政国际函件分组信息
+export function getChinaPostInternationalZone(regionCode: string): {
+  air?: { letter?: 1 | 2 | 3 | 4; other?: 1 | 2 | 3 };
+  sal?: { letter?: 1 | 2 | 3 | 4; other?: 1 | 2 | 3 };
+  surface?: 1 | 2;
+} | null {
+  const region = ALL_REGIONS.find((r) => r.code === regionCode);
+  return region?.chinaPostZone || null;
 }

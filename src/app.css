@@ -47,6 +47,21 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+a {
+  color: white;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: rgba(255, 255, 255, 0.5);
+  transition:
+    text-decoration-style 0.2s ease,
+    text-decoration-color 0.2s ease;
+}
+
+a:hover {
+  text-decoration-style: solid;
+  text-decoration-color: white;
+}
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -250,15 +265,16 @@ body {
   color: var(--text-primary);
 }
 
-/* Section styles */
-.section {
-  margin-bottom: 2rem;
+.header-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
 /* Footer styles */
 .footer {
   text-align: center;
-  padding: 2rem 0;
+  padding: 1rem 0;
   color: var(--text-muted);
   font-size: 0.875rem;
 }
@@ -268,8 +284,15 @@ body {
 }
 
 .footer-link {
-  color: var(--primary-color);
-  text-decoration: none;
+  color: var(--text-muted);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: rgba(148, 163, 184, 0.5);
+}
+
+.footer-link:hover {
+  text-decoration-style: solid;
+  text-decoration-color: var(--text-muted);
 }
 
 /* Card content padding */
@@ -284,17 +307,28 @@ body {
   padding: 0;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg-primary: #1e293b;
-    --bg-secondary: #0f172a;
-    --bg-tertiary: #334155;
+/* Dark theme support */
+[data-theme='dark'] {
+  --bg-primary: #1e293b;
+  --bg-secondary: #0f172a;
+  --bg-tertiary: #334155;
 
-    --text-primary: #f1f5f9;
-    --text-secondary: #cbd5e1;
-    --text-muted: #64748b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
 
-    --border-color: #475569;
-  }
+  --border-color: #475569;
+}
+
+/* Ensure light theme is explicit */
+[data-theme='light'] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+
+  --border-color: #e2e8f0;
 }

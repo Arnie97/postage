@@ -1,8 +1,19 @@
-import { getRegionType } from '../data/regions';
-import { POSTAGE_RATES, SERVICE_MAP } from '../data/rates';
+import {
+  getRegionType,
+  getChinaPostInternationalZone,
+  getChinaPostMainlandZone,
+} from '../data/regions';
+import { POSTAGE_RATES } from '../data/rates';
 import type { RateCalculationMethod } from '../data/rates';
 
-export type MailType = 'letter' | 'parcel' | 'ems' | 'epacket' | 'postcard';
+export type MailType =
+  | 'letter'
+  | 'postcard'
+  | 'printed_papers'
+  | 'literature_for_blind'
+  | 'parcel'
+  | 'small_packet'
+  | 'ems';
 
 export type DeliveryMethod = 'air' | 'sal' | 'surface';
 
@@ -14,7 +25,7 @@ export interface PostageResult {
   origin: string;
   destination: string;
   weight: number;
-  zone?: string;
+  zoneId?: string;
   deliveryMethod?: DeliveryMethod;
   ruleId?: string;
 }
@@ -29,14 +40,22 @@ export function calculatePostageRate(
 ): PostageResult | null {
   const fromRegionType = getRegionType(fromRegion);
 
-  const serviceKey = SERVICE_MAP[fromRegionType];
-  if (!serviceKey) return null;
+  // Find the service by matching fromRegion
+  let serviceKey: string | null = null;
+  let serviceData: any = null;
+
+  for (const [key, data] of Object.entries(POSTAGE_RATES)) {
+    if (data.fromRegion === fromRegionType) {
+      serviceKey = key;
+      serviceData = data;
+      break;
+    }
+  }
+
+  if (!serviceKey || !serviceData) return null;
 
   const fromType = fromRegionType;
   const toType = getRegionType(toRegion);
-
-  const serviceData = POSTAGE_RATES[serviceKey as keyof typeof POSTAGE_RATES];
-  if (!serviceData) return null;
 
   // Determine destination type for rate lookup
   let destinationType: string;
@@ -80,6 +99,7 @@ export function calculatePostageRate(
 
   // Calculate price based on rate method
   let price: number | null = null;
+  let zoneId: string | undefined;
 
   switch (rateMethod.type) {
     case 'stepped': {
@@ -107,22 +127,50 @@ export function calculatePostageRate(
       if (rateMethod.maxWeight && weight > rateMethod.maxWeight) return null;
       price = rateMethod.price;
       break;
+
+    case 'region_stepped': {
+      // Get China Post group for destination region
+      let zoneNumber: number | undefined;
+      if (destinationType == 'international') {
+        const chinaPostInternationalZone = getChinaPostInternationalZone(toRegion);
+        if (!chinaPostInternationalZone || !deliveryMethod) return null;
+
+        // Determine which group to use based on delivery method and mail type
+        const zoneNumberMap = chinaPostInternationalZone[deliveryMethod];
+        const mailCategory = (
+          mailType !== 'letter' ? 'other' : mailType
+        ) as keyof typeof zoneNumberMap;
+        zoneNumber =
+          typeof zoneNumberMap === 'object' ? zoneNumberMap?.[mailCategory] : zoneNumberMap;
+        if (!zoneNumber) return null;
+
+        zoneId = `international_${deliveryMethod}_${mailCategory}_${zoneNumber}`;
+      } else if (destinationType === 'domestic' && mailType === 'parcel') {
+        zoneNumber = getChinaPostMainlandZone(fromRegion, toRegion);
+        if (zoneNumber === undefined) return null;
+        zoneId = `domestic__${mailType}_${zoneNumber}`;
+      } else {
+        return null;
+      }
+
+      const groupRates = rateMethod.groups[zoneNumber];
+      if (!groupRates) return null;
+
+      // Check weight limit
+      if (groupRates.maxWeight && weight > groupRates.maxWeight) return null;
+
+      // Calculate price using group-specific rates
+      const weightStep = Math.ceil(weight / groupRates.weightStep);
+      if (weightStep <= 1) {
+        price = groupRates.basePrice;
+      } else {
+        price = groupRates.basePrice + (weightStep - 1) * groupRates.additionalPrice;
+      }
+      break;
+    }
   }
 
   if (price === null) return null;
-
-  // Determine rule ID
-  let ruleId = '';
-  const rulePrefix = serviceKey;
-  const mailTypeName = mailType;
-
-  if (mailType === 'epacket') {
-    ruleId = `${rulePrefix}_${destinationType}_${mailTypeName}`;
-  } else if (destinationType === 'international' && deliveryMethod) {
-    ruleId = `${rulePrefix}_${deliveryMethod}_${mailTypeName}`;
-  } else {
-    ruleId = `${rulePrefix}_${destinationType}_${mailTypeName}`;
-  }
 
   return {
     price,
@@ -133,6 +181,7 @@ export function calculatePostageRate(
     destination: toRegion,
     weight,
     deliveryMethod,
-    ruleId,
+    ruleId: `${serviceKey}_${destinationType}`,
+    zoneId,
   };
 }

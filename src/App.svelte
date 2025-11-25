@@ -1,6 +1,7 @@
 <script lang="ts">
   import './app.css';
   import LanguageSwitcher from './lib/components/LanguageSwitcher.svelte';
+  import ThemeSwitcher from './lib/components/ThemeSwitcher.svelte';
   import PostageCalculator from './lib/components/PostageCalculator.svelte';
   import { language } from './lib/utils/language';
   import { t } from './lib/data/translations';
@@ -35,7 +36,10 @@
           📮 {t('app.title', $language)}
         </h1>
       </div>
-      <LanguageSwitcher />
+      <div class="header-controls">
+        <LanguageSwitcher />
+        <ThemeSwitcher />
+      </div>
     </header>
 
     <!-- Main Calculator -->
@@ -46,11 +50,12 @@
     <!-- Footer -->
     <footer class="footer">
       <p>
-        Open source postage calculator for China Post, Chunghwa Post, Hongkong Post, and Macau Post
+        {t('footer.description', $language)}
       </p>
       <p class="footer-paragraph">
-        Licensed under GNU AGPL v3 •
-        <a href="https://github.com" class="footer-link"> Source Code </a>
+        <a href="https://github.com" class="footer-link">
+          {t('footer.source-code', $language)}</a
+        >{t('footer.license', $language)}
       </p>
     </footer>
   </div>
@@ -62,11 +67,16 @@
     padding: 0;
   }
 
-  @media (max-width: 640px) {
-    header {
+  @media (max-width: 480px) {
+    .header {
       flex-direction: column;
       gap: 1rem;
       align-items: flex-start !important;
+    }
+
+    .header-controls {
+      align-self: stretch;
+      justify-content: space-between;
     }
   }
 </style>

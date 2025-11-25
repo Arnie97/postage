@@ -8,16 +8,17 @@
     type DeliveryMethod,
   } from '../utils/postal-rates';
   import { RATE_RULES } from '../data/rates';
-  import { getRegionType, POSTAL_ZONES } from '../data/regions';
+  import { getRegionType, getChinaPostInternationalZone, POSTAL_ZONES } from '../data/regions';
   import RegionSelector from './RegionSelector.svelte';
 
   let selectedMailType: MailType = 'letter';
   let selectedDeliveryMethod: DeliveryMethod | null = null;
-  let originRegion = '';
-  let destinationRegion = '';
-  let weight = '';
+  let originRegion = 'CN-BJ';
+  let destinationRegion = 'HK';
+  let weight = '20';
   let result: PostageResult | null = null;
   let error = '';
+  let previousMailType: MailType = 'letter';
 
   $: currentLang = $language;
 
@@ -34,15 +35,69 @@
   // Check if destination is international (show delivery method options)
   $: isInternationalDestination = destinationRegion && getRegionType(destinationRegion) === 'XX';
 
-  // Reset delivery method when destination changes
+  // Get available delivery methods for the destination
+  $: availableDeliveryMethods = getAvailableDeliveryMethods(originRegion, destinationRegion);
+
+  // Set default delivery method when destination changes or method becomes unavailable
   $: {
     if (!isInternationalDestination) {
       selectedDeliveryMethod = null;
+    } else if (!availableDeliveryMethods.includes(selectedDeliveryMethod as DeliveryMethod)) {
+      // Set SAL as default if available, otherwise the first available method (usually air)
+      if (availableDeliveryMethods.includes('sal')) {
+        selectedDeliveryMethod = 'sal';
+      } else if (availableDeliveryMethods.length > 0) {
+        selectedDeliveryMethod = availableDeliveryMethods[0];
+      } else {
+        selectedDeliveryMethod = null;
+      }
     }
+  }
+
+  // Set default weight based on mail type only when mail type changes
+  $: {
+    if (selectedMailType !== previousMailType) {
+      if (selectedMailType === 'postcard' || selectedMailType === 'letter') {
+        weight = '20';
+      } else if (selectedMailType === 'printed_papers') {
+        weight = '50';
+      } else if (
+        selectedMailType === 'parcel' ||
+        selectedMailType === 'ems' ||
+        selectedMailType === 'small_packet'
+      ) {
+        weight = '100';
+      }
+      previousMailType = selectedMailType;
+    }
+  }
+
+  function getAvailableDeliveryMethods(origin: string, destination: string): DeliveryMethod[] {
+    if (!origin || !destination) return [];
+
+    const originType = getRegionType(origin);
+    const destType = getRegionType(destination);
+
+    // Only show delivery methods for China Post international mail
+    if (originType !== 'CN' || destType !== 'XX') {
+      return [];
+    }
+
+    const chinaPostZone = getChinaPostInternationalZone(destination);
+    if (!chinaPostZone) return [];
+
+    const methods: DeliveryMethod[] = [];
+    if (chinaPostZone.air !== undefined) methods.push('air');
+    if (chinaPostZone.sal !== undefined) methods.push('sal');
+    if (chinaPostZone.surface !== undefined) methods.push('surface');
+
+    return methods;
   }
 
   // Auto-calculate when inputs change
   $: {
+    // Include selectedDeliveryMethod in dependencies to trigger recalculation
+    selectedDeliveryMethod;
     if (originRegion && destinationRegion && weight && selectedMailType) {
       calculate();
     } else {
@@ -52,76 +107,49 @@
   }
 
   function getAvailableMailTypes(origin: string, destination: string): MailType[] {
-    if (!origin || !destination) {
-      return ['postcard', 'letter', 'parcel', 'ems'];
-    }
-
-    const originType = getRegionType(origin);
-    const destType = getRegionType(destination);
-    const baseTypes: MailType[] = ['postcard', 'letter', 'parcel', 'ems'];
-
-    // ePacket availability rules
-    if (originType === 'CN' && destType === 'XX') {
-      return [...baseTypes, 'epacket'];
-    }
-    if (originType === 'TW' && (destType === 'CN' || destType === 'XX')) {
-      return [...baseTypes, 'epacket'];
-    }
-    if (originType === 'HK' && destType === 'XX') {
-      return [...baseTypes, 'epacket'];
-    }
-    if (originType === 'MO' && destType === 'XX') {
-      return [...baseTypes, 'epacket'];
-    }
-
-    return baseTypes;
+    return [
+      'letter',
+      'postcard',
+      'printed_papers',
+      'literature_for_blind',
+      'parcel',
+      'small_packet',
+      'ems',
+    ];
   }
-
-  const MAIL_TYPE_KEY_MAP = new Map<string, TranslationKey>([
-    ['postcard', 'mail.type.postcard'],
-    ['letter', 'mail.type.letter'],
-    ['parcel', 'mail.type.parcel'],
-    ['ems', 'mail.type.ems'],
-    ['epacket', 'mail.type.epacket'],
-  ]);
 
   function getMailTypeKey(mailType: string): TranslationKey {
-    return MAIL_TYPE_KEY_MAP.get(mailType) || 'mail.type.letter';
+    return `mail.type.${mailType}` as TranslationKey;
   }
 
-  // Unified service and currency configuration
+  // Unified service configuration
   const SERVICE_CONFIG = {
     services: {
       'China Post': {
         translationKey: 'service.china-post' as TranslationKey,
-        color: '#10b981', // Green
+        primaryColor: '#059669', // Forest Green (from logo)
+        secondaryColor: '#f59e0b', // Golden Yellow (from logo)
       },
       'Chunghwa Post': {
         translationKey: 'service.chunghwa-post' as TranslationKey,
-        color: '#dc2626', // Red
+        primaryColor: '#dd2222',
+        secondaryColor: '#2147a5',
       },
       'Hong Kong Post': {
         translationKey: 'service.hongkong-post' as TranslationKey,
-        color: '#2563eb', // Blue
+        primaryColor: '#16875a',
+        secondaryColor: '#323092',
       },
       'Macau Post': {
         translationKey: 'service.macau-post' as TranslationKey,
-        color: '#7c3aed', // Purple
+        primaryColor: '#0071ba',
+        secondaryColor: '#cf202e',
       },
-    },
-    currencies: {
-      CNY: 'currency.cny' as TranslationKey,
-      TWD: 'currency.twd' as TranslationKey,
-      HKD: 'currency.hkd' as TranslationKey,
-      MOP: 'currency.mop' as TranslationKey,
     },
   };
 
   function getCurrencyKey(currency: string): TranslationKey {
-    return (
-      SERVICE_CONFIG.currencies[currency as keyof typeof SERVICE_CONFIG.currencies] ||
-      'currency.cny'
-    );
+    return `currency.${currency.toLowerCase()}` as TranslationKey;
   }
 
   function getServiceKey(service: string): TranslationKey {
@@ -131,15 +159,28 @@
     );
   }
 
-  function getServiceColor(service: string): string {
-    return (
-      SERVICE_CONFIG.services[service as keyof typeof SERVICE_CONFIG.services]?.color || '#10b981'
-    ); // Default to green
+  function getServicePrimaryColor(service: string): string {
+    return SERVICE_CONFIG.services[service as keyof typeof SERVICE_CONFIG.services]?.primaryColor;
+  }
+
+  function getServiceSecondaryColor(service: string): string {
+    return SERVICE_CONFIG.services[service as keyof typeof SERVICE_CONFIG.services]?.secondaryColor;
   }
 
   function getZoneDescription(zone: string): string {
-    const zoneNumber = parseInt(zone) as keyof typeof POSTAL_ZONES;
-    return POSTAL_ZONES[zoneNumber] || '';
+    // Format: "international_sal_letter_1", "international_air_other_2", etc.
+    const [prefix, deliveryMethod, mailType, zoneNumber] = zone.split('_');
+    const zoneKey = {
+      international: `${prefix}_${deliveryMethod}`,
+      domestic: `${prefix}_${mailType}`,
+    }[prefix] as keyof typeof POSTAL_ZONES;
+
+    let zones = POSTAL_ZONES[zoneKey];
+    if (typeof zones !== 'object') {
+      return '';
+    }
+    zones = zones[mailType as keyof typeof zones] || zones;
+    return zones[parseInt(zoneNumber) as keyof typeof zones] || '';
   }
 
   function calculate() {
@@ -212,40 +253,24 @@
     </div>
 
     <!-- Delivery Method Selection (International Only) -->
-    {#if isInternationalDestination}
+    {#if isInternationalDestination && availableDeliveryMethods.length > 0}
       <div class="form-group">
         <fieldset class="fieldset-reset">
           <legend class="form-label">
             {t('delivery.method', currentLang)}
           </legend>
           <div class="radio-group">
-            <label class="radio-item">
-              <input
-                type="radio"
-                bind:group={selectedDeliveryMethod}
-                value="air"
-                name="deliveryMethod"
-              />
-              <span>{t('delivery.method.air', currentLang)}</span>
-            </label>
-            <label class="radio-item">
-              <input
-                type="radio"
-                bind:group={selectedDeliveryMethod}
-                value="sal"
-                name="deliveryMethod"
-              />
-              <span>{t('delivery.method.sal', currentLang)}</span>
-            </label>
-            <label class="radio-item">
-              <input
-                type="radio"
-                bind:group={selectedDeliveryMethod}
-                value="surface"
-                name="deliveryMethod"
-              />
-              <span>{t('delivery.method.surface', currentLang)}</span>
-            </label>
+            {#each availableDeliveryMethods as method}
+              <label class="radio-item">
+                <input
+                  type="radio"
+                  bind:group={selectedDeliveryMethod}
+                  value={method}
+                  name="deliveryMethod"
+                />
+                <span>{t(`delivery.method.${method}`, currentLang)}</span>
+              </label>
+            {/each}
           </div>
         </fieldset>
       </div>
@@ -261,7 +286,6 @@
         type="number"
         class="form-control"
         bind:value={weight}
-        placeholder="500"
         min="1"
         step="1"
         required
@@ -275,9 +299,9 @@
     {#if result}
       <div
         class="result-card"
-        style="background: linear-gradient(135deg, {getServiceColor(
+        style="background: linear-gradient(135deg, {getServicePrimaryColor(
           result.service,
-        )}, {getServiceColor(result.service)}dd);"
+        )}, {getServiceSecondaryColor(result.service)});"
       >
         <div class="result-price">
           {result.price.toFixed(2)}
@@ -289,8 +313,8 @@
           {#if result.deliveryMethod}
             • {t(`delivery.method.${result.deliveryMethod}`, currentLang)}
           {/if}
-          {#if result.zone}
-            • {getZoneDescription(result.zone)}
+          {#if result.zoneId}
+            • {getZoneDescription(result.zoneId)}
           {/if}
           {#if result.ruleId && RATE_RULES[result.ruleId]}
             • <a
@@ -322,10 +346,15 @@
   .rate-rule-link {
     color: white;
     font-size: inherit;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-color: rgba(255, 255, 255, 0.5);
   }
 
   .rate-rule-link:hover {
-    color: #e0e0e0;
+    color: white;
+    text-decoration-style: solid;
+    text-decoration-color: white;
   }
 
   @media (max-width: 768px) {
