@@ -3,11 +3,13 @@ import type { Language } from '../utils/language';
 export type TranslationKey =
   | 'app.title'
   | 'mail.type'
-  | 'mail.type.postcard'
   | 'mail.type.letter'
+  | 'mail.type.postcard'
+  | 'mail.type.printed_papers'
+  | 'mail.type.literature_for_blind'
   | 'mail.type.parcel'
+  | 'mail.type.small_packet'
   | 'mail.type.ems'
-  | 'mail.type.epacket'
   | 'delivery.method'
   | 'delivery.method.air'
   | 'delivery.method.sal'
@@ -18,8 +20,8 @@ export type TranslationKey =
   | 'region.mainland'
   | 'region.special'
   | 'continent.AS'
-  | 'continent.AF'
   | 'continent.EU'
+  | 'continent.AF'
   | 'continent.NA'
   | 'continent.SA'
   | 'continent.OC'
@@ -36,17 +38,22 @@ export type TranslationKey =
   | 'currency.hkd'
   | 'currency.mop'
   | 'error.weight'
-  | 'error.calculation';
+  | 'error.calculation'
+  | 'footer.description'
+  | 'footer.license'
+  | 'footer.source-code';
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   'en': {
     'app.title': 'Postage Calculator',
     'mail.type': 'Mail Type',
-    'mail.type.postcard': 'Postcard',
     'mail.type.letter': 'Letter',
+    'mail.type.postcard': 'Postcard',
+    'mail.type.printed_papers': 'Printed Papers',
+    'mail.type.literature_for_blind': 'Literature for the Blind',
     'mail.type.parcel': 'Parcel',
+    'mail.type.small_packet': 'Small Packet',
     'mail.type.ems': 'EMS',
-    'mail.type.epacket': 'ePacket',
     'delivery.method': 'Delivery Method',
     'delivery.method.air': 'Air Mail',
     'delivery.method.sal': 'Surface Air Lifted (SAL)',
@@ -57,8 +64,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'region.mainland': 'Mainland China',
     'region.special': 'Hong Kong, Macau & Taiwan',
     'continent.AS': 'Asia',
-    'continent.AF': 'Africa',
     'continent.EU': 'Europe',
+    'continent.AF': 'Africa',
     'continent.NA': 'North America',
     'continent.SA': 'South America',
     'continent.OC': 'Oceania',
@@ -76,18 +83,23 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'currency.mop': 'MOP',
     'error.weight': 'Please enter a valid weight',
     'error.calculation': 'Unable to calculate postage',
+    'footer.description': 'Postage calculator for Greater China',
+    'footer.source-code': 'Source code',
+    'footer.license': ' licensed under GNU AGPL v3',
   },
   'zh-TW': {
-    'app.title': '郵費計算',
+    'app.title': '郵費計算機',
     'mail.type': '郵件類型',
-    'mail.type.postcard': '明信片',
     'mail.type.letter': '信件',
+    'mail.type.postcard': '明信片',
+    'mail.type.printed_papers': '印刷品',
+    'mail.type.literature_for_blind': '盲人讀物',
     'mail.type.parcel': '包裹',
+    'mail.type.small_packet': '小包',
     'mail.type.ems': 'EMS',
-    'mail.type.epacket': 'e小包',
     'delivery.method': '寄送方式',
     'delivery.method.air': '航空郵件',
-    'delivery.method.sal': '空運水陸路（SAL）',
+    'delivery.method.sal': '空運水陸路 (SAL)',
     'delivery.method.surface': '水陸路郵件',
     'sender': '寄件地',
     'receiver': '收件地',
@@ -95,8 +107,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'region.mainland': '中國大陸',
     'region.special': '港澳台',
     'continent.AS': '亞洲',
-    'continent.AF': '非洲',
     'continent.EU': '歐洲',
+    'continent.AF': '非洲',
     'continent.NA': '北美洲',
     'continent.SA': '南美洲',
     'continent.OC': '大洋洲',
@@ -114,18 +126,23 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'currency.mop': '澳門元',
     'error.weight': '請輸入有效的重量',
     'error.calculation': '無法計算郵費',
+    'footer.description': '兩岸四地郵費計算機',
+    'footer.source-code': '原始碼',
+    'footer.license': '以 GNU AGPL v3 授權',
   },
   'zh-CN': {
-    'app.title': '邮费计算',
+    'app.title': '邮费计算器',
     'mail.type': '邮件类型',
-    'mail.type.postcard': '明信片',
     'mail.type.letter': '信件',
+    'mail.type.postcard': '明信片',
+    'mail.type.printed_papers': '印刷品',
+    'mail.type.literature_for_blind': '盲人读物',
     'mail.type.parcel': '包裹',
+    'mail.type.small_packet': '小包',
     'mail.type.ems': 'EMS',
-    'mail.type.epacket': 'e小包',
     'delivery.method': '寄送方式',
     'delivery.method.air': '航空邮件',
-    'delivery.method.sal': '空运水陆路（SAL）',
+    'delivery.method.sal': '空运水陆路 (SAL)',
     'delivery.method.surface': '水陆路邮件',
     'sender': '寄件地',
     'receiver': '收件地',
@@ -133,8 +150,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'region.mainland': '中国大陆',
     'region.special': '港澳台',
     'continent.AS': '亚洲',
-    'continent.AF': '非洲',
     'continent.EU': '欧洲',
+    'continent.AF': '非洲',
     'continent.NA': '北美洲',
     'continent.SA': '南美洲',
     'continent.OC': '大洋洲',
@@ -152,6 +169,9 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'currency.mop': '澳门元',
     'error.weight': '请输入有效的重量',
     'error.calculation': '无法计算邮费',
+    'footer.description': '两岸四地邮费计算器',
+    'footer.source-code': '源代码',
+    'footer.license': '以 GNU AGPL v3 授权',
   },
 };
 

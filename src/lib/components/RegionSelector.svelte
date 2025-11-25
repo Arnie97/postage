@@ -99,10 +99,10 @@
       </optgroup>
     {/if}
 
-    <!-- 非洲（仅目的地） -->
-    {#if isDestination && regionGroups.africa.length > 0}
-      <optgroup label={t('continent.AF', currentLang)}>
-        {#each regionGroups.africa as region}
+    <!-- 欧洲（仅目的地） -->
+    {#if isDestination && regionGroups.europe.length > 0}
+      <optgroup label={t('continent.EU', currentLang)}>
+        {#each regionGroups.europe as region}
           <option value={region.code}>
             {getRegionName(region, currentLang)}
           </option>
@@ -110,10 +110,10 @@
       </optgroup>
     {/if}
 
-    <!-- 欧洲（仅目的地） -->
-    {#if isDestination && regionGroups.europe.length > 0}
-      <optgroup label={t('continent.EU', currentLang)}>
-        {#each regionGroups.europe as region}
+    <!-- 非洲（仅目的地） -->
+    {#if isDestination && regionGroups.africa.length > 0}
+      <optgroup label={t('continent.AF', currentLang)}>
+        {#each regionGroups.africa as region}
           <option value={region.code}>
             {getRegionName(region, currentLang)}
           </option>
