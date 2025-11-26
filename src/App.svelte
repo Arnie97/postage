@@ -53,7 +53,7 @@
         {t('footer.description', $language)}
       </p>
       <p class="footer-paragraph">
-        <a href="https://github.com" class="footer-link">
+        <a href="https://github.com/arnie97/postage" class="footer-link">
           {t('footer.source-code', $language)}</a
         >{t('footer.license', $language)}
       </p>
