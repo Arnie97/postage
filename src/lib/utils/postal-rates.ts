@@ -16,7 +16,7 @@ export type MailType =
   | 'parcel'
   | 'ems';
 
-export type DeliveryMethod = 'air' | 'sal' | 'surface';
+export type MailCategory = 'air' | 'sal' | 'surface';
 
 export interface PostageResult {
   price: number;
@@ -27,7 +27,7 @@ export interface PostageResult {
   destination: string;
   weight: number;
   zoneId?: string;
-  deliveryMethod?: DeliveryMethod;
+  mailCategory?: MailCategory;
   ruleId?: string;
 }
 
@@ -37,7 +37,7 @@ export function calculatePostageRate(
   fromRegion: string,
   toRegion: string,
   weight: number,
-  deliveryMethod?: DeliveryMethod,
+  mailCategory?: MailCategory,
 ): PostageResult | null {
   const fromRegionType = getRegionType(fromRegion);
 
@@ -79,7 +79,7 @@ export function calculatePostageRate(
   let rateMethod: RateCalculationMethod | undefined;
 
   // Handle international rates with mail categories
-  if (destinationType === 'international' && deliveryMethod) {
+  if (destinationType === 'international' && mailCategory) {
     const mailRate = destinationRates[mailType];
     if (!mailRate) return null;
 
@@ -90,7 +90,7 @@ export function calculatePostageRate(
         sal?: RateCalculationMethod;
         surface?: RateCalculationMethod;
       };
-      rateMethod = internationalRates[deliveryMethod] || internationalRates.default;
+      rateMethod = internationalRates[mailCategory] || internationalRates.default;
     } else {
       rateMethod = mailRate as RateCalculationMethod;
     }
@@ -139,17 +139,17 @@ export function calculatePostageRate(
       let zoneNumber: number | undefined;
       if (destinationType == 'international') {
         const chinaPostInternationalZone = getChinaPostInternationalZone(toRegion);
-        if (!chinaPostInternationalZone || !deliveryMethod) return null;
+        if (!chinaPostInternationalZone || !mailCategory) return null;
 
-        // Determine which group to use based on delivery method and mail type
-        const zoneNumberMap = chinaPostInternationalZone[deliveryMethod];
+        // Determine which group to use based on mail category and mail type
+        const zoneNumberMap = chinaPostInternationalZone[mailCategory];
         const letterTag = (
           mailType !== 'letter' ? 'other' : mailType
         ) as keyof typeof zoneNumberMap;
         zoneNumber = typeof zoneNumberMap === 'object' ? zoneNumberMap?.[letterTag] : zoneNumberMap;
         if (!zoneNumber) return null;
 
-        zoneId = `international_${deliveryMethod}_${letterTag}_${zoneNumber}`;
+        zoneId = `international_${mailCategory}_${letterTag}_${zoneNumber}`;
       } else if (destinationType === 'domestic' && mailType === 'parcel') {
         zoneNumber = getChinaPostMainlandZone(fromRegion, toRegion);
         if (zoneNumber === undefined) return null;
@@ -187,7 +187,7 @@ export function calculatePostageRate(
     origin: fromRegion,
     destination: toRegion,
     weight,
-    deliveryMethod,
+    mailCategory,
     ruleId: `${serviceKey}_${destinationType}`,
     zoneId,
   };

@@ -5,14 +5,14 @@
     calculatePostageRate,
     type MailType,
     type PostageResult,
-    type DeliveryMethod,
+    type MailCategory,
   } from '../utils/postal-rates';
   import { RATE_RULES } from '../data/rates';
   import { getRegionType, getChinaPostInternationalZone, POSTAL_ZONES } from '../data/regions';
   import RegionSelector from './RegionSelector.svelte';
 
   let selectedMailType: MailType = 'letter';
-  let selectedDeliveryMethod: DeliveryMethod | null = null;
+  let selectedMailCategory: MailCategory | null = null;
   let originRegion = 'CN-BJ';
   let destinationRegion = 'HK';
   let weight = '20';
@@ -35,21 +35,21 @@
   // Check if destination is international (show delivery method options)
   $: isInternationalDestination = destinationRegion && getRegionType(destinationRegion) === 'XX';
 
-  // Get available delivery methods for the destination
-  $: availableDeliveryMethods = getAvailableDeliveryMethods(originRegion, destinationRegion);
+  // Get available mail categories for the destination
+  $: availableMailCategories = getAvailableMailCategories(originRegion, destinationRegion);
 
-  // Set default delivery method when destination changes or method becomes unavailable
+  // Set default mail category when destination changes or category becomes unavailable
   $: {
     if (!isInternationalDestination) {
-      selectedDeliveryMethod = null;
-    } else if (!availableDeliveryMethods.includes(selectedDeliveryMethod as DeliveryMethod)) {
+      selectedMailCategory = null;
+    } else if (!availableMailCategories.includes(selectedMailCategory as MailCategory)) {
       // Set SAL as default if available, otherwise the first available method (usually air)
-      if (availableDeliveryMethods.includes('sal')) {
-        selectedDeliveryMethod = 'sal';
-      } else if (availableDeliveryMethods.length > 0) {
-        selectedDeliveryMethod = availableDeliveryMethods[0];
+      if (availableMailCategories.includes('sal')) {
+        selectedMailCategory = 'sal';
+      } else if (availableMailCategories.length > 0) {
+        selectedMailCategory = availableMailCategories[0];
       } else {
-        selectedDeliveryMethod = null;
+        selectedMailCategory = null;
       }
     }
   }
@@ -72,13 +72,13 @@
     }
   }
 
-  function getAvailableDeliveryMethods(origin: string, destination: string): DeliveryMethod[] {
+  function getAvailableMailCategories(origin: string, destination: string): MailCategory[] {
     if (!origin || !destination) return [];
 
     const originType = getRegionType(origin);
     const destType = getRegionType(destination);
 
-    // Only show delivery methods for China Post international mail
+    // Only show mail categories for China Post international mail
     if (originType !== 'CN' || destType !== 'XX') {
       return [];
     }
@@ -86,18 +86,18 @@
     const chinaPostZone = getChinaPostInternationalZone(destination);
     if (!chinaPostZone) return [];
 
-    const methods: DeliveryMethod[] = [];
-    if (chinaPostZone.air !== undefined) methods.push('air');
-    if (chinaPostZone.sal !== undefined) methods.push('sal');
-    if (chinaPostZone.surface !== undefined) methods.push('surface');
+    const categories: MailCategory[] = [];
+    if (chinaPostZone.air !== undefined) categories.push('air');
+    if (chinaPostZone.sal !== undefined) categories.push('sal');
+    if (chinaPostZone.surface !== undefined) categories.push('surface');
 
-    return methods;
+    return categories;
   }
 
   // Auto-calculate when inputs change
   $: {
-    // Include selectedDeliveryMethod in dependencies to trigger recalculation
-    selectedDeliveryMethod;
+    // Include selectedMailCategory in dependencies to trigger recalculation
+    selectedMailCategory;
     if (originRegion && destinationRegion && weight && selectedMailType) {
       calculate();
     } else {
@@ -170,9 +170,9 @@
 
   function getZoneDescription(zone: string): string {
     // Format: "international_sal_letter_1", "international_air_other_2", etc.
-    const [prefix, deliveryMethod, mailType, zoneNumber] = zone.split('_');
+    const [prefix, mailCategory, mailType, zoneNumber] = zone.split('_');
     const zoneKey = {
-      international: `${prefix}_${deliveryMethod}`,
+      international: `${prefix}_${mailCategory}`,
       domestic: `${prefix}_${mailType}`,
     }[prefix] as keyof typeof POSTAL_ZONES;
 
@@ -204,7 +204,7 @@
       originRegion,
       destinationRegion,
       weightNum,
-      selectedDeliveryMethod || undefined,
+      selectedMailCategory || undefined,
     );
 
     if (!calculatedResult) {
@@ -253,23 +253,23 @@
       </fieldset>
     </div>
 
-    <!-- Delivery Method Selection (International Only) -->
-    {#if isInternationalDestination && availableDeliveryMethods.length > 0}
+    <!-- Mail Category Selection (International Only) -->
+    {#if isInternationalDestination && availableMailCategories.length > 0}
       <div class="form-group">
         <fieldset class="fieldset-reset">
           <legend class="form-label">
-            {t('delivery.method', currentLang)}
+            {t('mail.category', currentLang)}
           </legend>
           <div class="radio-group">
-            {#each availableDeliveryMethods as method}
+            {#each availableMailCategories as category}
               <label class="radio-item">
                 <input
                   type="radio"
-                  bind:group={selectedDeliveryMethod}
-                  value={method}
-                  name="deliveryMethod"
+                  bind:group={selectedMailCategory}
+                  value={category}
+                  name="mailCategory"
                 />
-                <span>{t(`delivery.method.${method}`, currentLang)}</span>
+                <span>{t(`mail.category.${category}`, currentLang)}</span>
               </label>
             {/each}
           </div>
@@ -311,8 +311,8 @@
         <div class="result-details">
           {t(getServiceKey(result.service), currentLang)} •
           {t(getMailTypeKey(result.mailType), currentLang)}
-          {#if result.deliveryMethod}
-            • {t(`delivery.method.${result.deliveryMethod}`, currentLang)}
+          {#if result.mailCategory}
+            • {t(`mail.category.${result.mailCategory}`, currentLang)}
           {/if}
           {#if result.zoneId}
             • {getZoneDescription(result.zoneId)}
