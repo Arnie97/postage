@@ -8,7 +8,12 @@
     type MailCategory,
   } from '../utils/postal-rates';
   import { RATE_RULES, POSTAGE_RATES } from '../data/rates';
-  import { getRegionType, getChinaPostInternationalZone, POSTAL_ZONES } from '../data/regions';
+  import {
+    getRegionType,
+    getChinaPostInternationalZone,
+    getDestinationType,
+    POSTAL_ZONES,
+  } from '../data/regions';
   import RegionSelector from './RegionSelector.svelte';
 
   let selectedMailType: MailType = 'letter';
@@ -141,22 +146,7 @@
     }
 
     // Determine destination type for rate lookup
-    let destinationType: string;
-    if (toRegionType === fromRegionType) {
-      destinationType = 'domestic';
-    } else if (toRegionType === 'CN' && fromRegionType !== 'CN') {
-      destinationType = 'mainland';
-    } else if (
-      (toRegionType === 'TW' || toRegionType === 'HK' || toRegionType === 'MO') &&
-      fromRegionType !== toRegionType
-    ) {
-      destinationType = 'regional';
-    } else if (toRegionType === 'TW' && fromRegionType === 'MO') {
-      destinationType = 'regional_tw';
-    } else {
-      destinationType = 'international';
-    }
-
+    const destinationType = getDestinationType(fromRegionType, toRegionType);
     const destinationRates = serviceData.rates[destinationType];
 
     return (

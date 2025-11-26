@@ -2,6 +2,7 @@ import {
   getRegionType,
   getChinaPostInternationalZone,
   getChinaPostMainlandZone,
+  getDestinationType,
 } from '../data/regions';
 import { POSTAGE_RATES, RATE_RULES } from '../data/rates';
 import type { RateCalculationMethod } from '../data/rates';
@@ -119,20 +120,7 @@ export function calculatePostageRate(
   const toType = getRegionType(toRegion);
 
   // Determine destination type for rate lookup
-  let destinationType: string;
-  if (toType === fromType) {
-    destinationType = 'domestic';
-  } else if (toType === 'CN' && fromType !== 'CN') {
-    destinationType = 'mainland';
-  } else if ((toType === 'TW' || toType === 'HK' || toType === 'MO') && fromType !== toType) {
-    destinationType = 'regional';
-  } else if (toType === 'TW' && fromType === 'MO') {
-    destinationType = 'regional_tw';
-  } else {
-    destinationType = 'international';
-  }
-
-  // Get the rate configuration
+  const destinationType = getDestinationType(fromType, toType);
   const destinationRates = serviceData.rates[destinationType];
   if (!destinationRates) return null;
 

@@ -590,6 +590,22 @@ export function getRegionType(regionCode: string): 'CN' | 'HK' | 'MO' | 'TW' | '
   return 'XX';
 }
 
+// Helper function to determine destination type for rate lookup
+export function getDestinationType(fromRegionType: string, toRegionType: string): string {
+  switch (true) {
+    case fromRegionType === toRegionType:
+      return 'domestic';
+    case toRegionType === 'CN':
+      return 'mainland'; // 澳門郵電寄往內地和臺灣資費不同
+    case toRegionType === 'XX':
+      return 'international';
+    case fromRegionType === 'TW':
+      return 'international'; // 臺灣寄往港澳適用國際函件資費表
+    default:
+      return 'regional';
+  }
+}
+
 // 获取中国邮政国际函件分组信息
 export function getChinaPostInternationalZone(regionCode: string): {
   air?: { letter?: 1 | 2 | 3 | 4; other?: 1 | 2 | 3 };

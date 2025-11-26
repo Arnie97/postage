@@ -58,9 +58,6 @@ export interface PostalServiceRates {
     regional?: {
       [key in MailType]?: RateCalculationMethod | null;
     };
-    regional_tw?: {
-      [key in MailType]?: RateCalculationMethod | null;
-    };
     international?: {
       [key in MailType]?:
         | RateCalculationMethod
@@ -963,53 +960,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
       regional: {
         letter: {
           type: 'stepped',
-          basePrice: 2.5,
-          additionalPrice: 1.5,
-          weightStep: 20,
-          maxWeight: 100,
-        },
-        postcard: {
-          type: 'fixed',
-          price: 3.0,
-          maxWeight: 20,
-        },
-        printed_papers: {
-          type: 'stepped',
-          basePrice: 2.0,
-          additionalPrice: 1.2,
-          weightStep: 20,
-          maxWeight: 500,
-        },
-        items_for_blind: {
-          type: 'fixed',
-          price: 0.0,
-          maxWeight: 7000,
-        },
-        small_packet: {
-          type: 'stepped',
-          basePrice: 25,
-          additionalPrice: 5,
-          baseWeight: 100,
-          weightStep: 100,
-          maxWeight: 2000,
-        },
-        m_bags: {
-          type: 'stepped',
-          basePrice: 35,
-          additionalPrice: 4,
-          weightStep: 100,
-          maxWeight: 30000,
-        },
-        parcel: {
-          type: 'stepped',
-          basePrice: 35,
-          additionalPrice: 18,
-          weightStep: 500,
-        },
-      },
-      regional_tw: {
-        letter: {
-          type: 'stepped',
           basePrice: 3.5,
           additionalPrice: 2.5,
           weightStep: 20,
@@ -1094,25 +1044,29 @@ export const RATE_RULES: Record<string, { name: string; url: string }> = {
   },
 
   // Chunghwa Post Rules
-  chunghwa_post_domestic_letter: {
-    name: '國內函件資費表',
+  chunghwa_post_domestic: {
+    name: '國內郵件資費表',
     url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=20501',
   },
-  chunghwa_post_regional_letter: {
-    name: '大陸郵件資費表',
-    url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=20505',
+  chunghwa_post_international_ems: {
+    name: '國際快捷郵件資費表',
+    url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=20502',
   },
-  chunghwa_post_international_letter: {
+  chunghwa_post_international: {
     name: '國際函件資費表',
     url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=20503',
   },
-  chunghwa_post_domestic_parcel: {
-    name: '國內包裹資費表',
-    url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=2050106',
+  chunghwa_post_international_small_packet: {
+    name: '國際e小包資費表',
+    url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=1521427719836',
   },
   chunghwa_post_international_parcel: {
     name: '國際包裹資費表',
     url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=2050401',
+  },
+  chunghwa_post_mainland: {
+    name: '大陸郵件資費表',
+    url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=20505',
   },
   chunghwa_post_mainland_ems: {
     name: '兩岸郵政速遞(快捷)郵件資費表',
@@ -1122,9 +1076,9 @@ export const RATE_RULES: Record<string, { name: string; url: string }> = {
     name: '兩岸郵政e小包資費表',
     url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=1404380075391',
   },
-  chunghwa_post_international_small_packet: {
-    name: '國際e小包資費表',
-    url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=1521427719836',
+  chunghwa_post: {
+    name: '中華郵政資費表',
+    url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=205',
   },
 
   // Hongkong Post Rules
