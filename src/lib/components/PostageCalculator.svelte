@@ -125,15 +125,17 @@
 
     // If no service found, all mail types are unavailable
     if (!serviceData) {
-      return ([
-        'letter',
-        'postcard',
-        'printed_papers',
-        'items_for_blind',
-        'small_packet',
-        'm_bags',
-        'parcel',
-      ] as MailType[]).map(mailType => ({ mailType, status: 'unavailable' as const }));
+      return (
+        [
+          'letter',
+          'postcard',
+          'printed_papers',
+          'items_for_blind',
+          'small_packet',
+          'm_bags',
+          'parcel',
+        ] as MailType[]
+      ).map((mailType) => ({ mailType, status: 'unavailable' as const }));
     }
 
     // Determine destination type for rate lookup
@@ -142,7 +144,10 @@
       destinationType = 'domestic';
     } else if (toRegionType === 'CN' && fromRegionType !== 'CN') {
       destinationType = 'mainland';
-    } else if ((toRegionType === 'TW' || toRegionType === 'HK' || toRegionType === 'MO') && fromRegionType !== toRegionType) {
+    } else if (
+      (toRegionType === 'TW' || toRegionType === 'HK' || toRegionType === 'MO') &&
+      fromRegionType !== toRegionType
+    ) {
       destinationType = 'regional';
     } else if (toRegionType === 'TW' && fromRegionType === 'MO') {
       destinationType = 'regional_tw';
@@ -152,15 +157,17 @@
 
     const destinationRates = serviceData.rates[destinationType];
 
-    return ([
-      'letter',
-      'postcard',
-      'printed_papers',
-      'items_for_blind',
-      'small_packet',
-      'm_bags',
-      'parcel',
-    ] as MailType[]).map(mailType => {
+    return (
+      [
+        'letter',
+        'postcard',
+        'printed_papers',
+        'items_for_blind',
+        'small_packet',
+        'm_bags',
+        'parcel',
+      ] as MailType[]
+    ).map((mailType) => {
       if (!destinationRates) {
         return { mailType, status: 'unavailable' as const };
       }
@@ -178,8 +185,8 @@
 
   function getAvailableMailTypes(origin: string, destination: string): MailType[] {
     return getMailTypeAvailability(origin, destination)
-      .filter(item => item.status !== 'unavailable')
-      .map(item => item.mailType);
+      .filter((item) => item.status !== 'unavailable')
+      .map((item) => item.mailType);
   }
 
   function getMailTypeKey(mailType: string): TranslationKey {
@@ -387,12 +394,6 @@
         <div class="result-details">
           {t(getServiceKey(result.service), currentLang)} •
           {t(getMailTypeKey(result.mailType), currentLang)}
-          {#if result.mailCategory}
-            • {t(`mail.category.${result.mailCategory}`, currentLang)}
-          {/if}
-          {#if result.zoneId}
-            • {getZoneDescription(result.zoneId)}
-          {/if}
           {#if result.ruleId && RATE_RULES[result.ruleId]}
             • <a
               href={RATE_RULES[result.ruleId].url}
@@ -402,6 +403,49 @@
             >
               {RATE_RULES[result.ruleId].name}
             </a>
+          {/if}
+        </div>
+
+        <!-- Rate Calculation Details -->
+        <div class="calculation-details">
+          {#if result.mailCategory}
+            <p>{t(`mail.category.${result.mailCategory}`, currentLang)}</p>
+          {/if}
+          {#if result.zoneId}
+            <p>{getZoneDescription(result.zoneId)}</p>
+          {/if}
+
+          {#if result.calculationDetails.rateType === 'fixed'}
+            <p>
+              {t('calculation.fixed-rate', currentLang)}:
+              {result.calculationDetails.fixedPrice?.toFixed(2)}
+              {t(getCurrencyKey(result.currency), currentLang)}
+            </p>
+          {:else if result.calculationDetails.rateType === 'stepped' || result.calculationDetails.rateType === 'region_stepped'}
+            {#if result.calculationDetails.baseWeight !== undefined}
+              <p>
+                {t('calculation.base-weight', currentLang)}:
+                {result.calculationDetails.baseWeight}g,
+                {result.calculationDetails.basePrice?.toFixed(2)}
+                {t(getCurrencyKey(result.currency), currentLang)}
+              </p>
+            {/if}
+            {#if result.calculationDetails.additionalWeight !== undefined && result.calculationDetails.additionalWeight > 0}
+              <p>
+                {t('calculation.additional-weight', currentLang)}:
+                {result.calculationDetails.additionalWeight}g,
+                {result.calculationDetails.additionalPrice?.toFixed(2)}
+                {t(getCurrencyKey(result.currency), currentLang)}
+              </p>
+            {/if}
+          {:else if result.calculationDetails.rateType === 'tiered' && result.calculationDetails.tierUsed}
+            <p>
+              {t('calculation.tier-range', currentLang)}:
+              {result.calculationDetails.tierUsed.minWeight || 0}g –
+              {result.calculationDetails.tierUsed.maxWeight}g,
+              {result.calculationDetails.tierUsed.price.toFixed(2)}
+              {t(getCurrencyKey(result.currency), currentLang)}
+            </p>
           {/if}
         </div>
       </div>
@@ -446,6 +490,16 @@
   .todo {
     color: var(--color-text-muted);
     margin-left: 0.5rem;
+  }
+
+  .calculation-details {
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.4;
   }
 
   @media (max-width: 768px) {

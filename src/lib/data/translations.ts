@@ -40,6 +40,10 @@ export type TranslationKey =
   | 'currency.mop'
   | 'error.weight'
   | 'error.calculation'
+  | 'calculation.fixed-rate'
+  | 'calculation.base-weight'
+  | 'calculation.additional-weight'
+  | 'calculation.tier-range'
   | 'footer.description'
   | 'footer.license'
   | 'footer.source-code';
@@ -85,6 +89,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'currency.mop': 'MOP',
     'error.weight': 'Please enter a valid weight',
     'error.calculation': 'Unable to calculate postage',
+    'calculation.fixed-rate': 'Fixed Rate',
+    'calculation.base-weight': 'Base Weight',
+    'calculation.additional-weight': 'Additional Weight',
+    'calculation.tier-range': 'Weight:',
     'footer.description': 'Postage calculator for Greater China',
     'footer.source-code': 'Source code',
     'footer.license': ' licensed under GNU AGPL v3',
@@ -129,6 +137,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'currency.mop': '澳門元',
     'error.weight': '請輸入有效的重量',
     'error.calculation': '無法計算郵費',
+    'calculation.fixed-rate': '固定資費',
+    'calculation.base-weight': '基本重量',
+    'calculation.additional-weight': '額外重量',
+    'calculation.tier-range': '重量',
     'footer.description': '兩岸四地郵費計算機',
     'footer.source-code': '原始碼',
     'footer.license': '以 GNU AGPL v3 授權',
@@ -173,6 +185,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'currency.mop': '澳门元',
     'error.weight': '请输入有效的重量',
     'error.calculation': '无法计算邮费',
+    'calculation.fixed-rate': '固定资费',
+    'calculation.base-weight': '首重',
+    'calculation.additional-weight': '续重',
+    'calculation.tier-range': '重量',
     'footer.description': '两岸四地邮费计算器',
     'footer.source-code': '源代码',
     'footer.license': '以 GNU AGPL v3 授权',

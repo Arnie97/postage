@@ -17,6 +17,17 @@ export type MailType =
 
 export type MailCategory = 'air' | 'sal' | 'surface';
 
+export interface RateCalculationDetails {
+  rateType: 'stepped' | 'tiered' | 'fixed' | 'region_stepped';
+  baseWeight?: number;
+  basePrice?: number;
+  additionalWeight?: number;
+  additionalPrice?: number;
+  weightStep?: number;
+  fixedPrice?: number;
+  tierUsed?: { maxWeight: number; price: number; minWeight?: number };
+}
+
 export interface PostageResult {
   price: number;
   currency: string;
@@ -28,6 +39,7 @@ export interface PostageResult {
   zoneId?: string;
   mailCategory?: MailCategory;
   ruleId?: string;
+  calculationDetails: RateCalculationDetails;
 }
 
 // 主计算函数，根据出发地自动选择邮政服务
@@ -103,6 +115,7 @@ export function calculatePostageRate(
   // Calculate price based on rate method
   let price: number | null = null;
   let zoneId: string | undefined;
+  let calculationDetails: RateCalculationDetails;
 
   switch (rateMethod.type) {
     case 'stepped': {
@@ -110,27 +123,59 @@ export function calculatePostageRate(
       const baseWeight = rateMethod.baseWeight || rateMethod.weightStep;
       if (weight <= baseWeight) {
         price = rateMethod.basePrice;
+        calculationDetails = {
+          rateType: 'stepped',
+          baseWeight,
+          basePrice: rateMethod.basePrice,
+          additionalWeight: 0,
+          additionalPrice: rateMethod.additionalPrice,
+          weightStep: rateMethod.weightStep,
+        };
       } else {
         const additionalWeight = weight - baseWeight;
         const additionalSteps = Math.ceil(additionalWeight / rateMethod.weightStep);
         price = rateMethod.basePrice + additionalSteps * rateMethod.additionalPrice;
+        calculationDetails = {
+          rateType: 'stepped',
+          baseWeight,
+          basePrice: rateMethod.basePrice,
+          additionalWeight,
+          additionalPrice: rateMethod.additionalPrice,
+          weightStep: rateMethod.weightStep,
+        };
       }
       break;
     }
 
-    case 'tiered':
+    case 'tiered': {
+      let tierUsed: { maxWeight: number; price: number; minWeight?: number } | undefined;
+      let previousMaxWeight = 0;
       for (const tier of rateMethod.tiers) {
         if (weight <= tier.maxWeight) {
           price = tier.price;
+          tierUsed = {
+            ...tier,
+            minWeight: previousMaxWeight > 0 ? previousMaxWeight + 1 : undefined,
+          };
           break;
         }
+        previousMaxWeight = tier.maxWeight;
       }
       if (price === null) return null;
+      calculationDetails = {
+        rateType: 'tiered',
+        tierUsed,
+      };
       break;
+    }
 
     case 'fixed':
       if (rateMethod.maxWeight && weight > rateMethod.maxWeight) return null;
       price = rateMethod.price;
+      calculationDetails = {
+        rateType: 'fixed',
+        fixedPrice: rateMethod.price,
+      };
       break;
 
     case 'region_stepped': {
@@ -167,10 +212,26 @@ export function calculatePostageRate(
       const baseWeight = groupRates.baseWeight || groupRates.weightStep;
       if (weight <= baseWeight) {
         price = groupRates.basePrice;
+        calculationDetails = {
+          rateType: 'region_stepped',
+          baseWeight,
+          basePrice: groupRates.basePrice,
+          additionalWeight: 0,
+          additionalPrice: groupRates.additionalPrice,
+          weightStep: groupRates.weightStep,
+        };
       } else {
         const additionalWeight = weight - baseWeight;
         const additionalSteps = Math.ceil(additionalWeight / groupRates.weightStep);
         price = groupRates.basePrice + additionalSteps * groupRates.additionalPrice;
+        calculationDetails = {
+          rateType: 'region_stepped',
+          baseWeight,
+          basePrice: groupRates.basePrice,
+          additionalWeight,
+          additionalPrice: groupRates.additionalPrice,
+          weightStep: groupRates.weightStep,
+        };
       }
       break;
     }
@@ -189,5 +250,6 @@ export function calculatePostageRate(
     mailCategory,
     ruleId: `${serviceKey}_${destinationType}`,
     zoneId,
+    calculationDetails,
   };
 }

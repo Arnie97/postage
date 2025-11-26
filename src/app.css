@@ -47,6 +47,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+p {
+  margin: 0.25rem 0;
+}
+
 a {
   color: white;
   text-decoration: underline;
