@@ -13,8 +13,7 @@ export type MailType =
   | 'items_for_blind'
   | 'small_packet'
   | 'm_bags'
-  | 'parcel'
-  | 'ems';
+  | 'parcel';
 
 export type MailCategory = 'air' | 'sal' | 'surface';
 

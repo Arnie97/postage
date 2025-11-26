@@ -44,20 +44,21 @@ export interface PostalServiceRates {
   fromRegion: 'CN' | 'TW' | 'HK' | 'MO';
   rates: {
     domestic?: {
-      [key in MailType]?: RateCalculationMethod;
+      [key in MailType]?: RateCalculationMethod | null;
     };
     mainland?: {
-      [key in MailType]?: RateCalculationMethod;
+      [key in MailType]?: RateCalculationMethod | null;
     };
     regional?: {
-      [key in MailType]?: RateCalculationMethod;
+      [key in MailType]?: RateCalculationMethod | null;
     };
     regional_tw?: {
-      [key in MailType]?: RateCalculationMethod;
+      [key in MailType]?: RateCalculationMethod | null;
     };
     international?: {
       [key in MailType]?:
         | RateCalculationMethod
+        | null
         | {
             default?: RateCalculationMethod;
             air?: RateCalculationMethod;
@@ -129,13 +130,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
             6: { basePrice: 0xa, weightStep: 1000, additionalPrice: 5.0, maxWeight: 50000 },
           },
         },
-        ems: {
-          type: 'stepped',
-          baseWeight: 500,
-          basePrice: 20.0,
-          weightStep: 500,
-          additionalPrice: 10.0,
-        },
       },
       regional: {
         letter: {
@@ -191,13 +185,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           weightStep: 1000,
           additionalPrice: 8.0,
           maxWeight: 20000,
-        },
-        ems: {
-          type: 'stepped',
-          baseWeight: 500,
-          basePrice: 28.0,
-          weightStep: 500,
-          additionalPrice: 15.0,
         },
       },
       international: {
@@ -405,13 +392,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           weightStep: 1000,
           additionalPrice: 10,
         },
-        ems: {
-          type: 'stepped',
-          baseWeight: 500,
-          basePrice: 120,
-          weightStep: 500,
-          additionalPrice: 30,
-        },
       },
       mainland: {
         letter: {
@@ -461,13 +441,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           baseWeight: 500,
           weightStep: 500,
         },
-        ems: {
-          type: 'stepped',
-          basePrice: 260,
-          additionalPrice: 130,
-          baseWeight: 500,
-          weightStep: 500,
-        },
       },
       regional: {
         letter: {
@@ -513,12 +486,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           type: 'stepped',
           basePrice: 120,
           additionalPrice: 60,
-          weightStep: 500,
-        },
-        ems: {
-          type: 'stepped',
-          basePrice: 220,
-          additionalPrice: 110,
           weightStep: 500,
         },
       },
@@ -663,12 +630,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
             weightStep: 1000,
           },
         },
-        ems: {
-          type: 'stepped',
-          basePrice: 320,
-          additionalPrice: 160,
-          weightStep: 500,
-        },
       },
     },
   },
@@ -728,12 +689,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           additionalPrice: 6,
           weightStep: 1000,
         },
-        ems: {
-          type: 'stepped',
-          basePrice: 27,
-          additionalPrice: 7,
-          weightStep: 500,
-        },
       },
       mainland: {
         letter: {
@@ -782,12 +737,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           type: 'stepped',
           basePrice: 55,
           additionalPrice: 25,
-          weightStep: 500,
-        },
-        ems: {
-          type: 'stepped',
-          basePrice: 85,
-          additionalPrice: 40,
           weightStep: 500,
         },
       },
@@ -840,12 +789,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           additionalPrice: 35,
           weightStep: 500,
         },
-        ems: {
-          type: 'stepped',
-          basePrice: 115,
-          additionalPrice: 55,
-          weightStep: 500,
-        },
       },
       international: {
         letter: {
@@ -893,12 +836,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           type: 'stepped',
           basePrice: 95,
           additionalPrice: 45,
-          weightStep: 500,
-        },
-        ems: {
-          type: 'stepped',
-          basePrice: 145,
-          additionalPrice: 70,
           weightStep: 500,
         },
       },
@@ -958,12 +895,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           additionalPrice: 3,
           weightStep: 1000,
         },
-        ems: {
-          type: 'stepped',
-          basePrice: 15,
-          additionalPrice: 5,
-          weightStep: 500,
-        },
       },
       mainland: {
         letter: {
@@ -1011,12 +942,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           additionalPrice: 12,
           weightStep: 500,
         },
-        ems: {
-          type: 'stepped',
-          basePrice: 80,
-          additionalPrice: 35,
-          weightStep: 500,
-        },
       },
       regional: {
         letter: {
@@ -1062,12 +987,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           type: 'stepped',
           basePrice: 35,
           additionalPrice: 18,
-          weightStep: 500,
-        },
-        ems: {
-          type: 'stepped',
-          basePrice: 120,
-          additionalPrice: 55,
           weightStep: 500,
         },
       },
@@ -1132,12 +1051,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           additionalPrice: 25,
           weightStep: 500,
         },
-        ems: {
-          type: 'stepped',
-          basePrice: 150,
-          additionalPrice: 75,
-          weightStep: 500,
-        },
       },
     },
   },
@@ -1184,17 +1097,9 @@ export const RATE_RULES: Record<string, { name: string; url: string }> = {
     name: '國際包裹資費表',
     url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=2050401',
   },
-  chunghwa_post_domestic_ems: {
-    name: '國內快捷郵件資費表',
-    url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=2050106',
-  },
   chunghwa_post_mainland_ems: {
     name: '兩岸郵政速遞(快捷)郵件資費表',
     url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=1396492589492',
-  },
-  chunghwa_post_international_ems: {
-    name: '國際快捷郵件資費表',
-    url: 'https://www.post.gov.tw/post/internet/Postal/index.jsp?ID=2050401',
   },
   chunghwa_post_mainland_small_packet: {
     name: '兩岸郵政e小包資費表',
