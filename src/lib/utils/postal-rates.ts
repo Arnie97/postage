@@ -32,7 +32,7 @@ export interface RateCalculationDetails {
 export interface PostageResult {
   price: number;
   currency: string;
-  service: string;
+  serviceKey: string;
   mailType: string;
   origin: string;
   destination: string;
@@ -279,7 +279,7 @@ export function calculatePostageRate(
   return {
     price,
     currency: serviceData.currency,
-    service: serviceData.serviceName,
+    serviceKey,
     mailType,
     origin: fromRegion,
     destination: toRegion,

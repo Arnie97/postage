@@ -195,49 +195,20 @@
     return `mail.type.${mailType}` as TranslationKey;
   }
 
-  // Unified service configuration
-  const SERVICE_CONFIG = {
-    services: {
-      'China Post': {
-        translationKey: 'service.china-post' as TranslationKey,
-        primaryColor: '#059669', // Forest Green (from logo)
-        secondaryColor: '#f59e0b', // Golden Yellow (from logo)
-      },
-      'Chunghwa Post': {
-        translationKey: 'service.chunghwa-post' as TranslationKey,
-        primaryColor: '#dd2222',
-        secondaryColor: '#2147a5',
-      },
-      'Hong Kong Post': {
-        translationKey: 'service.hongkong-post' as TranslationKey,
-        primaryColor: '#16875a',
-        secondaryColor: '#323092',
-      },
-      'Macau Post': {
-        translationKey: 'service.macau-post' as TranslationKey,
-        primaryColor: '#0071ba',
-        secondaryColor: '#cf202e',
-      },
-    },
-  };
-
   function getCurrencyKey(currency: string): TranslationKey {
     return `currency.${currency.toLowerCase()}` as TranslationKey;
   }
 
-  function getServiceKey(service: string): TranslationKey {
-    return (
-      SERVICE_CONFIG.services[service as keyof typeof SERVICE_CONFIG.services]?.translationKey ||
-      'service.auto'
-    );
+  function getServiceNameKey(serviceKey: string): TranslationKey {
+    return POSTAGE_RATES[serviceKey]?.nameKey as TranslationKey;
   }
 
-  function getServicePrimaryColor(service: string): string {
-    return SERVICE_CONFIG.services[service as keyof typeof SERVICE_CONFIG.services]?.primaryColor;
+  function getServicePrimaryColor(serviceKey: string): string {
+    return POSTAGE_RATES[serviceKey]?.primaryColor || '#059669';
   }
 
-  function getServiceSecondaryColor(service: string): string {
-    return SERVICE_CONFIG.services[service as keyof typeof SERVICE_CONFIG.services]?.secondaryColor;
+  function getServiceSecondaryColor(serviceKey: string): string {
+    return POSTAGE_RATES[serviceKey]?.secondaryColor || '#f59e0b';
   }
 
   function getZoneDescription(zone: string): string {
@@ -397,16 +368,16 @@
     {#if result}
       <div
         class="result-card"
-        style="background: linear-gradient(135deg, {getServicePrimaryColor(
-          result.service,
-        )}, {getServiceSecondaryColor(result.service)});"
+        style="background: linear-gradient(135deg,
+        {getServicePrimaryColor(result.serviceKey)},
+        {getServiceSecondaryColor(result.serviceKey)});"
       >
         <div class="result-price">
           {result.price.toFixed(2)}
           {t(getCurrencyKey(result.currency), currentLang)}
         </div>
         <div class="result-details">
-          {t(getServiceKey(result.service), currentLang)} •
+          {t(getServiceNameKey(result.serviceKey), currentLang)} •
           {#if result.isRegistered}{t('mail.supplement.registered', currentLang)}{/if}{t(
             getMailTypeKey(result.mailType),
             currentLang,

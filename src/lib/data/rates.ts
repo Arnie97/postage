@@ -43,9 +43,11 @@ export interface RegionBasedSteppedRate {
 export type RateCalculationMethod = SteppedRate | TieredRate | FixedRate | RegionBasedSteppedRate;
 
 export interface PostalServiceRates {
-  serviceName: string;
-  currency: string;
+  nameKey: string;
   fromRegion: 'CN' | 'TW' | 'HK' | 'MO';
+  currency: string;
+  primaryColor: string;
+  secondaryColor: string;
   rates: {
     domestic?: {
       [key in MailType]?: RateCalculationMethod | null;
@@ -77,9 +79,11 @@ export interface PostalServiceRates {
 export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
   // China Post (中国邮政)
   china_post: {
-    serviceName: 'China Post',
-    currency: 'CNY',
+    nameKey: 'service.china-post',
     fromRegion: 'CN',
+    currency: 'CNY',
+    primaryColor: '#059669', // Forest Green (from logo)
+    secondaryColor: '#f59e0b', // Golden Yellow (from logo)
     rates: {
       domestic: {
         letter: {
@@ -345,9 +349,11 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
 
   // Taiwan Post (Chunghwa Post)
   chunghwa_post: {
-    serviceName: 'Chunghwa Post',
-    currency: 'TWD',
+    nameKey: 'service.chunghwa-post',
     fromRegion: 'TW',
+    currency: 'TWD',
+    primaryColor: '#dd2222',
+    secondaryColor: '#2147a5',
     rates: {
       domestic: {
         letter: {
@@ -643,9 +649,11 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
 
   // Hong Kong Post
   hongkong_post: {
-    serviceName: 'Hong Kong Post',
-    currency: 'HKD',
+    nameKey: 'service.hongkong-post',
     fromRegion: 'HK',
+    currency: 'HKD',
+    primaryColor: '#16875a',
+    secondaryColor: '#323092',
     rates: {
       domestic: {
         letter: {
@@ -851,9 +859,11 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
 
   // Macau Post
   macau_post: {
-    serviceName: 'Macau Post',
-    currency: 'MOP',
+    nameKey: 'service.macau-post',
     fromRegion: 'MO',
+    currency: 'MOP',
+    primaryColor: '#0071ba',
+    secondaryColor: '#cf202e',
     rates: {
       domestic: {
         letter: {
