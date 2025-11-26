@@ -7,7 +7,7 @@
     type PostageResult,
     type MailCategory,
   } from '../utils/postal-rates';
-  import { RATE_RULES } from '../data/rates';
+  import { RATE_RULES, POSTAGE_RATES } from '../data/rates';
   import { getRegionType, getChinaPostInternationalZone, POSTAL_ZONES } from '../data/regions';
   import RegionSelector from './RegionSelector.svelte';
 
@@ -24,6 +24,7 @@
 
   // Get available mail types based on origin and destination
   $: availableMailTypes = getAvailableMailTypes(originRegion, destinationRegion);
+  $: mailTypeAvailability = getMailTypeAvailability(originRegion, destinationRegion);
 
   // Reset mail type if not available
   $: {
@@ -106,8 +107,55 @@
     }
   }
 
-  function getAvailableMailTypes(origin: string, destination: string): MailType[] {
-    return [
+  interface MailTypeAvailability {
+    mailType: MailType;
+    status: 'available' | 'todo' | 'unavailable';
+  }
+
+  function getMailTypeAvailability(origin: string, destination: string): MailTypeAvailability[] {
+    const fromRegionType = getRegionType(origin);
+    const toRegionType = getRegionType(destination);
+
+    // Find the service by matching fromRegion
+    let serviceData: any = null;
+    for (const [key, data] of Object.entries(POSTAGE_RATES)) {
+      if (data.fromRegion === fromRegionType) {
+        serviceData = data;
+        break;
+      }
+    }
+
+    // If no service found, all mail types are unavailable
+    if (!serviceData) {
+      return ([
+        'letter',
+        'postcard',
+        'printed_papers',
+        'items_for_blind',
+        'small_packet',
+        'm_bags',
+        'parcel',
+        'ems',
+      ] as MailType[]).map(mailType => ({ mailType, status: 'unavailable' as const }));
+    }
+
+    // Determine destination type for rate lookup
+    let destinationType: string;
+    if (toRegionType === fromRegionType) {
+      destinationType = 'domestic';
+    } else if (toRegionType === 'CN' && fromRegionType !== 'CN') {
+      destinationType = 'mainland';
+    } else if ((toRegionType === 'TW' || toRegionType === 'HK' || toRegionType === 'MO') && fromRegionType !== toRegionType) {
+      destinationType = 'regional';
+    } else if (toRegionType === 'TW' && fromRegionType === 'MO') {
+      destinationType = 'regional_tw';
+    } else {
+      destinationType = 'international';
+    }
+
+    const destinationRates = serviceData.rates[destinationType];
+
+    return ([
       'letter',
       'postcard',
       'printed_papers',
@@ -116,7 +164,26 @@
       'm_bags',
       'parcel',
       'ems',
-    ];
+    ] as MailType[]).map(mailType => {
+      if (!destinationRates) {
+        return { mailType, status: 'unavailable' as const };
+      }
+
+      const rateConfig = destinationRates[mailType];
+      if (rateConfig === undefined) {
+        return { mailType, status: 'todo' as const };
+      } else if (rateConfig === null) {
+        return { mailType, status: 'unavailable' as const };
+      } else {
+        return { mailType, status: 'available' as const };
+      }
+    });
+  }
+
+  function getAvailableMailTypes(origin: string, destination: string): MailType[] {
+    return getMailTypeAvailability(origin, destination)
+      .filter(item => item.status !== 'unavailable')
+      .map(item => item.mailType);
   }
 
   function getMailTypeKey(mailType: string): TranslationKey {
@@ -243,11 +310,24 @@
           {t('mail.type', currentLang)}
         </legend>
         <div class="radio-group">
-          {#each availableMailTypes as mailType}
-            <label class="radio-item">
-              <input type="radio" bind:group={selectedMailType} value={mailType} name="mailType" />
-              <span>{t(getMailTypeKey(mailType), currentLang)}</span>
-            </label>
+          {#each mailTypeAvailability as { mailType, status }}
+            {#if status !== 'unavailable'}
+              <label class="radio-item" class:disabled={status === 'todo'}>
+                <input
+                  type="radio"
+                  bind:group={selectedMailType}
+                  value={mailType}
+                  name="mailType"
+                  disabled={status === 'todo'}
+                />
+                <span>
+                  {t(getMailTypeKey(mailType), currentLang)}
+                  {#if status === 'todo'}
+                    <small class="todo">(todo)</small>
+                  {/if}
+                </span>
+              </label>
+            {/if}
           {/each}
         </div>
       </fieldset>
@@ -356,6 +436,21 @@
     color: white;
     text-decoration-style: solid;
     text-decoration-color: white;
+  }
+
+  .radio-item.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .radio-item.disabled input {
+    cursor: not-allowed;
+  }
+
+  .todo {
+    color: var(--color-text-muted);
+    font-style: italic;
+    margin-left: 0.5rem;
   }
 
   @media (max-width: 768px) {

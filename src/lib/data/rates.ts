@@ -44,20 +44,21 @@ export interface PostalServiceRates {
   fromRegion: 'CN' | 'TW' | 'HK' | 'MO';
   rates: {
     domestic?: {
-      [key in MailType]?: RateCalculationMethod;
+      [key in MailType]?: RateCalculationMethod | null;
     };
     mainland?: {
-      [key in MailType]?: RateCalculationMethod;
+      [key in MailType]?: RateCalculationMethod | null;
     };
     regional?: {
-      [key in MailType]?: RateCalculationMethod;
+      [key in MailType]?: RateCalculationMethod | null;
     };
     regional_tw?: {
-      [key in MailType]?: RateCalculationMethod;
+      [key in MailType]?: RateCalculationMethod | null;
     };
     international?: {
       [key in MailType]?:
         | RateCalculationMethod
+        | null
         | {
             default?: RateCalculationMethod;
             air?: RateCalculationMethod;
