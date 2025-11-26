@@ -15,6 +15,8 @@ export type TranslationKey =
   | 'mail.category.air'
   | 'mail.category.sal'
   | 'mail.category.surface'
+  | 'mail.supplement'
+  | 'mail.supplement.registered'
   | 'sender'
   | 'receiver'
   | 'region.select'
@@ -44,6 +46,7 @@ export type TranslationKey =
   | 'calculation.base-weight'
   | 'calculation.additional-weight'
   | 'calculation.tier-range'
+  | 'calculation.registration-fee'
   | 'footer.description'
   | 'footer.license'
   | 'footer.source-code';
@@ -64,6 +67,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.category.air': 'Air Mail',
     'mail.category.sal': 'Surface Air Lifted (SAL)',
     'mail.category.surface': 'Surface Mail',
+    'mail.supplement': 'Supplementary Services',
+    'mail.supplement.registered': 'Registered ',
     'sender': 'From',
     'receiver': 'To',
     'region.select': 'Select Region',
@@ -92,7 +97,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'calculation.fixed-rate': 'Fixed Rate',
     'calculation.base-weight': 'Base Weight',
     'calculation.additional-weight': 'Additional Weight',
-    'calculation.tier-range': 'Weight:',
+    'calculation.tier-range': 'Weight',
+    'calculation.registration-fee': 'Registration Fee',
     'footer.description': 'Postage calculator for Greater China',
     'footer.source-code': 'Source code',
     'footer.license': ' licensed under GNU AGPL v3',
@@ -112,6 +118,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.category.air': '航空郵件',
     'mail.category.sal': '空運水陸路 (SAL)',
     'mail.category.surface': '水陸路郵件',
+    'mail.supplement': '附加服務',
+    'mail.supplement.registered': '掛號',
     'sender': '寄件地',
     'receiver': '收件地',
     'region.select': '選擇地區',
@@ -141,6 +149,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'calculation.base-weight': '基本重量',
     'calculation.additional-weight': '額外重量',
     'calculation.tier-range': '重量',
+    'calculation.registration-fee': '掛號費',
     'footer.description': '兩岸四地郵費計算機',
     'footer.source-code': '原始碼',
     'footer.license': '以 GNU AGPL v3 授權',
@@ -160,6 +169,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.category.air': '航空邮件',
     'mail.category.sal': '空运水陆路 (SAL)',
     'mail.category.surface': '水陆路邮件',
+    'mail.supplement': '附加业务',
+    'mail.supplement.registered': '挂号',
     'sender': '寄件地',
     'receiver': '收件地',
     'region.select': '选择地区',
@@ -189,6 +200,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'calculation.base-weight': '首重',
     'calculation.additional-weight': '续重',
     'calculation.tier-range': '重量',
+    'calculation.registration-fee': '挂号费',
     'footer.description': '两岸四地邮费计算器',
     'footer.source-code': '源代码',
     'footer.license': '以 GNU AGPL v3 授权',

@@ -16,6 +16,7 @@
   let originRegion = 'CN-BJ';
   let destinationRegion = 'HK';
   let weight = '20';
+  let isRegistered = false;
   let result: PostageResult | null = null;
   let error = '';
   let previousMailType: MailType = 'letter';
@@ -95,8 +96,9 @@
 
   // Auto-calculate when inputs change
   $: {
-    // Include selectedMailCategory in dependencies to trigger recalculation
+    // Include selectedMailCategory and isRegistered in dependencies to trigger recalculation
     selectedMailCategory;
+    isRegistered;
     if (originRegion && destinationRegion && weight && selectedMailType) {
       calculate();
     } else {
@@ -275,6 +277,7 @@
       destinationRegion,
       weightNum,
       selectedMailCategory || undefined,
+      isRegistered,
     );
 
     if (!calculatedResult) {
@@ -375,6 +378,21 @@
       </div>
     {/if}
 
+    <!-- Registered Mail Option -->
+    <div class="form-group">
+      <fieldset class="fieldset-reset">
+        <legend class="form-label">
+          {t('mail.supplement', currentLang)}
+        </legend>
+        <div class="checkbox-group">
+          <label class="checkbox-item">
+            <input type="checkbox" bind:checked={isRegistered} name="registeredMail" />
+            <span>{t('mail.supplement.registered', currentLang)}</span>
+          </label>
+        </div>
+      </fieldset>
+    </div>
+
     <!-- Result Display -->
     {#if result}
       <div
@@ -389,7 +407,10 @@
         </div>
         <div class="result-details">
           {t(getServiceKey(result.service), currentLang)} •
-          {t(getMailTypeKey(result.mailType), currentLang)}
+          {#if result.isRegistered}{t('mail.supplement.registered', currentLang)}{/if}{t(
+            getMailTypeKey(result.mailType),
+            currentLang,
+          )}
           {#if result.ruleId && RATE_RULES[result.ruleId]}
             • <a
               href={RATE_RULES[result.ruleId].url}
@@ -443,6 +464,13 @@
               {t(getCurrencyKey(result.currency), currentLang)}
             </p>
           {/if}
+          {#if result.calculationDetails.registrationFee !== undefined}
+            <p>
+              {t('calculation.registration-fee', currentLang)}:
+              {result.calculationDetails.registrationFee.toFixed(2)}
+              {t(getCurrencyKey(result.currency), currentLang)}
+            </p>
+          {/if}
         </div>
       </div>
     {/if}
@@ -488,7 +516,6 @@
     text-decoration-color: white;
   }
 
-
   .calculation-details {
     margin-top: 0.75rem;
     padding: 0.5rem;
@@ -497,6 +524,26 @@
     font-size: 0.875rem;
     color: rgba(255, 255, 255, 0.9);
     line-height: 1.4;
+  }
+
+  .checkbox-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: var(--border-radius);
+    transition: background-color 0.2s ease;
+  }
+
+  .checkbox-item:hover {
+    background: var(--bg-tertiary);
   }
 
   @media (max-width: 768px) {

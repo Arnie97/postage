@@ -7,6 +7,7 @@ export interface SteppedRate {
   weightStep: number;
   additionalPrice: number;
   maxWeight?: number;
+  registrationFee?: number;
 }
 
 export interface TieredRate {
@@ -15,12 +16,14 @@ export interface TieredRate {
     maxWeight: number;
     price: number;
   }>;
+  registrationFee?: number;
 }
 
 export interface FixedRate {
   type: 'fixed';
   price: number;
   maxWeight?: number;
+  registrationFee?: number;
 }
 
 export interface RegionBasedSteppedRate {
@@ -34,6 +37,7 @@ export interface RegionBasedSteppedRate {
       maxWeight?: number;
     };
   };
+  registrationFee?: number;
 }
 
 export type RateCalculationMethod = SteppedRate | TieredRate | FixedRate | RegionBasedSteppedRate;
@@ -85,6 +89,7 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           weightStep: 20,
           additionalPrice: 0.8,
           maxWeight: 2000,
+          registrationFee: 3,
         },
         postcard: {
           type: 'fixed',
@@ -143,6 +148,7 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
             { maxWeight: 1000, price: 31.7 },
             { maxWeight: 2000, price: 55.8 },
           ],
+          registrationFee: 16,
         },
         postcard: {
           type: 'fixed',
@@ -177,6 +183,7 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           weightStep: 1000,
           additionalPrice: 0.6,
           maxWeight: 35000,
+          registrationFee: 80,
         },
         parcel: {
           type: 'stepped',

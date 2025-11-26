@@ -18,14 +18,15 @@ export type MailType =
 export type MailCategory = 'air' | 'sal' | 'surface';
 
 export interface RateCalculationDetails {
-  rateType: 'stepped' | 'tiered' | 'fixed' | 'region_stepped';
+  rateType: 'fixed' | 'tiered' | 'stepped' | 'region_stepped';
   baseWeight?: number;
   basePrice?: number;
   additionalWeight?: number;
   additionalPrice?: number;
   weightStep?: number;
   fixedPrice?: number;
-  tierUsed?: { maxWeight: number; price: number; minWeight?: number };
+  tierUsed?: { minWeight?: number; maxWeight: number; price: number };
+  registrationFee?: number;
 }
 
 export interface PostageResult {
@@ -36,10 +37,31 @@ export interface PostageResult {
   origin: string;
   destination: string;
   weight: number;
+  isRegistered?: boolean;
   zoneId?: string;
   mailCategory?: MailCategory;
   ruleId?: string;
   calculationDetails: RateCalculationDetails;
+}
+
+// Helper function to get rate method for a specific mail rate and category
+function getRateMethod(
+  mailRate: any,
+  mailCategory?: MailCategory,
+): RateCalculationMethod | undefined {
+  // Handle domestic and regional rates
+  if (!mailCategory || !mailRate?.air) {
+    return mailRate;
+  }
+
+  // Handle international rates with mail categories
+  const internationalRates = mailRate as {
+    default?: RateCalculationMethod;
+    air?: RateCalculationMethod;
+    sal?: RateCalculationMethod;
+    surface?: RateCalculationMethod;
+  };
+  return internationalRates[mailCategory] || internationalRates.default;
 }
 
 // Find the best matching rate rule for the given service and destination type
@@ -75,6 +97,7 @@ export function calculatePostageRate(
   toRegion: string,
   weight: number,
   mailCategory?: MailCategory,
+  isRegistered?: boolean,
 ): PostageResult | null {
   const fromRegionType = getRegionType(fromRegion);
 
@@ -113,29 +136,7 @@ export function calculatePostageRate(
   const destinationRates = serviceData.rates[destinationType];
   if (!destinationRates) return null;
 
-  let rateMethod: RateCalculationMethod | undefined;
-
-  // Handle international rates with mail categories
-  if (destinationType === 'international' && mailCategory) {
-    const mailRate = destinationRates[mailType];
-    if (!mailRate) return null;
-
-    if (typeof mailRate === 'object' && 'air' in mailRate) {
-      const internationalRates = mailRate as {
-        default?: RateCalculationMethod;
-        air?: RateCalculationMethod;
-        sal?: RateCalculationMethod;
-        surface?: RateCalculationMethod;
-      };
-      rateMethod = internationalRates[mailCategory] || internationalRates.default;
-    } else {
-      rateMethod = mailRate as RateCalculationMethod;
-    }
-  } else {
-    // Handle domestic, mainland, and regional rates
-    rateMethod = destinationRates[mailType];
-  }
-
+  const rateMethod = getRateMethod(destinationRates[mailType], mailCategory);
   if (!rateMethod) return null;
 
   // Calculate price based on rate method
@@ -265,6 +266,16 @@ export function calculatePostageRate(
 
   if (price === null) return null;
 
+  if (isRegistered) {
+    const registrationFee =
+      rateMethod?.registrationFee ??
+      getRateMethod(destinationRates['letter'], mailCategory)?.registrationFee;
+    if (registrationFee) {
+      price += registrationFee;
+      calculationDetails.registrationFee = registrationFee;
+    }
+  }
+
   return {
     price,
     currency: serviceData.currency,
@@ -273,6 +284,7 @@ export function calculatePostageRate(
     origin: fromRegion,
     destination: toRegion,
     weight,
+    isRegistered,
     mailCategory,
     ruleId: findBestMatchingRateRule(serviceKey, destinationType, mailType),
     zoneId,

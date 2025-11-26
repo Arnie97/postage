@@ -53,8 +53,8 @@ src/
 
 ## Todo
 
-* Registered Mail
 * EMS
+* Insured mails
 * Postal services in other regions
 
 ## Contributing
