@@ -10,9 +10,10 @@ export type MailType =
   | 'letter'
   | 'postcard'
   | 'printed_papers'
-  | 'literature_for_blind'
-  | 'parcel'
+  | 'items_for_blind'
   | 'small_packet'
+  | 'm_bags'
+  | 'parcel'
   | 'ems';
 
 export type DeliveryMethod = 'air' | 'sal' | 'surface';
@@ -72,15 +73,18 @@ export function calculatePostageRate(
   }
 
   // Get the rate configuration
-  const mailRates = serviceData.rates[mailType];
-  if (!mailRates) return null;
+  const destinationRates = serviceData.rates[destinationType];
+  if (!destinationRates) return null;
 
   let rateMethod: RateCalculationMethod | undefined;
 
-  // Handle international rates with delivery methods
-  if (destinationType === 'international' && deliveryMethod && mailRates.international) {
-    if (typeof mailRates.international === 'object' && 'air' in mailRates.international) {
-      const internationalRates = mailRates.international as {
+  // Handle international rates with mail categories
+  if (destinationType === 'international' && deliveryMethod) {
+    const mailRate = destinationRates[mailType];
+    if (!mailRate) return null;
+
+    if (typeof mailRate === 'object' && 'air' in mailRate) {
+      const internationalRates = mailRate as {
         default?: RateCalculationMethod;
         air?: RateCalculationMethod;
         sal?: RateCalculationMethod;
@@ -88,11 +92,11 @@ export function calculatePostageRate(
       };
       rateMethod = internationalRates[deliveryMethod] || internationalRates.default;
     } else {
-      rateMethod = mailRates.international as RateCalculationMethod;
+      rateMethod = mailRate as RateCalculationMethod;
     }
   } else {
     // Handle domestic, mainland, and regional rates
-    rateMethod = mailRates[destinationType as keyof typeof mailRates] as RateCalculationMethod;
+    rateMethod = destinationRates[mailType];
   }
 
   if (!rateMethod) return null;
@@ -104,11 +108,13 @@ export function calculatePostageRate(
   switch (rateMethod.type) {
     case 'stepped': {
       if (rateMethod.maxWeight && weight > rateMethod.maxWeight) return null;
-      const weightStep = Math.ceil(weight / rateMethod.weightStep);
-      if (weightStep <= 1) {
+      const baseWeight = rateMethod.baseWeight || rateMethod.weightStep;
+      if (weight <= baseWeight) {
         price = rateMethod.basePrice;
       } else {
-        price = rateMethod.basePrice + (weightStep - 1) * rateMethod.additionalPrice;
+        const additionalWeight = weight - baseWeight;
+        const additionalSteps = Math.ceil(additionalWeight / rateMethod.weightStep);
+        price = rateMethod.basePrice + additionalSteps * rateMethod.additionalPrice;
       }
       break;
     }
@@ -137,14 +143,13 @@ export function calculatePostageRate(
 
         // Determine which group to use based on delivery method and mail type
         const zoneNumberMap = chinaPostInternationalZone[deliveryMethod];
-        const mailCategory = (
+        const letterTag = (
           mailType !== 'letter' ? 'other' : mailType
         ) as keyof typeof zoneNumberMap;
-        zoneNumber =
-          typeof zoneNumberMap === 'object' ? zoneNumberMap?.[mailCategory] : zoneNumberMap;
+        zoneNumber = typeof zoneNumberMap === 'object' ? zoneNumberMap?.[letterTag] : zoneNumberMap;
         if (!zoneNumber) return null;
 
-        zoneId = `international_${deliveryMethod}_${mailCategory}_${zoneNumber}`;
+        zoneId = `international_${deliveryMethod}_${letterTag}_${zoneNumber}`;
       } else if (destinationType === 'domestic' && mailType === 'parcel') {
         zoneNumber = getChinaPostMainlandZone(fromRegion, toRegion);
         if (zoneNumber === undefined) return null;
@@ -160,11 +165,13 @@ export function calculatePostageRate(
       if (groupRates.maxWeight && weight > groupRates.maxWeight) return null;
 
       // Calculate price using group-specific rates
-      const weightStep = Math.ceil(weight / groupRates.weightStep);
-      if (weightStep <= 1) {
+      const baseWeight = groupRates.baseWeight || groupRates.weightStep;
+      if (weight <= baseWeight) {
         price = groupRates.basePrice;
       } else {
-        price = groupRates.basePrice + (weightStep - 1) * groupRates.additionalPrice;
+        const additionalWeight = weight - baseWeight;
+        const additionalSteps = Math.ceil(additionalWeight / groupRates.weightStep);
+        price = groupRates.basePrice + additionalSteps * groupRates.additionalPrice;
       }
       break;
     }
