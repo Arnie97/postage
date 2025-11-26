@@ -11,10 +11,10 @@ export type TranslationKey =
   | 'mail.type.m_bags'
   | 'mail.type.parcel'
   | 'mail.type.ems'
-  | 'delivery.method'
-  | 'delivery.method.air'
-  | 'delivery.method.sal'
-  | 'delivery.method.surface'
+  | 'mail.category'
+  | 'mail.category.air'
+  | 'mail.category.sal'
+  | 'mail.category.surface'
   | 'sender'
   | 'receiver'
   | 'region.select'
@@ -56,10 +56,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type.m_bags': 'M Bags',
     'mail.type.parcel': 'Parcel',
     'mail.type.ems': 'EMS',
-    'delivery.method': 'Delivery Method',
-    'delivery.method.air': 'Air Mail',
-    'delivery.method.sal': 'Surface Air Lifted (SAL)',
-    'delivery.method.surface': 'Surface Mail',
+    'mail.category': 'Mail Category',
+    'mail.category.air': 'Air Mail',
+    'mail.category.sal': 'Surface Air Lifted (SAL)',
+    'mail.category.surface': 'Surface Mail',
     'sender': 'From',
     'receiver': 'To',
     'region.select': 'Select Region',
@@ -100,10 +100,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type.m_bags': '印刷品專袋',
     'mail.type.parcel': '包裹',
     'mail.type.ems': 'EMS',
-    'delivery.method': '寄送方式',
-    'delivery.method.air': '航空郵件',
-    'delivery.method.sal': '空運水陸路 (SAL)',
-    'delivery.method.surface': '水陸路郵件',
+    'mail.category': '郵件等級',
+    'mail.category.air': '航空郵件',
+    'mail.category.sal': '空運水陸路 (SAL)',
+    'mail.category.surface': '水陸路郵件',
     'sender': '寄件地',
     'receiver': '收件地',
     'region.select': '選擇地區',
@@ -144,10 +144,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type.m_bags': '印刷品专袋',
     'mail.type.parcel': '包裹',
     'mail.type.ems': 'EMS',
-    'delivery.method': '寄送方式',
-    'delivery.method.air': '航空邮件',
-    'delivery.method.sal': '空运水陆路 (SAL)',
-    'delivery.method.surface': '水陆路邮件',
+    'mail.category': '邮件等级',
+    'mail.category.air': '航空邮件',
+    'mail.category.sal': '空运水陆路 (SAL)',
+    'mail.category.surface': '水陆路邮件',
     'sender': '寄件地',
     'receiver': '收件地',
     'region.select': '选择地区',
