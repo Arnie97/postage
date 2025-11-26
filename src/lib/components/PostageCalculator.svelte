@@ -306,34 +306,49 @@
       </div>
     </div>
 
-    <!-- Mail Type Selection -->
-    <div class="form-group">
-      <fieldset class="fieldset-reset">
-        <legend class="form-label">
-          {t('mail.type', currentLang)}
-        </legend>
-        <div class="radio-group">
-          {#each mailTypeAvailability as { mailType, status }}
-            {#if status !== 'unavailable'}
-              <label class="radio-item" class:disabled={status === 'todo'}>
-                <input
-                  type="radio"
-                  bind:group={selectedMailType}
-                  value={mailType}
-                  name="mailType"
-                  disabled={status === 'todo'}
-                />
-                <span>
+    <!-- Mail Type and Weight Row -->
+    <div class="mail-type-weight-row">
+      <div class="mail-type-col">
+        <!-- Mail Type Selection -->
+        <div class="form-group">
+          <label class="form-label" for="mailType">
+            {t('mail.type', currentLang)}
+          </label>
+
+          <select id="mailType" class="form-control select" bind:value={selectedMailType} required>
+            {#each mailTypeAvailability as { mailType, status }}
+              {#if status !== 'unavailable'}
+                <option value={mailType} disabled={status === 'todo'}>
                   {t(getMailTypeKey(mailType), currentLang)}
                   {#if status === 'todo'}
-                    <small class="todo">({t('mail.type.todo', currentLang)})</small>
+                    ({t('mail.type.todo', currentLang)})
                   {/if}
-                </span>
-              </label>
-            {/if}
-          {/each}
+                </option>
+              {/if}
+            {/each}
+          </select>
         </div>
-      </fieldset>
+      </div>
+      <div class="weight-col">
+        <!-- Weight Input -->
+        <div class="form-group">
+          <label class="form-label" for="weight">
+            {t('weight', currentLang)} ({t('weight.grams', currentLang)})
+          </label>
+          <input
+            id="weight"
+            type="number"
+            class="form-control"
+            bind:value={weight}
+            min="1"
+            step="1"
+            required
+          />
+          {#if error}
+            <div class="error-message">{error}</div>
+          {/if}
+        </div>
+      </div>
     </div>
 
     <!-- Mail Category Selection (International Only) -->
@@ -359,25 +374,6 @@
         </fieldset>
       </div>
     {/if}
-
-    <!-- Weight Input -->
-    <div class="form-group">
-      <label class="form-label" for="weight">
-        {t('weight', currentLang)} ({t('weight.grams', currentLang)})
-      </label>
-      <input
-        id="weight"
-        type="number"
-        class="form-control"
-        bind:value={weight}
-        min="1"
-        step="1"
-        required
-      />
-      {#if error}
-        <div class="error-message">{error}</div>
-      {/if}
-    </div>
 
     <!-- Result Display -->
     {#if result}
@@ -464,6 +460,20 @@
     flex: 1;
   }
 
+  .mail-type-weight-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .mail-type-col {
+    flex: 1;
+  }
+
+  .weight-col {
+    flex: 1;
+  }
+
   .rate-rule-link {
     color: white;
     font-size: inherit;
@@ -478,19 +488,6 @@
     text-decoration-color: white;
   }
 
-  .radio-item.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .radio-item.disabled input {
-    cursor: not-allowed;
-  }
-
-  .todo {
-    color: var(--color-text-muted);
-    margin-left: 0.5rem;
-  }
 
   .calculation-details {
     margin-top: 0.75rem;
@@ -504,6 +501,11 @@
 
   @media (max-width: 768px) {
     .region-row {
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .mail-type-weight-row {
       flex-direction: column;
       gap: 0;
     }
