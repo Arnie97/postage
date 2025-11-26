@@ -3,7 +3,7 @@ import {
   getChinaPostInternationalZone,
   getChinaPostMainlandZone,
 } from '../data/regions';
-import { POSTAGE_RATES } from '../data/rates';
+import { POSTAGE_RATES, RATE_RULES } from '../data/rates';
 import type { RateCalculationMethod } from '../data/rates';
 
 export type MailType =
@@ -40,6 +40,32 @@ export interface PostageResult {
   mailCategory?: MailCategory;
   ruleId?: string;
   calculationDetails: RateCalculationDetails;
+}
+
+// Find the best matching rate rule for the given service and destination type
+function findBestMatchingRateRule(
+  serviceKey: string,
+  destinationType: string,
+  mailType: string,
+): string | undefined {
+  // Generate possible rule IDs in order of preference (most specific to least specific)
+  const possibleRuleIds = [
+    // Most specific: service_destination_mailtype
+    `${serviceKey}_${destinationType}_${mailType}`,
+    // Medium specific: service_destination
+    `${serviceKey}_${destinationType}`,
+    // Least specific: just service (fallback)
+    serviceKey,
+  ];
+
+  // Find the first match in RATE_RULES
+  for (const ruleId of possibleRuleIds) {
+    if (RATE_RULES[ruleId]) {
+      return ruleId;
+    }
+  }
+
+  return undefined;
 }
 
 // 主计算函数，根据出发地自动选择邮政服务
@@ -248,7 +274,7 @@ export function calculatePostageRate(
     destination: toRegion,
     weight,
     mailCategory,
-    ruleId: `${serviceKey}_${destinationType}`,
+    ruleId: findBestMatchingRateRule(serviceKey, destinationType, mailType),
     zoneId,
     calculationDetails,
   };
