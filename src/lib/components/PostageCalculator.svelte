@@ -111,9 +111,10 @@
       'letter',
       'postcard',
       'printed_papers',
-      'literature_for_blind',
-      'parcel',
+      'items_for_blind',
       'small_packet',
+      'm_bags',
+      'parcel',
       'ems',
     ];
   }

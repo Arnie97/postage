@@ -6,9 +6,10 @@ export type TranslationKey =
   | 'mail.type.letter'
   | 'mail.type.postcard'
   | 'mail.type.printed_papers'
-  | 'mail.type.literature_for_blind'
-  | 'mail.type.parcel'
+  | 'mail.type.items_for_blind'
   | 'mail.type.small_packet'
+  | 'mail.type.m_bags'
+  | 'mail.type.parcel'
   | 'mail.type.ems'
   | 'delivery.method'
   | 'delivery.method.air'
@@ -50,9 +51,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type.letter': 'Letter',
     'mail.type.postcard': 'Postcard',
     'mail.type.printed_papers': 'Printed Papers',
-    'mail.type.literature_for_blind': 'Literature for the Blind',
-    'mail.type.parcel': 'Parcel',
+    'mail.type.items_for_blind': 'Items for the Blind',
     'mail.type.small_packet': 'Small Packet',
+    'mail.type.m_bags': 'M Bags',
+    'mail.type.parcel': 'Parcel',
     'mail.type.ems': 'EMS',
     'delivery.method': 'Delivery Method',
     'delivery.method.air': 'Air Mail',
@@ -93,9 +95,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type.letter': '信件',
     'mail.type.postcard': '明信片',
     'mail.type.printed_papers': '印刷品',
-    'mail.type.literature_for_blind': '盲人讀物',
-    'mail.type.parcel': '包裹',
+    'mail.type.items_for_blind': '盲人郵件',
     'mail.type.small_packet': '小包',
+    'mail.type.m_bags': '印刷品專袋',
+    'mail.type.parcel': '包裹',
     'mail.type.ems': 'EMS',
     'delivery.method': '寄送方式',
     'delivery.method.air': '航空郵件',
@@ -136,9 +139,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type.letter': '信件',
     'mail.type.postcard': '明信片',
     'mail.type.printed_papers': '印刷品',
-    'mail.type.literature_for_blind': '盲人读物',
-    'mail.type.parcel': '包裹',
+    'mail.type.items_for_blind': '盲人邮件',
     'mail.type.small_packet': '小包',
+    'mail.type.m_bags': '印刷品专袋',
+    'mail.type.parcel': '包裹',
     'mail.type.ems': 'EMS',
     'delivery.method': '寄送方式',
     'delivery.method.air': '航空邮件',
