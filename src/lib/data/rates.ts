@@ -1,4 +1,5 @@
 import type { MailType } from './mail-types';
+import type { RegionCode } from './regions';
 
 export interface SteppedRate {
   type: 'stepped';
@@ -44,7 +45,7 @@ export type RateCalculationMethod = SteppedRate | TieredRate | FixedRate | Regio
 
 export interface PostalServiceRates {
   nameKey: string;
-  fromRegion: 'CN' | 'TW' | 'HK' | 'MO';
+  fromRegion: RegionCode;
   currency: string;
   primaryColor: string;
   secondaryColor: string;
@@ -53,10 +54,26 @@ export interface PostalServiceRates {
       [key in MailType]?: RateCalculationMethod | null;
     };
     mainland?: {
-      [key in MailType]?: RateCalculationMethod | null;
+      [key in MailType]?:
+        | RateCalculationMethod
+        | null
+        | {
+            default?: RateCalculationMethod;
+            air?: RateCalculationMethod;
+            sal?: RateCalculationMethod;
+            surface?: RateCalculationMethod;
+          };
     };
     regional?: {
-      [key in MailType]?: RateCalculationMethod | null;
+      [key in MailType]?:
+        | RateCalculationMethod
+        | null
+        | {
+            default?: RateCalculationMethod;
+            air?: RateCalculationMethod;
+            sal?: RateCalculationMethod;
+            surface?: RateCalculationMethod;
+          };
     };
     international?: {
       [key in MailType]?:

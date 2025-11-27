@@ -1,6 +1,6 @@
 import {
   getRegionType,
-  getChinaPostInternationalZone,
+  getPostalZone,
   getChinaPostMainlandZone,
   getDestinationType,
 } from '../data/regions';
@@ -187,11 +187,13 @@ export function calculatePostageRate(
       // Get China Post group for destination region
       let zoneNumber: number | undefined;
       if (destinationType == 'international') {
-        const chinaPostInternationalZone = getChinaPostInternationalZone(toRegion);
-        if (!chinaPostInternationalZone || !mailCategory) return null;
+        // Add type guard to handle 'XX' region type
+        if (fromType === 'XX') return null;
+        const postalZone = getPostalZone(fromType, toRegion);
+        if (!postalZone || !mailCategory) return null;
 
         // Determine which group to use based on mail category and mail type
-        const zoneNumberMap = chinaPostInternationalZone[mailCategory];
+        const zoneNumberMap = postalZone[mailCategory];
         const letterTag = (
           mailType !== 'letter' ? 'other' : mailType
         ) as keyof typeof zoneNumberMap;

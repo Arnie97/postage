@@ -4,12 +4,7 @@
   import { calculatePostageRate, type PostageResult } from '../services/calc';
   import { ALL_MAIL_TYPES, type MailType, type MailCategory } from '../data/mail-types';
   import { RATE_RULES, POSTAGE_RATES } from '../data/rates';
-  import {
-    getRegionType,
-    getChinaPostInternationalZone,
-    getDestinationType,
-    POSTAL_ZONES,
-  } from '../data/regions';
+  import { getRegionType, getDestinationType, getPostalZone, POSTAL_ZONES } from '../data/regions';
   import RegionSelector from './RegionSelector.svelte';
 
   let selectedMailType: MailType = 'letter';
@@ -82,20 +77,15 @@
     const originType = getRegionType(origin);
     const destType = getRegionType(destination);
 
-    // Only show mail categories for China Post international mail
-    if (originType !== 'CN' || destType !== 'XX') {
+    // Only show mail categories for international mail
+    if (originType === 'XX' || destType !== 'XX') {
       return [];
     }
 
-    const chinaPostZone = getChinaPostInternationalZone(destination);
-    if (!chinaPostZone) return [];
+    const postalZone = getPostalZone(originType, destination);
+    if (!postalZone) return [];
 
-    const categories: MailCategory[] = [];
-    if (chinaPostZone.air !== undefined) categories.push('air');
-    if (chinaPostZone.sal !== undefined) categories.push('sal');
-    if (chinaPostZone.surface !== undefined) categories.push('surface');
-
-    return categories;
+    return Object.keys(postalZone) as MailCategory[];
   }
 
   // Auto-calculate when inputs change
