@@ -42,10 +42,13 @@ src/
 ├── lib/
 │   ├── components/         # Svelte components
 │   ├── data/               # Static resources
+│   │   ├── mail-types.ts   # Mail type and category definitions
 │   │   ├── regions.ts      # Postal zone definitions
 │   │   ├── rates.ts        # Postage rates and prices
 │   │   └── translations.ts # Multilingual text translations
-│   └── utils/              # Calculation logic
+│   ├── services/           # Business logic
+│   │   └── calc.ts         # Postage calculation functions
+│   └── utils/              # Utility functions
 ├── App.svelte              # Main app component
 ├── main.ts                 # Entry point
 └── app.css                 # Global styles

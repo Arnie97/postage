@@ -1,12 +1,8 @@
 <script lang="ts">
   import { language } from '../utils/language';
   import { t, type TranslationKey } from '../data/translations';
-  import {
-    calculatePostageRate,
-    type MailType,
-    type PostageResult,
-    type MailCategory,
-  } from '../utils/postal-rates';
+  import { calculatePostageRate, type PostageResult } from '../services/calc';
+  import { ALL_MAIL_TYPES, type MailType, type MailCategory } from '../data/mail-types';
   import { RATE_RULES, POSTAGE_RATES } from '../data/rates';
   import {
     getRegionType,
@@ -63,18 +59,21 @@
 
   // Set default weight based on mail type only when mail type changes
   $: {
-    if (selectedMailType !== previousMailType) {
-      if (selectedMailType === 'postcard' || selectedMailType === 'letter') {
+    switch (selectedMailType) {
+      case previousMailType:
+        break;
+      case 'letter':
+      case 'postcard':
+      case 'aerogramme':
         weight = '20';
-      } else if (
-        selectedMailType === 'printed_papers' ||
-        selectedMailType === 'parcel' ||
-        selectedMailType === 'small_packet'
-      ) {
+        break;
+      case 'm_bags':
+        weight = '5000';
+        break;
+      default:
         weight = '500';
-      }
-      previousMailType = selectedMailType;
     }
+    previousMailType = selectedMailType;
   }
 
   function getAvailableMailCategories(origin: string, destination: string): MailCategory[] {
@@ -132,34 +131,14 @@
 
     // If no service found, all mail types are unavailable
     if (!serviceData) {
-      return (
-        [
-          'letter',
-          'postcard',
-          'printed_papers',
-          'items_for_blind',
-          'small_packet',
-          'm_bags',
-          'parcel',
-        ] as MailType[]
-      ).map((mailType) => ({ mailType, status: 'unavailable' as const }));
+      return [];
     }
 
     // Determine destination type for rate lookup
     const destinationType = getDestinationType(fromRegionType, toRegionType);
     const destinationRates = serviceData.rates[destinationType];
 
-    return (
-      [
-        'letter',
-        'postcard',
-        'printed_papers',
-        'items_for_blind',
-        'small_packet',
-        'm_bags',
-        'parcel',
-      ] as MailType[]
-    ).map((mailType) => {
+    return ALL_MAIL_TYPES.map((mailType) => {
       if (!destinationRates) {
         return { mailType, status: 'unavailable' as const };
       }

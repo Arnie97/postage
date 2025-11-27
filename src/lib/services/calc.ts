@@ -6,17 +6,7 @@ import {
 } from '../data/regions';
 import { POSTAGE_RATES, RATE_RULES } from '../data/rates';
 import type { RateCalculationMethod } from '../data/rates';
-
-export type MailType =
-  | 'letter'
-  | 'postcard'
-  | 'printed_papers'
-  | 'items_for_blind'
-  | 'small_packet'
-  | 'm_bags'
-  | 'parcel';
-
-export type MailCategory = 'air' | 'sal' | 'surface';
+import type { MailType, MailCategory } from '../data/mail-types';
 
 export interface RateCalculationDetails {
   rateType: 'fixed' | 'tiered' | 'stepped' | 'region_stepped';

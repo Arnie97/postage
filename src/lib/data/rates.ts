@@ -1,4 +1,4 @@
-import type { MailType } from '../utils/postal-rates';
+import type { MailType } from './mail-types';
 
 export interface SteppedRate {
   type: 'stepped';
@@ -156,6 +156,11 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           price: 3.5,
           maxWeight: 20,
         },
+        aerogramme: {
+          type: 'fixed',
+          price: 1.8,
+          maxWeight: 20,
+        },
         printed_papers: {
           type: 'stepped',
           baseWeight: 20,
@@ -237,6 +242,23 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           surface: {
             type: 'fixed',
             price: 3.5,
+            maxWeight: 20,
+          },
+        },
+        aerogramme: {
+          air: {
+            type: 'fixed',
+            price: 5.5,
+            maxWeight: 20,
+          },
+          sal: {
+            type: 'fixed',
+            price: 5.5,
+            maxWeight: 20,
+          },
+          surface: {
+            type: 'fixed',
+            price: 5.5,
             maxWeight: 20,
           },
         },
@@ -666,6 +688,11 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           price: 2.0,
           maxWeight: 20,
         },
+        aerogramme: {
+          type: 'fixed',
+          price: 2.5,
+          maxWeight: 20,
+        },
         printed_papers: {
           type: 'tiered',
           tiers: [
@@ -923,6 +950,11 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           price: 2.5,
           maxWeight: 20,
         },
+        aerogramme: {
+          type: 'fixed',
+          price: 2.5,
+          maxWeight: 20,
+        },
         printed_papers: {
           type: 'stepped',
           basePrice: 2.0,
@@ -995,6 +1027,13 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           surface: {
             type: 'fixed',
             price: 3.2,
+            maxWeight: 20,
+          },
+        },
+        aerogramme: {
+          surface: {
+            type: 'fixed',
+            price: 5.0,
             maxWeight: 20,
           },
         },

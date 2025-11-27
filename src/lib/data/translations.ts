@@ -5,6 +5,7 @@ export type TranslationKey =
   | 'mail.type'
   | 'mail.type.letter'
   | 'mail.type.postcard'
+  | 'mail.type.aerogramme'
   | 'mail.type.printed_papers'
   | 'mail.type.items_for_blind'
   | 'mail.type.small_packet'
@@ -57,6 +58,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type': 'Mail Type',
     'mail.type.letter': 'Letter',
     'mail.type.postcard': 'Postcard',
+    'mail.type.aerogramme': 'Aerogramme',
     'mail.type.printed_papers': 'Printed Papers',
     'mail.type.items_for_blind': 'Items for the Blind',
     'mail.type.small_packet': 'Small Packet',
@@ -108,6 +110,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type': '郵件類型',
     'mail.type.letter': '信件',
     'mail.type.postcard': '明信片',
+    'mail.type.aerogramme': '航空郵簡',
     'mail.type.printed_papers': '印刷品',
     'mail.type.items_for_blind': '盲人郵件',
     'mail.type.small_packet': '小包',
@@ -159,6 +162,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type': '邮件类型',
     'mail.type.letter': '信件',
     'mail.type.postcard': '明信片',
+    'mail.type.aerogramme': '航空邮简',
     'mail.type.printed_papers': '印刷品',
     'mail.type.items_for_blind': '盲人邮件',
     'mail.type.small_packet': '小包',
