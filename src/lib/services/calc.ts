@@ -9,7 +9,7 @@ import type { RateCalculationMethod } from '../data/rates';
 import type { MailType, MailCategory } from '../data/mail-types';
 
 export interface RateCalculationDetails {
-  rateType: 'fixed' | 'tiered' | 'stepped' | 'region_stepped';
+  rateType: 'fixed' | 'tiered' | 'stepped' | 'zonal';
   baseWeight?: number;
   basePrice?: number;
   additionalWeight?: number;
@@ -183,7 +183,7 @@ export function calculatePostageRate(
       };
       break;
 
-    case 'region_stepped': {
+    case 'zonal': {
       // Get China Post group for destination region
       let zoneNumber: number | undefined;
       if (destinationType == 'international') {
@@ -209,7 +209,7 @@ export function calculatePostageRate(
         return null;
       }
 
-      const groupRates = rateMethod.groups[zoneNumber];
+      const groupRates = rateMethod.zones[zoneNumber];
       if (!groupRates) return null;
 
       // Check weight limit
@@ -220,7 +220,7 @@ export function calculatePostageRate(
       if (weight <= baseWeight) {
         price = groupRates.basePrice;
         calculationDetails = {
-          rateType: 'region_stepped',
+          rateType: 'zonal',
           baseWeight,
           basePrice: groupRates.basePrice,
           additionalWeight: 0,
@@ -232,7 +232,7 @@ export function calculatePostageRate(
         const additionalSteps = Math.ceil(additionalWeight / groupRates.weightStep);
         price = groupRates.basePrice + additionalSteps * groupRates.additionalPrice;
         calculationDetails = {
-          rateType: 'region_stepped',
+          rateType: 'zonal',
           baseWeight,
           basePrice: groupRates.basePrice,
           additionalWeight,

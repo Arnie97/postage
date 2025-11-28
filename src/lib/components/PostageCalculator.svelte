@@ -368,7 +368,7 @@
               {result.calculationDetails.fixedPrice?.toFixed(2)}
               {t(getCurrencyKey(result.currency), currentLang)}
             </p>
-          {:else if result.calculationDetails.rateType === 'stepped' || result.calculationDetails.rateType === 'region_stepped'}
+          {:else if result.calculationDetails.rateType === 'stepped' || result.calculationDetails.rateType === 'zonal'}
             {#if result.calculationDetails.baseWeight !== undefined}
               <p>
                 {t('calculation.base-weight', currentLang)}:

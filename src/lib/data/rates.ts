@@ -27,10 +27,10 @@ export interface FixedRate {
   registrationFee?: number;
 }
 
-export interface RegionBasedSteppedRate {
-  type: 'region_stepped';
-  groups: {
-    [groupNumber: number]: {
+export interface ZonalRate {
+  type: 'zonal';
+  zones: {
+    [zoneNumber: number]: {
       baseWeight?: number; // Weight covered by base price (defaults to weightStep if not specified)
       basePrice: number;
       weightStep: number;
@@ -41,7 +41,7 @@ export interface RegionBasedSteppedRate {
   registrationFee?: number;
 }
 
-export type RateCalculationMethod = SteppedRate | TieredRate | FixedRate | RegionBasedSteppedRate;
+export type RateCalculationMethod = SteppedRate | TieredRate | FixedRate | ZonalRate;
 
 export interface PostalServiceRates {
   nameKey: string;
@@ -143,8 +143,8 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           maxWeight: 25000,
         },
         parcel: {
-          type: 'region_stepped',
-          groups: {
+          type: 'zonal',
+          zones: {
             1: { basePrice: 0x5, weightStep: 1000, additionalPrice: 1.0, maxWeight: 50000 },
             2: { basePrice: 0x6, weightStep: 1000, additionalPrice: 1.5, maxWeight: 50000 },
             3: { basePrice: 0x7, weightStep: 1000, additionalPrice: 2.0, maxWeight: 50000 },
@@ -220,8 +220,8 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
       international: {
         letter: {
           air: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 20, basePrice: 5.0, weightStep: 10, additionalPrice: 1.0, maxWeight: 100 },
               2: { baseWeight: 20, basePrice: 5.5, weightStep: 10, additionalPrice: 1.5, maxWeight: 100 },
               3: { baseWeight: 20, basePrice: 6.0, weightStep: 10, additionalPrice: 1.8, maxWeight: 100 },
@@ -229,8 +229,8 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
             },
           },
           sal: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 20, basePrice: 4.5, weightStep: 10, additionalPrice: 0.5, maxWeight: 100 },
               2: { baseWeight: 20, basePrice: 5.0, weightStep: 10, additionalPrice: 0.6, maxWeight: 100 },
               3: { baseWeight: 20, basePrice: 5.5, weightStep: 10, additionalPrice: 0.7, maxWeight: 100 },
@@ -238,8 +238,8 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
             },
           },
           surface: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 20, basePrice: 3.5, weightStep: 10, additionalPrice: 0.4, maxWeight: 100 }, // 27 asia-pacific countries
               2: { baseWeight: 20, basePrice: 4.0, weightStep: 10, additionalPrice: 0.5, maxWeight: 100 }, // standard rate
             },
@@ -281,16 +281,16 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
         },
         printed_papers: {
           air: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 20, basePrice: 4.5, weightStep: 10, additionalPrice: 2.2, maxWeight: 500 },
               2: { baseWeight: 20, basePrice: 5.0, weightStep: 10, additionalPrice: 2.5, maxWeight: 500 },
               3: { baseWeight: 20, basePrice: 6.0, weightStep: 10, additionalPrice: 2.8, maxWeight: 500 },
             },
           },
           sal: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 20, basePrice: 4.0, weightStep: 10, additionalPrice: 1.9, maxWeight: 500 },
               2: { baseWeight: 20, basePrice: 4.5, weightStep: 10, additionalPrice: 2.2, maxWeight: 500 },
               3: { baseWeight: 20, basePrice: 5.0, weightStep: 10, additionalPrice: 2.5, maxWeight: 500 },
@@ -307,16 +307,16 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
         },
         items_for_blind: {
           air: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { basePrice: 0, weightStep: 10, additionalPrice: 0.6, maxWeight: 7000 },
               2: { basePrice: 0, weightStep: 10, additionalPrice: 0.8, maxWeight: 7000 },
               3: { basePrice: 0, weightStep: 10, additionalPrice: 1.0, maxWeight: 7000 },
             },
           },
           sal: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { basePrice: 0, weightStep: 10, additionalPrice: 0.3, maxWeight: 7000 },
               2: { basePrice: 0, weightStep: 10, additionalPrice: 0.3, maxWeight: 7000 },
               3: { basePrice: 0, weightStep: 10, additionalPrice: 0.4, maxWeight: 7000 },
@@ -330,16 +330,16 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
         },
         small_packet: {
           air: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 100, basePrice: 25, weightStep: 100, additionalPrice: 23 },
               2: { baseWeight: 100, basePrice: 30, weightStep: 100, additionalPrice: 27 },
               3: { baseWeight: 100, basePrice: 35, weightStep: 100, additionalPrice: 33 },
             },
           },
           sal: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 100, basePrice: 22, weightStep: 100, additionalPrice: 18 },
               2: { baseWeight: 100, basePrice: 27, weightStep: 100, additionalPrice: 23 },
               3: { baseWeight: 100, basePrice: 32, weightStep: 100, additionalPrice: 28 },
@@ -355,16 +355,16 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
         },
         m_bags: {
           air: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 5000, basePrice: 485, weightStep: 1000, additionalPrice: 100, maxWeight: 30000 },
               2: { baseWeight: 5000, basePrice: 610, weightStep: 1000, additionalPrice: 120, maxWeight: 30000 },
               3: { baseWeight: 5000, basePrice: 730, weightStep: 1000, additionalPrice: 145, maxWeight: 30000 },
             },
           },
           sal: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 5000, basePrice: 455, weightStep: 1000, additionalPrice: 100, maxWeight: 30000 },
               2: { baseWeight: 5000, basePrice: 600, weightStep: 1000, additionalPrice: 120, maxWeight: 30000 },
               3: { baseWeight: 5000, basePrice: 730, weightStep: 1000, additionalPrice: 145, maxWeight: 30000 },
@@ -909,16 +909,16 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
       international: {
         letter: {
           air: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 30, basePrice: 6.6, weightStep: 10, additionalPrice: 2.0, maxWeight: 500 },
               2: { baseWeight: 30, basePrice: 8.2, weightStep: 10, additionalPrice: 2.1, maxWeight: 500 },
               3: { baseWeight: 30, basePrice: 8.4, weightStep: 10, additionalPrice: 2.2, maxWeight: 500 },
             },
           },
           surface: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 20, basePrice: 3.5, weightStep: 30, additionalPrice: 2.7, maxWeight: 500 },
               2: { baseWeight: 20, basePrice: 5.0, weightStep: 30, additionalPrice: 2.9, maxWeight: 500 },
               3: { baseWeight: 20, basePrice: 5.3, weightStep: 30, additionalPrice: 2.9, maxWeight: 500 },
@@ -927,16 +927,16 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
         },
         postcard: {
           air: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 20, basePrice: 4.0, weightStep: 10, additionalPrice: 2.4, maxWeight: 50 },
               2: { baseWeight: 20, basePrice: 5.4, weightStep: 10, additionalPrice: 2.7, maxWeight: 50 },
               3: { baseWeight: 20, basePrice: 5.5, weightStep: 10, additionalPrice: 2.8, maxWeight: 50 },
             },
           },
           surface: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 20, basePrice: 3.5, weightStep: 30, additionalPrice: 2.7, maxWeight: 50 },
               2: { baseWeight: 20, basePrice: 5.0, weightStep: 30, additionalPrice: 2.9, maxWeight: 50 },
               3: { baseWeight: 20, basePrice: 5.3, weightStep: 30, additionalPrice: 2.9, maxWeight: 50 },
@@ -945,16 +945,16 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
         },
         printed_papers: {
           air: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 30, basePrice: 6.6, weightStep: 10, additionalPrice: 2.0, maxWeight: 500 },
               2: { baseWeight: 30, basePrice: 8.2, weightStep: 10, additionalPrice: 2.1, maxWeight: 500 },
               3: { baseWeight: 30, basePrice: 8.4, weightStep: 10, additionalPrice: 2.2, maxWeight: 500 },
             },
           },
           surface: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 50, basePrice: 6.3, weightStep: 50, additionalPrice: 4.2, maxWeight: 500 },
               2: { baseWeight: 50, basePrice: 8.0, weightStep: 50, additionalPrice: 4.0, maxWeight: 500 },
               3: { baseWeight: 50, basePrice: 8.3, weightStep: 50, additionalPrice: 4.0, maxWeight: 500 },
@@ -963,16 +963,16 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
         },
         small_packet: {
           air: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 30, basePrice: 6.8, weightStep: 10, additionalPrice: 2.0, maxWeight: 2000 },
               2: { baseWeight: 30, basePrice: 8.4, weightStep: 10, additionalPrice: 2.1, maxWeight: 2000 },
               3: { baseWeight: 30, basePrice: 8.6, weightStep: 10, additionalPrice: 2.2, maxWeight: 2000 },
             },
           },
           surface: {
-            type: 'region_stepped',
-            groups: {
+            type: 'zonal',
+            zones: {
               1: { baseWeight: 100, basePrice: 10.8, weightStep: 100, additionalPrice: 10.2, maxWeight: 2000 },
               2: { baseWeight: 100, basePrice: 12.3, weightStep: 100, additionalPrice: 11.4, maxWeight: 2000 },
               3: { baseWeight: 100, basePrice: 12.6, weightStep: 100, additionalPrice: 11.7, maxWeight: 2000 },
