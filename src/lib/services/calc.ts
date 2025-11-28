@@ -13,10 +13,9 @@ export interface RateCalculationDetails {
   baseWeight?: number;
   basePrice?: number;
   additionalWeight?: number;
-  additionalPrice?: number;
   weightStep?: number;
-  fixedPrice?: number;
-  tierUsed?: { minWeight?: number; maxWeight: number; price: number };
+  additionalPrice?: number;
+  maxWeight?: number;
   registrationFee?: number;
 }
 
@@ -136,57 +135,60 @@ export function calculatePostageRate(
 
   switch (rate.type) {
     case 'stepped': {
-      if (rate.maxWeight && weight > rate.maxWeight) {
+      if (weight > (rate.maxWeight ?? Infinity)) {
         return { errorType: 'weight' };
       }
-      const baseWeight = rate.baseWeight || rate.weightStep;
-      if (weight <= baseWeight) {
-        price = rate.basePrice;
-        calculationDetails = {
-          rateType: 'stepped',
-          baseWeight,
-          basePrice: rate.basePrice,
-          additionalWeight: 0,
-          additionalPrice: rate.additionalPrice,
-          weightStep: rate.weightStep,
-        };
-      } else {
-        const additionalWeight = weight - baseWeight;
-        const additionalSteps = Math.ceil(additionalWeight / rate.weightStep);
-        price = rate.basePrice + additionalSteps * rate.additionalPrice;
-        calculationDetails = {
-          rateType: 'stepped',
-          baseWeight,
-          basePrice: rate.basePrice,
-          additionalWeight,
-          additionalPrice: rate.additionalPrice,
-          weightStep: rate.weightStep,
-        };
-      }
-      break;
-    }
 
-    case 'tiered': {
-      let tierUsed: { maxWeight: number; price: number; minWeight?: number } | undefined;
-      let previousMaxWeight = 0;
-      for (const tier of rate.tiers) {
-        if (weight <= tier.maxWeight) {
-          price = tier.price;
-          tierUsed = {
-            ...tier,
-            minWeight: previousMaxWeight > 0 ? previousMaxWeight + 1 : undefined,
-          };
+      // Find the appropriate tier based on weight and baseWeight values
+      let tier, baseWeight, nextTier, nextTierBaseWeight;
+
+      for (let i = 0; i < rate.tiers.length; i++) {
+        const currentTier = rate.tiers[i];
+        baseWeight = currentTier.baseWeight ?? currentTier.weightStep ?? 0;
+        nextTier = rate.tiers[i + 1];
+        nextTierBaseWeight = nextTier
+          ? (nextTier.baseWeight ?? nextTier.weightStep ?? 0)
+          : (rate.maxWeight ?? Infinity);
+
+        if (weight <= nextTierBaseWeight) {
+          tier = currentTier;
           break;
         }
-        previousMaxWeight = tier.maxWeight;
       }
-      if (price === null) {
+
+      if (!tier || baseWeight === undefined) {
         return { errorType: 'weight' };
       }
-      calculationDetails = {
-        rateType: 'tiered',
-        tierUsed,
-      };
+
+      // Calculate price within the tier
+      const weightInTier = weight - baseWeight;
+      if (tier.weightStep && tier.additionalPrice) {
+        // Stepped pricing within tier
+        if (weightInTier <= 0) {
+          price = tier.basePrice;
+        } else {
+          const additionalSteps = Math.ceil(weightInTier / tier.weightStep);
+          price = tier.basePrice + additionalSteps * tier.additionalPrice;
+        }
+
+        calculationDetails = {
+          rateType: 'stepped',
+          baseWeight: baseWeight,
+          basePrice: tier.basePrice,
+          additionalWeight: weightInTier,
+          additionalPrice: tier.additionalPrice,
+          weightStep: tier.weightStep,
+        };
+      } else {
+        // Fixed pricing within tier (pure tiered mode)
+        price = tier.basePrice;
+        calculationDetails = {
+          rateType: 'tiered',
+          baseWeight: baseWeight,
+          basePrice: price,
+          maxWeight: nextTierBaseWeight,
+        };
+      }
       break;
     }
 
@@ -197,7 +199,7 @@ export function calculatePostageRate(
       price = rate.price;
       calculationDetails = {
         rateType: 'fixed',
-        fixedPrice: rate.price,
+        basePrice: rate.price,
       };
       break;
 

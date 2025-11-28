@@ -1,10 +1,7 @@
 <script lang="ts">
   import { language } from '../utils/language';
   import { t, type TranslationKey } from '../data/translations';
-  import {
-    calculatePostageRate,
-    type CalculationResult,
-  } from '../services/calc';
+  import { calculatePostageRate, type CalculationResult } from '../services/calc';
   import { ALL_MAIL_TYPES, type MailType, type MailCategory } from '../data/mail-types';
   import { RATE_RULES, POSTAGE_RATES } from '../data/rates';
   import { getRegionType, getDestinationType, getPostalZone, POSTAL_ZONES } from '../data/regions';
@@ -359,32 +356,36 @@
           {#if result.calculationDetails.rateType === 'fixed'}
             <p>
               {t('calculation.fixed-rate', currentLang)}:
-              {result.calculationDetails.fixedPrice?.toFixed(2)}
+              {result.calculationDetails.basePrice?.toFixed(2)}
               {t(getCurrencyKey(result.currency), currentLang)}
             </p>
           {:else if result.calculationDetails.rateType === 'stepped' || result.calculationDetails.rateType === 'zonal'}
             {#if result.calculationDetails.baseWeight !== undefined}
               <p>
                 {t('calculation.base-weight', currentLang)}:
-                {result.calculationDetails.baseWeight}g,
+                {result.calculationDetails.baseWeight}
+                {t('weight.grams', currentLang)},
                 {result.calculationDetails.basePrice?.toFixed(2)}
                 {t(getCurrencyKey(result.currency), currentLang)}
               </p>
             {/if}
-            {#if result.calculationDetails.additionalWeight !== undefined && result.calculationDetails.additionalWeight > 0}
+            {#if result.calculationDetails.weightStep && result.calculationDetails.additionalWeight !== undefined && result.calculationDetails.additionalWeight > 0}
               <p>
                 {t('calculation.additional-weight', currentLang)}:
-                {result.calculationDetails.additionalWeight}g,
+                {result.calculationDetails.additionalWeight}
+                {t('weight.grams', currentLang)},
                 {result.calculationDetails.additionalPrice?.toFixed(2)}
                 {t(getCurrencyKey(result.currency), currentLang)}
               </p>
             {/if}
-          {:else if result.calculationDetails.rateType === 'tiered' && result.calculationDetails.tierUsed}
+          {:else if result.calculationDetails.rateType === 'tiered'}
             <p>
               {t('calculation.tier-range', currentLang)}:
-              {result.calculationDetails.tierUsed.minWeight || 0}g –
-              {result.calculationDetails.tierUsed.maxWeight}g,
-              {result.calculationDetails.tierUsed.price.toFixed(2)}
+              {result.calculationDetails.baseWeight || 0}
+              {t('weight.grams', currentLang)} –
+              {result.calculationDetails.maxWeight}
+              {t('weight.grams', currentLang)},
+              {result.calculationDetails.basePrice?.toFixed(2)}
               {t(getCurrencyKey(result.currency), currentLang)}
             </p>
           {/if}

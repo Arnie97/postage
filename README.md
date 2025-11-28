@@ -57,6 +57,8 @@ src/
 ## Todo
 
 * EMS
+* Avis de réception
+* Poste restante
 * Insured mails
 * Postal services in other regions
 
