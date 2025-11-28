@@ -43,6 +43,10 @@ export type TranslationKey =
   | 'currency.mop'
   | 'error.weight'
   | 'error.calculation'
+  | 'error.service'
+  | 'error.route'
+  | 'error.mail_type'
+  | 'error.mail_category'
   | 'calculation.fixed-rate'
   | 'calculation.base-weight'
   | 'calculation.additional-weight'
@@ -82,7 +86,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'continent.NA': 'North America',
     'continent.SA': 'South America',
     'continent.OC': 'Oceania',
-    'continent.AN': 'Other',
+    'continent.AN': 'Antarctica',
     'weight': 'Weight',
     'weight.grams': 'grams',
     'service.auto': 'Auto-detected service',
@@ -94,8 +98,12 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'currency.twd': 'TWD',
     'currency.hkd': 'HKD',
     'currency.mop': 'MOP',
-    'error.weight': 'Please enter a valid weight',
+    'error.weight': 'Invalid weight',
     'error.calculation': 'Unable to calculate postage',
+    'error.service': 'Postal service is not available for this origin region',
+    'error.route': 'Shipping route is not available for this destination',
+    'error.mail_type': 'Mail type is not available for the selected route',
+    'error.mail_category': 'Mail category is not available for the selected route',
     'calculation.fixed-rate': 'Fixed Rate',
     'calculation.base-weight': 'Base Weight',
     'calculation.additional-weight': 'Additional Weight',
@@ -134,7 +142,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'continent.NA': '北美洲',
     'continent.SA': '南美洲',
     'continent.OC': '大洋洲',
-    'continent.AN': '其他',
+    'continent.AN': '南極洲',
     'weight': '重量',
     'weight.grams': '公克',
     'service.auto': '自動判斷服務',
@@ -146,8 +154,12 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'currency.twd': '新臺幣',
     'currency.hkd': '港幣',
     'currency.mop': '澳門元',
-    'error.weight': '請輸入有效的重量',
+    'error.weight': '重量無效',
     'error.calculation': '無法計算郵費',
+    'error.service': '出發地無郵政服務可用',
+    'error.route': '目的地無運送路線可用',
+    'error.mail_type': '所選路線不支援此郵件類型',
+    'error.mail_category': '所選路線不支援此郵件等級',
     'calculation.fixed-rate': '固定資費',
     'calculation.base-weight': '基本重量',
     'calculation.additional-weight': '額外重量',
@@ -186,7 +198,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'continent.NA': '北美洲',
     'continent.SA': '南美洲',
     'continent.OC': '大洋洲',
-    'continent.AN': '其他',
+    'continent.AN': '南极洲',
     'weight': '重量',
     'weight.grams': '克',
     'service.auto': '自动判断服务',
@@ -198,8 +210,12 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'currency.twd': '新台币',
     'currency.hkd': '港币',
     'currency.mop': '澳门元',
-    'error.weight': '请输入有效的重量',
+    'error.weight': '重量无效',
     'error.calculation': '无法计算邮费',
+    'error.service': '出发地无邮政服务可用',
+    'error.route': '目的地无运送路线可用',
+    'error.mail_type': '所选路线不支持此邮件类型',
+    'error.mail_category': '所选路线不支持此邮件等级',
     'calculation.fixed-rate': '固定资费',
     'calculation.base-weight': '首重',
     'calculation.additional-weight': '续重',

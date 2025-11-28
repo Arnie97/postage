@@ -20,7 +20,7 @@ export interface RateCalculationDetails {
   registrationFee?: number;
 }
 
-export interface PostageResult {
+export interface CalculationResult {
   price: number;
   currency: string;
   serviceKey: string;
@@ -33,6 +33,10 @@ export interface PostageResult {
   mailCategory?: MailCategory;
   ruleId?: string;
   calculationDetails: RateCalculationDetails;
+}
+
+export interface CalculationError {
+  errorType: 'service' | 'route' | 'mail_type' | 'mail_category' | 'weight' | 'calculation';
 }
 
 // Helper function to get rate method for a specific mail rate and category
@@ -89,7 +93,7 @@ export function calculatePostageRate(
   weight: number,
   mailCategory?: MailCategory,
   isRegistered?: boolean,
-): PostageResult | null {
+): CalculationResult | CalculationError {
   const fromRegionType = getRegionType(fromRegion);
 
   // Find the service by matching fromRegion
@@ -104,7 +108,9 @@ export function calculatePostageRate(
     }
   }
 
-  if (!serviceKey || !serviceData) return null;
+  if (!serviceKey || !serviceData) {
+    return { errorType: 'service' };
+  }
 
   const fromType = fromRegionType;
   const toType = getRegionType(toRegion);
@@ -112,41 +118,47 @@ export function calculatePostageRate(
   // Determine destination type for rate lookup
   const destinationType = getDestinationType(fromType, toType);
   const destinationRates = serviceData.rates[destinationType];
-  if (!destinationRates) return null;
+  if (!destinationRates) {
+    return { errorType: 'route' };
+  }
 
-  const rateMethod = getRateMethod(destinationRates[mailType], mailCategory);
-  if (!rateMethod) return null;
+  const rate = getRateMethod(destinationRates[mailType], mailCategory);
+  if (!rate) {
+    return { errorType: 'mail_type' };
+  }
 
   // Calculate price based on rate method
   let price: number | null = null;
   let zoneId: string | undefined;
   let calculationDetails: RateCalculationDetails;
 
-  switch (rateMethod.type) {
+  switch (rate.type) {
     case 'stepped': {
-      if (rateMethod.maxWeight && weight > rateMethod.maxWeight) return null;
-      const baseWeight = rateMethod.baseWeight || rateMethod.weightStep;
+      if (rate.maxWeight && weight > rate.maxWeight) {
+        return { errorType: 'weight' };
+      }
+      const baseWeight = rate.baseWeight || rate.weightStep;
       if (weight <= baseWeight) {
-        price = rateMethod.basePrice;
+        price = rate.basePrice;
         calculationDetails = {
           rateType: 'stepped',
           baseWeight,
-          basePrice: rateMethod.basePrice,
+          basePrice: rate.basePrice,
           additionalWeight: 0,
-          additionalPrice: rateMethod.additionalPrice,
-          weightStep: rateMethod.weightStep,
+          additionalPrice: rate.additionalPrice,
+          weightStep: rate.weightStep,
         };
       } else {
         const additionalWeight = weight - baseWeight;
-        const additionalSteps = Math.ceil(additionalWeight / rateMethod.weightStep);
-        price = rateMethod.basePrice + additionalSteps * rateMethod.additionalPrice;
+        const additionalSteps = Math.ceil(additionalWeight / rate.weightStep);
+        price = rate.basePrice + additionalSteps * rate.additionalPrice;
         calculationDetails = {
           rateType: 'stepped',
           baseWeight,
-          basePrice: rateMethod.basePrice,
+          basePrice: rate.basePrice,
           additionalWeight,
-          additionalPrice: rateMethod.additionalPrice,
-          weightStep: rateMethod.weightStep,
+          additionalPrice: rate.additionalPrice,
+          weightStep: rate.weightStep,
         };
       }
       break;
@@ -155,7 +167,7 @@ export function calculatePostageRate(
     case 'tiered': {
       let tierUsed: { maxWeight: number; price: number; minWeight?: number } | undefined;
       let previousMaxWeight = 0;
-      for (const tier of rateMethod.tiers) {
+      for (const tier of rate.tiers) {
         if (weight <= tier.maxWeight) {
           price = tier.price;
           tierUsed = {
@@ -166,7 +178,9 @@ export function calculatePostageRate(
         }
         previousMaxWeight = tier.maxWeight;
       }
-      if (price === null) return null;
+      if (price === null) {
+        return { errorType: 'weight' };
+      }
       calculationDetails = {
         rateType: 'tiered',
         tierUsed,
@@ -175,11 +189,13 @@ export function calculatePostageRate(
     }
 
     case 'fixed':
-      if (rateMethod.maxWeight && weight > rateMethod.maxWeight) return null;
-      price = rateMethod.price;
+      if (rate.maxWeight && weight > rate.maxWeight) {
+        return { errorType: 'weight' };
+      }
+      price = rate.price;
       calculationDetails = {
         rateType: 'fixed',
-        fixedPrice: rateMethod.price,
+        fixedPrice: rate.price,
       };
       break;
 
@@ -188,67 +204,82 @@ export function calculatePostageRate(
       let zoneNumber: number | undefined;
       if (destinationType == 'international') {
         // Add type guard to handle 'XX' region type
-        if (fromType === 'XX') return null;
+        if (fromType === 'XX') {
+          return { errorType: 'service' };
+        }
         const postalZone = getPostalZone(fromType, toRegion);
-        if (!postalZone || !mailCategory) return null;
+        if (!postalZone || !mailCategory) {
+          return { errorType: 'mail_category' };
+        }
 
-        // Determine which group to use based on mail category and mail type
+        // Determine which zone to use based on mail category and mail type
         const zoneNumberMap = postalZone[mailCategory];
         const letterTag = (
           mailType !== 'letter' ? 'other' : mailType
         ) as keyof typeof zoneNumberMap;
         zoneNumber = typeof zoneNumberMap === 'object' ? zoneNumberMap?.[letterTag] : zoneNumberMap;
-        if (!zoneNumber) return null;
+        if (!zoneNumber) {
+          return { errorType: 'route' };
+        }
 
         zoneId = `international_${mailCategory}_${letterTag}_${zoneNumber}`;
       } else if (destinationType === 'domestic' && mailType === 'parcel') {
         zoneNumber = getChinaPostMainlandZone(fromRegion, toRegion);
-        if (zoneNumber === undefined) return null;
+        if (!zoneNumber) {
+          return { errorType: 'route' };
+        }
         zoneId = `domestic__${mailType}_${zoneNumber}`;
       } else {
-        return null;
+        return { errorType: 'mail_type' };
       }
 
-      const groupRates = rateMethod.zones[zoneNumber];
-      if (!groupRates) return null;
+      const zoneRates = rate.zones[zoneNumber];
+      if (!zoneRates) {
+        return { errorType: 'route' };
+      }
 
       // Check weight limit
-      if (groupRates.maxWeight && weight > groupRates.maxWeight) return null;
+      if (zoneRates.maxWeight && weight > zoneRates.maxWeight) {
+        return { errorType: 'weight' };
+      }
 
-      // Calculate price using group-specific rates
-      const baseWeight = groupRates.baseWeight || groupRates.weightStep;
+      // Calculate price using zonal rates
+      const baseWeight = zoneRates.baseWeight || zoneRates.weightStep;
       if (weight <= baseWeight) {
-        price = groupRates.basePrice;
+        price = zoneRates.basePrice;
         calculationDetails = {
           rateType: 'zonal',
           baseWeight,
-          basePrice: groupRates.basePrice,
+          basePrice: zoneRates.basePrice,
           additionalWeight: 0,
-          additionalPrice: groupRates.additionalPrice,
-          weightStep: groupRates.weightStep,
+          additionalPrice: zoneRates.additionalPrice,
+          weightStep: zoneRates.weightStep,
         };
       } else {
         const additionalWeight = weight - baseWeight;
-        const additionalSteps = Math.ceil(additionalWeight / groupRates.weightStep);
-        price = groupRates.basePrice + additionalSteps * groupRates.additionalPrice;
+        const additionalSteps = Math.ceil(additionalWeight / zoneRates.weightStep);
+        price = zoneRates.basePrice + additionalSteps * zoneRates.additionalPrice;
         calculationDetails = {
           rateType: 'zonal',
           baseWeight,
-          basePrice: groupRates.basePrice,
+          basePrice: zoneRates.basePrice,
           additionalWeight,
-          additionalPrice: groupRates.additionalPrice,
-          weightStep: groupRates.weightStep,
+          additionalPrice: zoneRates.additionalPrice,
+          weightStep: zoneRates.weightStep,
         };
       }
       break;
     }
   }
 
-  if (price === null) return null;
+  if (price === null) {
+    console.error(rate);
+    return { errorType: 'calculation' };
+  }
 
   if (isRegistered) {
     const registrationFee =
-      rateMethod?.registrationFee ??
+      rate?.registrationFee ??
       getRateMethod(destinationRates['letter'], mailCategory)?.registrationFee;
     if (registrationFee) {
       price += registrationFee;

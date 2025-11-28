@@ -1,7 +1,11 @@
 <script lang="ts">
   import { language } from '../utils/language';
   import { t, type TranslationKey } from '../data/translations';
-  import { calculatePostageRate, type PostageResult } from '../services/calc';
+  import {
+    calculatePostageRate,
+    type CalculationResult,
+    type CalculationError,
+  } from '../services/calc';
   import { ALL_MAIL_TYPES, type MailType, type MailCategory } from '../data/mail-types';
   import { RATE_RULES, POSTAGE_RATES } from '../data/rates';
   import { getRegionType, getDestinationType, getPostalZone, POSTAL_ZONES } from '../data/regions';
@@ -13,7 +17,7 @@
   let destinationRegion = 'HK';
   let weight = '20';
   let isRegistered = false;
-  let result: PostageResult | null = null;
+  let result: CalculationResult | null;
   let error = '';
   let previousMailType: MailType = 'letter';
 
@@ -197,7 +201,7 @@
     }
 
     if (!originRegion || !destinationRegion) {
-      error = t('error.calculation', currentLang);
+      error = t('error.route', currentLang);
       return;
     }
 
@@ -210,8 +214,8 @@
       isRegistered,
     );
 
-    if (!calculatedResult) {
-      error = t('error.calculation', currentLang);
+    if ('errorType' in calculatedResult) {
+      error = t(`error.${calculatedResult.errorType}` as TranslationKey, currentLang);
       return;
     }
 
