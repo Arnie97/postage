@@ -94,7 +94,11 @@ export function calculatePostageRate(
   mailCategory?: MailCategory,
   isRegistered?: boolean,
 ): CalculationResult | CalculationError {
+  // Type guard: check if fromRegionType is a valid RegionCode
   const fromRegionType = getRegionType(fromRegion);
+  if (fromRegionType === 'XX') {
+    return { errorType: 'service' };
+  }
 
   // Find the service by matching fromRegion
   let serviceKey: string | null = null;
@@ -112,11 +116,9 @@ export function calculatePostageRate(
     return { errorType: 'service' };
   }
 
-  const fromType = fromRegionType;
-  const toType = getRegionType(toRegion);
-
   // Determine destination type for rate lookup
-  const destinationType = getDestinationType(fromType, toType);
+  const toRegionType = getRegionType(toRegion);
+  const destinationType = getDestinationType(fromRegionType, toRegionType);
   const destinationRates = serviceData.rates[destinationType];
   if (!destinationRates) {
     return { errorType: 'route' };
@@ -202,35 +204,25 @@ export function calculatePostageRate(
     case 'zonal': {
       // Get China Post group for destination region
       let zoneNumber: number | undefined;
-      if (destinationType == 'international') {
-        // Add type guard to handle 'XX' region type
-        if (fromType === 'XX') {
-          return { errorType: 'service' };
-        }
-        const postalZone = getPostalZone(fromType, toRegion);
-        if (!postalZone || !mailCategory) {
-          return { errorType: 'mail_category' };
-        }
-
-        // Determine which zone to use based on mail category and mail type
-        const zoneNumberMap = postalZone[mailCategory];
-        const letterTag = (
-          mailType !== 'letter' ? 'other' : mailType
-        ) as keyof typeof zoneNumberMap;
-        zoneNumber = typeof zoneNumberMap === 'object' ? zoneNumberMap?.[letterTag] : zoneNumberMap;
-        if (!zoneNumber) {
-          return { errorType: 'route' };
-        }
-
-        zoneId = `international_${mailCategory}_${letterTag}_${zoneNumber}`;
-      } else if (destinationType === 'domestic' && mailType === 'parcel') {
+      if (fromRegionType === 'CN' && destinationType === 'domestic' && mailType === 'parcel') {
         zoneNumber = getChinaPostMainlandZone(fromRegion, toRegion);
         if (!zoneNumber) {
           return { errorType: 'route' };
         }
         zoneId = `domestic__${mailType}_${zoneNumber}`;
-      } else {
-        return { errorType: 'mail_type' };
+      }
+
+      const postalZone = getPostalZone(fromRegionType, toRegion);
+      if (!postalZone || !mailCategory) {
+        return { errorType: 'mail_category' };
+      }
+
+      // Determine which zone to use based on mail category and mail type
+      const zoneNumberMap = postalZone[mailCategory];
+      const letterTag = (mailType !== 'letter' ? 'other' : mailType) as keyof typeof zoneNumberMap;
+      zoneNumber = typeof zoneNumberMap === 'object' ? zoneNumberMap?.[letterTag] : zoneNumberMap;
+      if (!zoneNumber) {
+        return { errorType: 'route' };
       }
 
       const zoneRates = rate.zones[zoneNumber];

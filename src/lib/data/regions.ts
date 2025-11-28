@@ -25,6 +25,13 @@ export interface PostalZone {
   surface?: 1 | 2 | 3;
 }
 
+// 港澳臺地區
+export const SPECIAL_REGIONS: Region[] = [
+  { code: 'HK', name: { 'zh-CN': '香港', 'zh-TW': '香港', 'en': 'Hong Kong' } },
+  { code: 'MO', name: { 'zh-CN': '澳门', 'zh-TW': '澳門', 'en': 'Macau' } },
+  { code: 'TW', name: { 'zh-CN': '台湾', 'zh-TW': '臺灣', 'en': 'Taiwan' } },
+];
+
 // 中国大陆各省市自治区（按行政区划编码顺序）
 export const MAINLAND_PROVINCES: Region[] = [
   { code: 'CN-BJ', name: { 'zh-CN': '北京', 'zh-TW': '北京', 'en': 'Beijing' } },
@@ -58,13 +65,6 @@ export const MAINLAND_PROVINCES: Region[] = [
   { code: 'CN-QH', name: { 'zh-CN': '青海', 'zh-TW': '青海', 'en': 'Qinghai' } },
   { code: 'CN-NX', name: { 'zh-CN': '宁夏', 'zh-TW': '寧夏', 'en': 'Ningxia' } },
   { code: 'CN-XJ', name: { 'zh-CN': '新疆', 'zh-TW': '新疆', 'en': 'Xinjiang' } },
-];
-
-// 港澳台地区（按港澳台顺序）
-export const SPECIAL_REGIONS: Region[] = [
-  { code: 'HK', name: { 'zh-CN': '香港', 'zh-TW': '香港', 'en': 'Hong Kong' } },
-  { code: 'MO', name: { 'zh-CN': '澳门', 'zh-TW': '澳門', 'en': 'Macau' } },
-  { code: 'TW', name: { 'zh-CN': '台湾', 'zh-TW': '臺灣', 'en': 'Taiwan' } },
 ];
 
 // 国际地区（按大洲分组）

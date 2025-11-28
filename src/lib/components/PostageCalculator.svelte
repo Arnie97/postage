@@ -4,7 +4,6 @@
   import {
     calculatePostageRate,
     type CalculationResult,
-    type CalculationError,
   } from '../services/calc';
   import { ALL_MAIL_TYPES, type MailType, type MailCategory } from '../data/mail-types';
   import { RATE_RULES, POSTAGE_RATES } from '../data/rates';
@@ -34,17 +33,12 @@
     }
   }
 
-  // Check if destination is international (show delivery method options)
-  $: isInternationalDestination = destinationRegion && getRegionType(destinationRegion) === 'XX';
-
   // Get available mail categories for the destination
   $: availableMailCategories = getAvailableMailCategories(originRegion, destinationRegion);
 
   // Set default mail category when destination changes or category becomes unavailable
   $: {
-    if (!isInternationalDestination) {
-      selectedMailCategory = null;
-    } else if (!availableMailCategories.includes(selectedMailCategory as MailCategory)) {
+    if (!availableMailCategories.includes(selectedMailCategory as MailCategory)) {
       // Set SAL as default if available, otherwise the first available method (usually air)
       if (availableMailCategories.includes('sal')) {
         selectedMailCategory = 'sal';
@@ -75,18 +69,14 @@
     previousMailType = selectedMailType;
   }
 
-  function getAvailableMailCategories(origin: string, destination: string): MailCategory[] {
-    if (!origin || !destination) return [];
-
-    const originType = getRegionType(origin);
-    const destType = getRegionType(destination);
-
-    // Only show mail categories for international mail
-    if (originType === 'XX' || destType !== 'XX') {
+  function getAvailableMailCategories(fromRegion: string, toRegion: string): MailCategory[] {
+    // Type guard: check if fromRegionType is a valid RegionCode
+    const fromRegionType = getRegionType(fromRegion);
+    if (fromRegionType === 'XX') {
       return [];
     }
 
-    const postalZone = getPostalZone(originType, destination);
+    const postalZone = getPostalZone(fromRegionType, toRegion);
     if (!postalZone) return [];
 
     return Object.keys(postalZone) as MailCategory[];
@@ -288,8 +278,8 @@
       </div>
     </div>
 
-    <!-- Mail Category Selection (International Only) -->
-    {#if isInternationalDestination && availableMailCategories.length > 0}
+    <!-- Mail Category Selection -->
+    {#if availableMailCategories.length > 0}
       <div class="form-group">
         <fieldset class="fieldset-reset">
           <legend class="form-label">
