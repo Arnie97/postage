@@ -279,31 +279,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
             maxWeight: 20,
           },
         },
-        small_packet: {
-          air: {
-            type: 'region_stepped',
-            groups: {
-              1: { baseWeight: 100, basePrice: 25, weightStep: 100, additionalPrice: 23 },
-              2: { baseWeight: 100, basePrice: 30, weightStep: 100, additionalPrice: 27 },
-              3: { baseWeight: 100, basePrice: 35, weightStep: 100, additionalPrice: 33 },
-            },
-          },
-          sal: {
-            type: 'region_stepped',
-            groups: {
-              1: { baseWeight: 100, basePrice: 22, weightStep: 100, additionalPrice: 18 },
-              2: { baseWeight: 100, basePrice: 27, weightStep: 100, additionalPrice: 23 },
-              3: { baseWeight: 100, basePrice: 32, weightStep: 100, additionalPrice: 28 },
-            },
-          },
-          surface: {
-            type: 'stepped',
-            baseWeight: 100,
-            basePrice: 18,
-            weightStep: 100,
-            additionalPrice: 13,
-          },
-        },
         printed_papers: {
           air: {
             type: 'region_stepped',
@@ -330,6 +305,54 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
             maxWeight: 500,
           },
         },
+        items_for_blind: {
+          air: {
+            type: 'region_stepped',
+            groups: {
+              1: { basePrice: 0, weightStep: 10, additionalPrice: 0.6, maxWeight: 7000 },
+              2: { basePrice: 0, weightStep: 10, additionalPrice: 0.8, maxWeight: 7000 },
+              3: { basePrice: 0, weightStep: 10, additionalPrice: 1.0, maxWeight: 7000 },
+            },
+          },
+          sal: {
+            type: 'region_stepped',
+            groups: {
+              1: { basePrice: 0, weightStep: 10, additionalPrice: 0.3, maxWeight: 7000 },
+              2: { basePrice: 0, weightStep: 10, additionalPrice: 0.3, maxWeight: 7000 },
+              3: { basePrice: 0, weightStep: 10, additionalPrice: 0.4, maxWeight: 7000 },
+            },
+          },
+          surface: {
+            type: 'fixed',
+            price: 0.0,
+            maxWeight: 7000,
+          },
+        },
+        small_packet: {
+          air: {
+            type: 'region_stepped',
+            groups: {
+              1: { baseWeight: 100, basePrice: 25, weightStep: 100, additionalPrice: 23 },
+              2: { baseWeight: 100, basePrice: 30, weightStep: 100, additionalPrice: 27 },
+              3: { baseWeight: 100, basePrice: 35, weightStep: 100, additionalPrice: 33 },
+            },
+          },
+          sal: {
+            type: 'region_stepped',
+            groups: {
+              1: { baseWeight: 100, basePrice: 22, weightStep: 100, additionalPrice: 18 },
+              2: { baseWeight: 100, basePrice: 27, weightStep: 100, additionalPrice: 23 },
+              3: { baseWeight: 100, basePrice: 32, weightStep: 100, additionalPrice: 28 },
+            },
+          },
+          surface: {
+            type: 'stepped',
+            baseWeight: 100,
+            basePrice: 18,
+            weightStep: 100,
+            additionalPrice: 13,
+          },
+        },
         m_bags: {
           air: {
             type: 'region_stepped',
@@ -354,29 +377,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
             weightStep: 1000,
             additionalPrice: 50,
             maxWeight: 30000,
-          },
-        },
-        items_for_blind: {
-          air: {
-            type: 'region_stepped',
-            groups: {
-              1: { basePrice: 0, weightStep: 10, additionalPrice: 0.6, maxWeight: 7000 },
-              2: { basePrice: 0, weightStep: 10, additionalPrice: 0.8, maxWeight: 7000 },
-              3: { basePrice: 0, weightStep: 10, additionalPrice: 1.0, maxWeight: 7000 },
-            },
-          },
-          sal: {
-            type: 'region_stepped',
-            groups: {
-              1: { basePrice: 0, weightStep: 10, additionalPrice: 0.3, maxWeight: 7000 },
-              2: { basePrice: 0, weightStep: 10, additionalPrice: 0.3, maxWeight: 7000 },
-              3: { basePrice: 0, weightStep: 10, additionalPrice: 0.4, maxWeight: 7000 },
-            },
-          },
-          surface: {
-            type: 'fixed',
-            price: 0.0,
-            maxWeight: 7000,
           },
         },
       },
@@ -696,8 +696,10 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           type: 'tiered',
           tiers: [
             { maxWeight: 30, price: 2.2 },
-            { maxWeight: 50, price: 3.7 },
-            { maxWeight: 100, price: 5.5 },
+            { maxWeight: 50, price: 3.3 },
+            { maxWeight: 100, price: 5.4 },
+            { maxWeight: 250, price: 7.9 },
+            { maxWeight: 500, price: 14.6 },
           ],
         },
         postcard: {
@@ -725,12 +727,14 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           maxWeight: 7000,
         },
         small_packet: {
-          type: 'stepped',
-          basePrice: 22,
-          additionalPrice: 4,
-          baseWeight: 100,
-          weightStep: 100,
-          maxWeight: 2000,
+          type: 'tiered',
+          tiers: [
+            { maxWeight: 100, price: 5.6 },
+            { maxWeight: 250, price: 8.2 },
+            { maxWeight: 500, price: 15.5 },
+            { maxWeight: 1000, price: 30.0 },
+            { maxWeight: 2000, price: 48.0 },
+          ],
         },
         m_bags: {
           type: 'stepped',
@@ -740,34 +744,78 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           maxWeight: 30000,
         },
         parcel: {
-          type: 'stepped',
-          basePrice: 26,
-          additionalPrice: 6,
-          weightStep: 1000,
+          type: 'tiered',
+          tiers: [
+            { maxWeight: 3000, price: 77 },
+            { maxWeight: 4000, price: 93 },
+            { maxWeight: 5000, price: 109 },
+            { maxWeight: 6000, price: 129 },
+            { maxWeight: 7000, price: 151 },
+            { maxWeight: 8000, price: 166 },
+            { maxWeight: 9000, price: 177 },
+            { maxWeight: 11000, price: 188 },
+            { maxWeight: 13000, price: 194 },
+            { maxWeight: 16000, price: 225 },
+            { maxWeight: 20000, price: 245 },
+          ],
         },
       },
       mainland: {
         letter: {
-          type: 'tiered',
-          tiers: [
-            { maxWeight: 30, price: 3.2 },
-            { maxWeight: 50, price: 5.2 },
-            { maxWeight: 100, price: 7.8 },
-          ],
+          air: {
+            type: 'stepped',
+            baseWeight: 30,
+            basePrice: 6.4,
+            weightStep: 10,
+            additionalPrice: 1.7,
+            maxWeight: 500,
+          },
+          surface: {
+            type: 'tiered',
+            tiers: [
+              { maxWeight: 20, price: 2.8 },
+              { maxWeight: 50, price: 4.5 },
+              { maxWeight: 100, price: 8.4 },
+              { maxWeight: 250, price: 16.6 },
+              { maxWeight: 500, price: 31.8 },
+            ],
+          },
         },
         postcard: {
-          type: 'fixed',
-          price: 2.5,
-          maxWeight: 20,
+          air: {
+            type: 'stepped',
+            baseWeight: 20,
+            basePrice: 3.7,
+            weightStep: 10,
+            additionalPrice: 1.7,
+            maxWeight: 50,
+          },
+          surface: {
+            type: 'tiered',
+            tiers: [
+              { maxWeight: 20, price: 2.8 },
+              { maxWeight: 50, price: 4.5 },
+            ],
+          },
         },
         printed_papers: {
-          type: 'tiered',
-          tiers: [
-            { maxWeight: 30, price: 2.5 },
-            { maxWeight: 50, price: 4.2 },
-            { maxWeight: 100, price: 6.3 },
-            { maxWeight: 500, price: 20.0 },
-          ],
+          air: {
+            type: 'stepped',
+            baseWeight: 30,
+            basePrice: 6.4,
+            weightStep: 10,
+            additionalPrice: 1.7,
+            maxWeight: 500,
+          },
+          surface: {
+            type: 'tiered',
+            tiers: [
+              { maxWeight: 50, price: 4.6 },
+              { maxWeight: 100, price: 8.4 },
+              { maxWeight: 250, price: 16.6 },
+              { maxWeight: 500, price: 31.8 },
+            ],
+          },
         },
         items_for_blind: {
           type: 'fixed',
@@ -775,12 +823,24 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           maxWeight: 7000,
         },
         small_packet: {
-          type: 'stepped',
-          basePrice: 28,
-          additionalPrice: 5,
-          baseWeight: 100,
-          weightStep: 100,
-          maxWeight: 2000,
+          air: {
+            type: 'stepped',
+            baseWeight: 30,
+            basePrice: 6.7,
+            weightStep: 10,
+            additionalPrice: 1.7,
+            maxWeight: 2000,
+          },
+          surface: {
+            type: 'tiered',
+            tiers: [
+              { maxWeight: 100, price: 8.6 },
+              { maxWeight: 250, price: 16.9 },
+              { maxWeight: 500, price: 32.2 },
+              { maxWeight: 1000, price: 55.5 },
+              { maxWeight: 2000, price: 85.3 },
+            ],
+          },
         },
         m_bags: {
           type: 'stepped',
@@ -848,45 +908,76 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
       },
       international: {
         letter: {
-          type: 'tiered',
-          tiers: [
-            { maxWeight: 30, price: 4.9 },
-            { maxWeight: 50, price: 7.9 },
-            { maxWeight: 100, price: 11.8 },
-          ],
+          air: {
+            type: 'region_stepped',
+            groups: {
+              1: { baseWeight: 30, basePrice: 6.6, weightStep: 10, additionalPrice: 2.0, maxWeight: 500 },
+              2: { baseWeight: 30, basePrice: 8.2, weightStep: 10, additionalPrice: 2.1, maxWeight: 500 },
+              3: { baseWeight: 30, basePrice: 8.4, weightStep: 10, additionalPrice: 2.2, maxWeight: 500 },
+            },
+          },
+          surface: {
+            type: 'region_stepped',
+            groups: {
+              1: { baseWeight: 20, basePrice: 3.5, weightStep: 30, additionalPrice: 2.7, maxWeight: 500 },
+              2: { baseWeight: 20, basePrice: 5.0, weightStep: 30, additionalPrice: 2.9, maxWeight: 500 },
+              3: { baseWeight: 20, basePrice: 5.3, weightStep: 30, additionalPrice: 2.9, maxWeight: 500 },
+            },
+          },
         },
         postcard: {
           air: {
-            type: 'fixed',
-            price: 4.9,
-            maxWeight: 20,
-          },
-          sal: {
-            type: 'fixed',
-            price: 4.0,
-            maxWeight: 20,
+            type: 'region_stepped',
+            groups: {
+              1: { baseWeight: 20, basePrice: 4.0, weightStep: 10, additionalPrice: 2.4, maxWeight: 50 },
+              2: { baseWeight: 20, basePrice: 5.4, weightStep: 10, additionalPrice: 2.7, maxWeight: 50 },
+              3: { baseWeight: 20, basePrice: 5.5, weightStep: 10, additionalPrice: 2.8, maxWeight: 50 },
+            },
           },
           surface: {
-            type: 'fixed',
-            price: 3.5,
-            maxWeight: 20,
+            type: 'region_stepped',
+            groups: {
+              1: { baseWeight: 20, basePrice: 3.5, weightStep: 30, additionalPrice: 2.7, maxWeight: 50 },
+              2: { baseWeight: 20, basePrice: 5.0, weightStep: 30, additionalPrice: 2.9, maxWeight: 50 },
+              3: { baseWeight: 20, basePrice: 5.3, weightStep: 30, additionalPrice: 2.9, maxWeight: 50 },
+            },
           },
         },
         printed_papers: {
-          type: 'tiered',
-          tiers: [
-            { maxWeight: 30, price: 4.0 },
-            { maxWeight: 50, price: 6.5 },
-            { maxWeight: 100, price: 9.8 },
-            { maxWeight: 500, price: 30.0 },
-          ],
+          air: {
+            type: 'region_stepped',
+            groups: {
+              1: { baseWeight: 30, basePrice: 6.6, weightStep: 10, additionalPrice: 2.0, maxWeight: 500 },
+              2: { baseWeight: 30, basePrice: 8.2, weightStep: 10, additionalPrice: 2.1, maxWeight: 500 },
+              3: { baseWeight: 30, basePrice: 8.4, weightStep: 10, additionalPrice: 2.2, maxWeight: 500 },
+            },
+          },
+          surface: {
+            type: 'region_stepped',
+            groups: {
+              1: { baseWeight: 50, basePrice: 6.3, weightStep: 50, additionalPrice: 4.2, maxWeight: 500 },
+              2: { baseWeight: 50, basePrice: 8.0, weightStep: 50, additionalPrice: 4.0, maxWeight: 500 },
+              3: { baseWeight: 50, basePrice: 8.3, weightStep: 50, additionalPrice: 4.0, maxWeight: 500 },
+            },
+          },
         },
         small_packet: {
-          type: 'stepped',
-          basePrice: 25,
-          additionalPrice: 3,
-          weightStep: 100,
-          maxWeight: 2000,
+          air: {
+            type: 'region_stepped',
+            groups: {
+              1: { baseWeight: 30, basePrice: 6.8, weightStep: 10, additionalPrice: 2.0, maxWeight: 2000 },
+              2: { baseWeight: 30, basePrice: 8.4, weightStep: 10, additionalPrice: 2.1, maxWeight: 2000 },
+              3: { baseWeight: 30, basePrice: 8.6, weightStep: 10, additionalPrice: 2.2, maxWeight: 2000 },
+            },
+          },
+          surface: {
+            type: 'region_stepped',
+            groups: {
+              1: { baseWeight: 100, basePrice: 10.8, weightStep: 100, additionalPrice: 10.2, maxWeight: 2000 },
+              2: { baseWeight: 100, basePrice: 12.3, weightStep: 100, additionalPrice: 11.4, maxWeight: 2000 },
+              3: { baseWeight: 100, basePrice: 12.6, weightStep: 100, additionalPrice: 11.7, maxWeight: 2000 },
+            },
+          },
         },
         parcel: {
           type: 'stepped',
@@ -910,74 +1001,166 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
         letter: {
           type: 'tiered',
           tiers: [
-            { maxWeight: 50, price: 2.0 },
-            { maxWeight: 100, price: 3.0 },
+            { maxWeight: 20, price: 2.5 },
+            { maxWeight: 50, price: 3.0 },
+            { maxWeight: 100, price: 3.5 },
+            { maxWeight: 150, price: 4.5 },
+            { maxWeight: 200, price: 5.5 },
+            { maxWeight: 250, price: 6.0 },
+            { maxWeight: 500, price: 10.5 },
+            { maxWeight: 1000, price: 21.0 },
           ],
-        },
-        postcard: {
-          type: 'fixed',
-          price: 2.0,
-          maxWeight: 20,
-        },
-        printed_papers: {
-          type: 'tiered',
-          tiers: [
-            { maxWeight: 50, price: 1.5 },
-            { maxWeight: 100, price: 2.5 },
-            { maxWeight: 500, price: 10.0 },
-          ],
-        },
-        items_for_blind: {
-          type: 'fixed',
-          price: 0.0,
-          maxWeight: 7000,
-        },
-        small_packet: {
-          type: 'stepped',
-          basePrice: 18,
-          additionalPrice: 3,
-          baseWeight: 100,
-          weightStep: 100,
-          maxWeight: 2000,
-        },
-        m_bags: {
-          type: 'stepped',
-          basePrice: 25,
-          additionalPrice: 2,
-          weightStep: 100,
-          maxWeight: 30000,
         },
         parcel: {
           type: 'stepped',
-          basePrice: 8,
-          additionalPrice: 3,
+          baseWeight: 1000,
+          basePrice: 21.0,
           weightStep: 1000,
+          additionalPrice: 8.5,
         },
       },
       mainland: {
         letter: {
-          type: 'stepped',
-          basePrice: 2.5,
-          additionalPrice: 1.5,
-          weightStep: 20,
-          maxWeight: 100,
-        },
-        postcard: {
-          type: 'fixed',
-          price: 2.5,
-          maxWeight: 20,
-        },
-        aerogramme: {
-          type: 'fixed',
-          price: 2.5,
-          maxWeight: 20,
+          surface: {
+            type: 'tiered',
+            tiers: [
+              { maxWeight: 20, price: 4.0 },
+              { maxWeight: 50, price: 6.5 },
+              { maxWeight: 100, price: 9.5 },
+              { maxWeight: 250, price: 20.0 },
+              { maxWeight: 300, price: 28.0 },
+              { maxWeight: 400, price: 35.0 },
+            ],
+          },
+          air: {
+            type: 'stepped',
+            baseWeight: 10,
+            basePrice: 4.5,
+            weightStep: 10,
+            additionalPrice: 1.0,
+            maxWeight: 100,
+          },
         },
         printed_papers: {
-          type: 'stepped',
-          basePrice: 2.0,
-          additionalPrice: 1.2,
-          weightStep: 20,
-          maxWeight: 500,
+          surface: {
+            type: 'stepped',
+            baseWeight: 100,
+            basePrice: 6.0,
+            weightStep: 100,
+            additionalPrice: 6.0,
+            maxWeight: 2000,
+          },
+          air: {
+            type: 'stepped',
+            baseWeight: 100,
+            basePrice: 12.0,
+            weightStep: 100,
+            additionalPrice: 9.5,
+            maxWeight: 2000,
+          },
+        },
+        small_packet: {
+          surface: {
+            type: 'stepped',
+            baseWeight: 100,
+            basePrice: 6.0,
+            weightStep: 100,
+            additionalPrice: 6.0,
+            maxWeight: 2000,
+          },
+          air: {
+            type: 'stepped',
+            baseWeight: 100,
+            basePrice: 12.0,
+            weightStep: 100,
+            additionalPrice: 9.5,
+            maxWeight: 2000,
+          },
+        },
+        m_bags: {
+          surface: {
+            type: 'stepped',
+            baseWeight: 5000,
+            basePrice: 80.0,
+            weightStep: 1000,
+            additionalPrice: 20.0,
+            maxWeight: 30000,
+          },
+          air: {
+            type: 'stepped',
+            baseWeight: 5000,
+            basePrice: 180.0,
+            weightStep: 1000,
+            additionalPrice: 40.0,
+            maxWeight: 30000,
+          },
+        },
+        parcel: null,
+      },
+      regional: {
+        letter: {
+          surface: {
+            type: 'tiered',
+            tiers: [
+              { maxWeight: 20, price: 4.5 },
+              { maxWeight: 100, price: 9.0 },
+              { maxWeight: 200, price: 23.5 },
+              { maxWeight: 350, price: 45.5 },
+              { maxWeight: 500, price: 59.5 },
+              { maxWeight: 750, price: 80.0 },
+              { maxWeight: 1000, price: 98.0 },
+            ],
+          },
+          air: {
+            type: 'stepped',
+            baseWeight: 10,
+            basePrice: 4.0,
+            weightStep: 10,
+            additionalPrice: 1.5,
+            maxWeight: 100,
+          },
+        },
+        postcard: {
+          surface: {
+            type: 'fixed',
+            price: 4.5,
+            maxWeight: 20,
+          },
+          air: {
+            type: 'fixed',
+            price: 4.0,
+            maxWeight: 20,
+          },
+        },
+        aerogramme: {
+          surface: {
+            type: 'fixed',
+            price: 4.5,
+            maxWeight: 20,
+          },
+          air: {
+            type: 'fixed',
+            price: 4.0,
+            maxWeight: 20,
+          },
+        },
+        printed_papers: {
+          surface: {
+            type: 'stepped',
+            baseWeight: 100,
+            basePrice: 10.0,
+            weightStep: 100,
+            additionalPrice: 9.0,
+            maxWeight: 2000,
+          },
+          air: {
+            type: 'stepped',
+            baseWeight: 100,
+            basePrice: 13.5,
+            weightStep: 100,
+            additionalPrice: 11.0,
+            maxWeight: 2000,
+          },
         },
         items_for_blind: {
           type: 'fixed',
@@ -985,50 +1168,65 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           maxWeight: 7000,
         },
         small_packet: {
-          type: 'stepped',
-          basePrice: 22,
-          additionalPrice: 4,
-          baseWeight: 100,
-          weightStep: 100,
-          maxWeight: 2000,
+          surface: {
+            type: 'stepped',
+            baseWeight: 100,
+            basePrice: 10.0,
+            weightStep: 100,
+            additionalPrice: 9.0,
+            maxWeight: 2000,
+          },
+          air: {
+            type: 'stepped',
+            baseWeight: 100,
+            basePrice: 13.5,
+            weightStep: 100,
+            additionalPrice: 11.0,
+            maxWeight: 2000,
+          },
         },
         m_bags: {
-          type: 'stepped',
-          basePrice: 30,
-          additionalPrice: 3,
-          weightStep: 100,
-          maxWeight: 30000,
+          surface: {
+            type: 'stepped',
+            baseWeight: 5000,
+            basePrice: 180.0,
+            weightStep: 1000,
+            additionalPrice: 40.0,
+            maxWeight: 30000,
+          },
+          air: {
+            type: 'stepped',
+            baseWeight: 5000,
+            basePrice: 280.0,
+            weightStep: 1000,
+            additionalPrice: 50.0,
+            maxWeight: 30000,
+          },
         },
-        parcel: {
-          type: 'stepped',
-          basePrice: 25,
-          additionalPrice: 12,
-          weightStep: 500,
-        },
-      },
-      regional: {
-        letter: {
-          type: 'stepped',
-          basePrice: 3.5,
-          additionalPrice: 2.5,
-          weightStep: 20,
-          maxWeight: 100,
-        },
-        printed_papers: {
-          type: 'stepped',
-          basePrice: 3.0,
-          additionalPrice: 2.0,
-          weightStep: 20,
-          maxWeight: 500,
-        },
+        parcel: null,
       },
       international: {
         letter: {
-          type: 'stepped',
-          basePrice: 4.0,
-          additionalPrice: 3.0,
-          weightStep: 20,
-          maxWeight: 100,
+          surface: {
+            type: 'tiered',
+            tiers: [
+              { maxWeight: 20, price: 5.0 },
+              { maxWeight: 100, price: 12.0 },
+              { maxWeight: 200, price: 30.0 },
+              { maxWeight: 350, price: 50.0 },
+              { maxWeight: 500, price: 65.0 },
+              { maxWeight: 750, price: 85.0 },
+              { maxWeight: 1000, price: 103.0 },
+            ],
+          },
+          air: {
+            type: 'stepped',
+            baseWeight: 10,
+            basePrice: 4.5,
+            weightStep: 10,
+            additionalPrice: 2.0,
+            maxWeight: 100,
+          },
         },
         postcard: {
           air: {
@@ -1055,25 +1253,60 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           },
         },
         printed_papers: {
-          type: 'stepped',
-          basePrice: 3.5,
-          additionalPrice: 2.5,
-          weightStep: 20,
-          maxWeight: 500,
+          surface: {
+            type: 'stepped',
+            baseWeight: 100,
+            basePrice: 12.0,
+            weightStep: 100,
+            additionalPrice: 10.0,
+            maxWeight: 2000,
+          },
+          air: {
+            type: 'stepped',
+            baseWeight: 100,
+            basePrice: 18.0,
+            weightStep: 100,
+            additionalPrice: 16.0,
+            maxWeight: 2000,
+          },
         },
         small_packet: {
-          type: 'stepped',
-          basePrice: 28,
-          additionalPrice: 4,
-          weightStep: 100,
-          maxWeight: 2000,
+          surface: {
+            type: 'stepped',
+            baseWeight: 100,
+            basePrice: 12.0,
+            weightStep: 100,
+            additionalPrice: 10.0,
+            maxWeight: 2000,
+          },
+          air: {
+            type: 'stepped',
+            baseWeight: 100,
+            basePrice: 18.0,
+            weightStep: 100,
+            additionalPrice: 16.0,
+            maxWeight: 2000,
+          },
         },
-        parcel: {
-          type: 'stepped',
-          basePrice: 45,
-          additionalPrice: 25,
-          weightStep: 500,
+        m_bags: {
+          surface: {
+            type: 'stepped',
+            baseWeight: 5000,
+            basePrice: 200.0,
+            weightStep: 1000,
+            additionalPrice: 40.0,
+            maxWeight: 30000,
+          },
+          air: {
+            type: 'stepped',
+            baseWeight: 5000,
+            basePrice: 450.0,
+            weightStep: 1000,
+            additionalPrice: 70.0,
+            maxWeight: 30000,
+          },
         },
+        parcel: null,
       },
     },
   },

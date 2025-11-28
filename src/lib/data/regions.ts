@@ -218,7 +218,7 @@ export const INTERNATIONAL_REGIONS: Region[] = [
   { code: 'XO', name: { 'zh-CN': '大洋洲其他地区', 'zh-TW': '大洋洲其他地區', en: 'Other Oceanian Countries' }, continent: 'OC', postalZone: { CN: { air: { letter: 4, other: 3 }, surface: 2 }, HK: { air: { letter: 2, other: 2 }, surface: 2 }, MO: { air: { letter: 2, other: 2 }, surface: 2 } } },
 
   // 南极洲 (AN)
-  { code: 'AQ', name: { 'zh-CN': '南极洲', 'zh-TW': '南極洲', en: 'Antarctica' }, continent: 'AN', postalZone: { CN: { air: { letter: 4, other: 3 }, surface: 2 }, HK: { air: { letter: 3, other: 3 }, surface: 3 }, MO: { air: { letter: 3, other: 3 }, surface: 3 } } },
+  { code: 'AQ', name: { 'zh-CN': '南极洲', 'zh-TW': '南極洲', en: 'Antarctica' }, continent: 'AN' },
 ];
 
 // 合并所有地区

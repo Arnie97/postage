@@ -113,7 +113,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type.aerogramme': '航空郵簡',
     'mail.type.printed_papers': '印刷品',
     'mail.type.items_for_blind': '盲人郵件',
-    'mail.type.small_packet': '小包',
+    'mail.type.small_packet': '小郵包',
     'mail.type.m_bags': '印刷品專袋',
     'mail.type.parcel': '包裹',
     'mail.type.todo': '待實作',
