@@ -32,11 +32,10 @@ export type TranslationKey =
   | 'continent.AN'
   | 'weight'
   | 'weight.grams'
-  | 'service.auto'
-  | 'service.china-post'
-  | 'service.chunghwa-post'
-  | 'service.hongkong-post'
-  | 'service.macau-post'
+  | 'service.china_post'
+  | 'service.chunghwa_post'
+  | 'service.hongkong_post'
+  | 'service.macau_post'
   | 'currency.cny'
   | 'currency.twd'
   | 'currency.hkd'
@@ -89,11 +88,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'continent.AN': 'Antarctica',
     'weight': 'Weight',
     'weight.grams': 'grams',
-    'service.auto': 'Auto-detected service',
-    'service.china-post': 'China Post',
-    'service.chunghwa-post': 'Chunghwa Post',
-    'service.hongkong-post': 'Hongkong Post',
-    'service.macau-post': 'Macau Post',
+    'service.china_post': 'China Post',
+    'service.chunghwa_post': 'Chunghwa Post',
+    'service.hongkong_post': 'Hongkong Post',
+    'service.macau_post': 'Macau Post',
     'currency.cny': 'CNY',
     'currency.twd': 'TWD',
     'currency.hkd': 'HKD',
@@ -145,11 +143,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'continent.AN': '南極洲',
     'weight': '重量',
     'weight.grams': '公克',
-    'service.auto': '自動判斷服務',
-    'service.china-post': '中國郵政',
-    'service.chunghwa-post': '中華郵政',
-    'service.hongkong-post': '香港郵政',
-    'service.macau-post': '澳門郵電',
+    'service.china_post': '中國郵政',
+    'service.chunghwa_post': '中華郵政',
+    'service.hongkong_post': '香港郵政',
+    'service.macau_post': '澳門郵電',
     'currency.cny': '人民幣',
     'currency.twd': '新臺幣',
     'currency.hkd': '港幣',
@@ -201,11 +198,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'continent.AN': '南极洲',
     'weight': '重量',
     'weight.grams': '克',
-    'service.auto': '自动判断服务',
-    'service.china-post': '中国邮政',
-    'service.chunghwa-post': '中华邮政',
-    'service.hongkong-post': '香港邮政',
-    'service.macau-post': '澳门邮电',
+    'service.china_post': '中国邮政',
+    'service.chunghwa_post': '中华邮政',
+    'service.hongkong_post': '香港邮政',
+    'service.macau_post': '澳门邮电',
     'currency.cny': '人民币',
     'currency.twd': '新台币',
     'currency.hkd': '港币',
@@ -229,4 +225,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
 
 export const t = (key: TranslationKey, lang: Language): string => {
   return translations[lang][key] || translations['en'][key] || key;
+};
+
+export const s = (section: string, key: string, lang: Language): string => {
+  return t(`${section}.${key}` as TranslationKey, lang);
 };

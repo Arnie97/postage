@@ -1,4 +1,6 @@
 export type RegionCode = 'CN' | 'HK' | 'MO' | 'TW';
+export type PostalServiceName = 'china_post' | 'hongkong_post' | 'macau_post' | 'chunghwa_post';
+export type DestinationType = 'domestic' | 'regional' | 'mainland' | 'international';
 
 export interface Region {
   code: string;
@@ -511,51 +513,6 @@ const MAINLAND_POSTAL_ZONES: Record<string, string[][]> = {
   ]
 };
 
-// 邮政分区说明
-export const POSTAL_ZONES = {
-  domestic: {
-    1: '一档：省份面积小于70万平方公里的省内寄递',
-    2: '二档：相邻省和省会距离不超过500公里',
-    3: '三档：省会距离500-1000公里',
-    4: '四档：省会距离1000-2000公里',
-    5: '五档：省会距离2000-3000公里',
-    6: '六档：省会距离3000公里以上',
-  },
-  // 国际航空邮件分组
-  international_air: {
-    letter: {
-      1: '信函一组：东亚、中亚邻近国家',
-      2: '信函二组：其他亚洲国家或地区',
-      3: '信函三组：欧洲各国、美加澳新',
-      4: '信函四组：拉美、非洲、太平洋岛屿',
-    },
-    other: {
-      1: '包裹一组：阿联酋等亚洲 21 国',
-      2: '包裹二组：阿塞拜疆等亚欧 50 个国家和地区、美加澳新',
-      3: '包裹三组：其他国家和地区',
-    },
-  },
-  // 国际空运水陆路邮件分组
-  international_sal: {
-    letter: {
-      1: '信函一组：韩国、日本',
-      2: '信函二组：塞浦路斯',
-      3: '信函三组：亚欧其他国家、美加澳',
-      4: '信函四组：美洲、非洲部分国家和地区',
-    },
-    other: {
-      1: '包裹一组：格鲁吉亚',
-      2: '包裹二组：阿塞拜疆等 40 个国家',
-      3: '包裹三组：俄罗斯等 27 个国家和地区',
-    },
-  },
-  // 国际水陆路邮件分组
-  international_surface: {
-    1: '27 个亚太国家',
-    2: '标准资费',
-  },
-};
-
 // 获取中国邮政境内分区信息
 export function getChinaPostMainlandZone(
   fromProvince: string,
@@ -591,14 +548,17 @@ export function getChinaPostMainlandZone(
 }
 
 // 根据地区代码获取地区类型
-export function getRegionType(regionCode: string): 'CN' | 'HK' | 'MO' | 'TW' | 'XX' {
-  if (['CN', 'HK', 'MO', 'TW'].includes(regionCode.substring(0, 2)))
-    return regionCode.substring(0, 2) as 'CN' | 'HK' | 'MO' | 'TW';
+export function getRegionType(region: string): RegionCode | 'XX' {
+  if (['CN', 'HK', 'MO', 'TW'].includes(region.substring(0, 2)))
+    return region.substring(0, 2) as RegionCode;
   return 'XX';
 }
 
 // Helper function to determine destination type for rate lookup
-export function getDestinationType(fromRegionType: string, toRegionType: string): string {
+export function getDestinationType(
+  fromRegionType: RegionCode,
+  toRegionType: RegionCode | 'XX',
+): DestinationType {
   switch (true) {
     case fromRegionType === toRegionType:
       return 'domestic';
@@ -614,7 +574,90 @@ export function getDestinationType(fromRegionType: string, toRegionType: string)
 }
 
 // Get corresponding postal zone for pricing
-export function getPostalZone(postalService: RegionCode, destination: string): PostalZone | null {
+export function getPostalZone(regionType: RegionCode, destination: string): PostalZone | null {
   const region = ALL_REGIONS.find((r) => r.code === destination);
-  return region?.postalZone?.[postalService] || null;
+  return region?.postalZone?.[regionType] || null;
 }
+
+// Type definitions for postal zone descriptions
+type AllZoneDescriptions = {
+  [K in PostalServiceName]?: PostalServiceZoneDescriptions;
+};
+
+interface PostalServiceZoneDescriptions {
+  domestic?: ZoneDescriptions;
+  mainland?: CategoryZoneDescriptions;
+  regional?: ZoneDescriptions | CategoryZoneDescriptions;
+  international?: ZoneDescriptions | CategoryZoneDescriptions;
+}
+
+export interface CategoryZoneDescriptions {
+  air?: LetterTagZoneDescriptions;
+  sal?: LetterTagZoneDescriptions;
+  surface?: LetterTagZoneDescriptions;
+}
+
+interface LetterTagZoneDescriptions {
+  letter?: ZoneDescriptions;
+  other?: ZoneDescriptions;
+}
+
+export interface ZoneDescriptions {
+  [key: number]: string;
+}
+
+export const POSTAL_ZONE_DESCRIPTIONS: AllZoneDescriptions = {
+  china_post: {
+    domestic: {
+      1: '一档：省份面积小于 70 万平方公里的省内寄递',
+      2: '二档：相邻省和省会距离不超过 500 公里',
+      3: '三档：省会距离 500-1000 公里',
+      4: '四档：省会距离 1000-2000 公里',
+      5: '五档：省会距离 2000-3000 公里',
+      6: '六档：省会距离 3000 公里以上',
+    },
+    international: {
+      air: {
+        letter: {
+          1: '信函一组：东亚、中亚邻近国家',
+          2: '信函二组：其他亚洲国家或地区',
+          3: '信函三组：欧洲各国、美加澳新',
+          4: '信函四组：拉美、非洲、太平洋岛屿',
+        },
+        other: {
+          1: '包裹一组：阿联酋等亚洲 21 国',
+          2: '包裹二组：阿塞拜疆等亚欧 50 国、美加澳新',
+          3: '包裹三组：其他国家和地区',
+        },
+      },
+      sal: {
+        letter: {
+          1: '信函一组：韩国、日本',
+          2: '信函二组：塞浦路斯',
+          3: '信函三组：亚欧其他国家、美加澳',
+          4: '信函四组：美洲、非洲部分国家和地区',
+        },
+        other: {
+          1: '包裹一组：格鲁吉亚',
+          2: '包裹二组：阿塞拜疆等 40 国',
+          3: '包裹三组：俄罗斯等 27 个国家和地区',
+        },
+      },
+      surface: {
+        letter: {
+          1: '27 个亚太国家和地区',
+          2: '标准资费',
+        },
+      },
+    },
+  },
+  chunghwa_post: {
+    international: {
+      1: '香港澳門',
+      2: '亞洲及大洋洲',
+      3: '歐非中南美洲各地、東經180度以東各島',
+      4: '加拿大；美國之屬地或離島',
+      5: '美國本土',
+    },
+  },
+};

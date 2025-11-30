@@ -1,11 +1,15 @@
 import {
   getRegionType,
+  getDestinationType,
   getPostalZone,
   getChinaPostMainlandZone,
-  getDestinationType,
+  POSTAL_ZONE_DESCRIPTIONS,
+  type CategoryZoneDescriptions,
+  type ZoneDescriptions,
 } from '../data/regions';
-import { POSTAGE_RATES, RATE_RULES } from '../data/rates';
-import type { RateCalculationMethod } from '../data/rates';
+
+import { POSTAGE_RATES, RATE_RULES, type CategoryRates, type Rate } from '../data/rates';
+
 import type { MailType, MailCategory } from '../data/mail-types';
 
 export interface RateCalculationDetails {
@@ -16,20 +20,13 @@ export interface RateCalculationDetails {
   weightStep?: number;
   additionalPrice?: number;
   maxWeight?: number;
+  zoneDescription?: string;
   registrationFee?: number;
 }
 
 export interface CalculationResult {
   price: number;
-  currency: string;
   serviceKey: string;
-  mailType: string;
-  origin: string;
-  destination: string;
-  weight: number;
-  isRegistered?: boolean;
-  zoneId?: string;
-  mailCategory?: MailCategory;
   ruleId?: string;
   calculationDetails: RateCalculationDetails;
 }
@@ -38,31 +35,23 @@ export interface CalculationError {
   errorType: 'service' | 'route' | 'mail_type' | 'mail_category' | 'weight' | 'calculation';
 }
 
-// Helper function to get rate method for a specific mail rate and category
-function getRateMethod(
-  mailRate: any,
+// Helper function to get pricing model for a specific mail category
+function getPricingModel(
+  mailTypeRate?: Rate | CategoryRates | null,
   mailCategory?: MailCategory,
-): RateCalculationMethod | undefined {
-  // Handle domestic and regional rates
-  if (!mailCategory || !mailRate?.air) {
-    return mailRate;
+): Rate | undefined {
+  if (!mailTypeRate || !mailCategory || 'type' in mailTypeRate) {
+    return mailTypeRate as Rate;
   }
-
-  // Handle international rates with mail categories
-  const internationalRates = mailRate as {
-    default?: RateCalculationMethod;
-    air?: RateCalculationMethod;
-    sal?: RateCalculationMethod;
-    surface?: RateCalculationMethod;
-  };
-  return internationalRates[mailCategory] || internationalRates.default;
+  const categoryRates = mailTypeRate as CategoryRates;
+  return categoryRates[mailCategory] ?? categoryRates.air;
 }
 
 // Find the best matching rate rule for the given service and destination type
 function findBestMatchingRateRule(
   serviceKey: string,
   destinationType: string,
-  mailType: string,
+  mailType: MailType,
 ): string | undefined {
   // Generate possible rule IDs in order of preference (most specific to least specific)
   const possibleRuleIds = [
@@ -100,18 +89,8 @@ export function calculatePostageRate(
   }
 
   // Find the service by matching fromRegion
-  let serviceKey: string | null = null;
-  let serviceData: any = null;
-
-  for (const [key, data] of Object.entries(POSTAGE_RATES)) {
-    if (data.fromRegion === fromRegionType) {
-      serviceKey = key;
-      serviceData = data;
-      break;
-    }
-  }
-
-  if (!serviceKey || !serviceData) {
+  const serviceData = POSTAGE_RATES[fromRegionType];
+  if (!serviceData) {
     return { errorType: 'service' };
   }
 
@@ -123,14 +102,13 @@ export function calculatePostageRate(
     return { errorType: 'route' };
   }
 
-  const rate = getRateMethod(destinationRates[mailType], mailCategory);
+  const rate = getPricingModel(destinationRates[mailType], mailCategory);
   if (!rate) {
     return { errorType: 'mail_type' };
   }
 
   // Calculate price based on rate method
   let price: number | null = null;
-  let zoneId: string | undefined;
   let calculationDetails: RateCalculationDetails;
 
   switch (rate.type) {
@@ -157,6 +135,7 @@ export function calculatePostageRate(
       }
 
       if (!tier || baseWeight === undefined) {
+        console.error(rate);
         return { errorType: 'weight' };
       }
 
@@ -204,25 +183,29 @@ export function calculatePostageRate(
       break;
 
     case 'zonal': {
-      // Get China Post group for destination region
+      const destinationZoneDescriptions =
+        POSTAL_ZONE_DESCRIPTIONS[serviceData.nameKey]?.[destinationType];
+
+      let zoneDescriptions: ZoneDescriptions | undefined;
       let zoneNumber: number | undefined;
       if (fromRegionType === 'CN' && destinationType === 'domestic' && mailType === 'parcel') {
         zoneNumber = getChinaPostMainlandZone(fromRegion, toRegion);
-        if (!zoneNumber) {
-          return { errorType: 'route' };
+        zoneDescriptions = destinationZoneDescriptions as ZoneDescriptions;
+      } else {
+        const postalZone = getPostalZone(fromRegionType, toRegion);
+        if (!postalZone || !mailCategory) {
+          return { errorType: 'mail_category' };
         }
-        zoneId = `domestic__${mailType}_${zoneNumber}`;
+
+        // Determine which zone to use based on mail category and mail type
+        const zoneNumberMap = postalZone[mailCategory];
+        const letterTag = mailType !== 'letter' ? 'other' : mailType;
+        zoneNumber = typeof zoneNumberMap === 'object' ? zoneNumberMap?.[letterTag] : zoneNumberMap;
+        zoneDescriptions =
+          (destinationZoneDescriptions as CategoryZoneDescriptions)?.[mailCategory]?.[letterTag] ??
+          (destinationZoneDescriptions as ZoneDescriptions);
       }
 
-      const postalZone = getPostalZone(fromRegionType, toRegion);
-      if (!postalZone || !mailCategory) {
-        return { errorType: 'mail_category' };
-      }
-
-      // Determine which zone to use based on mail category and mail type
-      const zoneNumberMap = postalZone[mailCategory];
-      const letterTag = (mailType !== 'letter' ? 'other' : mailType) as keyof typeof zoneNumberMap;
-      zoneNumber = typeof zoneNumberMap === 'object' ? zoneNumberMap?.[letterTag] : zoneNumberMap;
       if (!zoneNumber) {
         return { errorType: 'route' };
       }
@@ -239,29 +222,23 @@ export function calculatePostageRate(
 
       // Calculate price using zonal rates
       const baseWeight = zoneRates.baseWeight || zoneRates.weightStep;
+      let additionalWeight = 0;
       if (weight <= baseWeight) {
         price = zoneRates.basePrice;
-        calculationDetails = {
-          rateType: 'zonal',
-          baseWeight,
-          basePrice: zoneRates.basePrice,
-          additionalWeight: 0,
-          additionalPrice: zoneRates.additionalPrice,
-          weightStep: zoneRates.weightStep,
-        };
       } else {
-        const additionalWeight = weight - baseWeight;
+        additionalWeight = weight - baseWeight;
         const additionalSteps = Math.ceil(additionalWeight / zoneRates.weightStep);
         price = zoneRates.basePrice + additionalSteps * zoneRates.additionalPrice;
-        calculationDetails = {
-          rateType: 'zonal',
-          baseWeight,
-          basePrice: zoneRates.basePrice,
-          additionalWeight,
-          additionalPrice: zoneRates.additionalPrice,
-          weightStep: zoneRates.weightStep,
-        };
       }
+      calculationDetails = {
+        rateType: 'zonal',
+        baseWeight,
+        basePrice: zoneRates.basePrice,
+        additionalWeight,
+        additionalPrice: zoneRates.additionalPrice,
+        weightStep: zoneRates.weightStep,
+        zoneDescription: zoneDescriptions?.[zoneNumber],
+      };
       break;
     }
   }
@@ -274,7 +251,7 @@ export function calculatePostageRate(
   if (isRegistered) {
     const registrationFee =
       rate?.registrationFee ??
-      getRateMethod(destinationRates['letter'], mailCategory)?.registrationFee;
+      getPricingModel(destinationRates['letter'], mailCategory)?.registrationFee;
     if (registrationFee) {
       price += registrationFee;
       calculationDetails.registrationFee = registrationFee;
@@ -283,16 +260,8 @@ export function calculatePostageRate(
 
   return {
     price,
-    currency: serviceData.currency,
-    serviceKey,
-    mailType,
-    origin: fromRegion,
-    destination: toRegion,
-    weight,
-    isRegistered,
-    mailCategory,
-    ruleId: findBestMatchingRateRule(serviceKey, destinationType, mailType),
-    zoneId,
+    serviceKey: serviceData.nameKey,
+    ruleId: findBestMatchingRateRule(serviceData.nameKey, destinationType, mailType),
     calculationDetails,
   };
 }

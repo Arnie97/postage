@@ -1,16 +1,21 @@
 <script lang="ts">
   import { language } from '../utils/language';
-  import { t, type TranslationKey } from '../data/translations';
   import { calculatePostageRate, type CalculationResult } from '../services/calc';
   import { ALL_MAIL_TYPES, type MailType, type MailCategory } from '../data/mail-types';
+  import {
+    getDestinationType,
+    getRegionType,
+    getPostalZone,
+    type RegionCode,
+  } from '../data/regions';
   import { RATE_RULES, POSTAGE_RATES } from '../data/rates';
-  import { getRegionType, getDestinationType, getPostalZone, POSTAL_ZONES } from '../data/regions';
+  import { t, s } from '../data/translations';
   import RegionSelector from './RegionSelector.svelte';
 
   let selectedMailType: MailType = 'letter';
-  let selectedMailCategory: MailCategory | null = null;
-  let originRegion = 'CN-BJ';
-  let destinationRegion = 'HK';
+  let selectedMailCategory: MailCategory | undefined;
+  let fromRegion = 'CN-BJ';
+  let toRegion = 'HK';
   let weight = '20';
   let isRegistered = false;
   let result: CalculationResult | null;
@@ -20,8 +25,8 @@
   $: currentLang = $language;
 
   // Get available mail types based on origin and destination
-  $: availableMailTypes = getAvailableMailTypes(originRegion, destinationRegion);
-  $: mailTypeAvailability = getMailTypeAvailability(originRegion, destinationRegion);
+  $: availableMailTypes = getAvailableMailTypes(fromRegion, toRegion);
+  $: mailTypeAvailability = getMailTypeAvailability(fromRegion, toRegion);
 
   // Reset mail type if not available
   $: {
@@ -31,7 +36,7 @@
   }
 
   // Get available mail categories for the destination
-  $: availableMailCategories = getAvailableMailCategories(originRegion, destinationRegion);
+  $: availableMailCategories = getAvailableMailCategories(fromRegion, toRegion);
 
   // Set default mail category when destination changes or category becomes unavailable
   $: {
@@ -42,7 +47,7 @@
       } else if (availableMailCategories.length > 0) {
         selectedMailCategory = availableMailCategories[0];
       } else {
-        selectedMailCategory = null;
+        selectedMailCategory = undefined;
       }
     }
   }
@@ -82,9 +87,9 @@
   // Auto-calculate when inputs change
   $: {
     // Include selectedMailCategory and isRegistered in dependencies to trigger recalculation
-    selectedMailCategory;
-    isRegistered;
-    if (originRegion && destinationRegion && weight && selectedMailType) {
+    void selectedMailCategory;
+    void isRegistered;
+    if (fromRegion && toRegion && weight && selectedMailType) {
       calculate();
     } else {
       result = null;
@@ -99,23 +104,17 @@
 
   function getMailTypeAvailability(origin: string, destination: string): MailTypeAvailability[] {
     const fromRegionType = getRegionType(origin);
-    const toRegionType = getRegionType(destination);
-
-    // Find the service by matching fromRegion
-    let serviceData: any = null;
-    for (const [key, data] of Object.entries(POSTAGE_RATES)) {
-      if (data.fromRegion === fromRegionType) {
-        serviceData = data;
-        break;
-      }
+    if (fromRegionType === 'XX') {
+      return [];
     }
-
+    const serviceData = POSTAGE_RATES[fromRegionType];
     // If no service found, all mail types are unavailable
     if (!serviceData) {
       return [];
     }
 
     // Determine destination type for rate lookup
+    const toRegionType = getRegionType(destination);
     const destinationType = getDestinationType(fromRegionType, toRegionType);
     const destinationRates = serviceData.rates[destinationType];
 
@@ -141,42 +140,6 @@
       .map((item) => item.mailType);
   }
 
-  function getMailTypeKey(mailType: string): TranslationKey {
-    return `mail.type.${mailType}` as TranslationKey;
-  }
-
-  function getCurrencyKey(currency: string): TranslationKey {
-    return `currency.${currency.toLowerCase()}` as TranslationKey;
-  }
-
-  function getServiceNameKey(serviceKey: string): TranslationKey {
-    return POSTAGE_RATES[serviceKey]?.nameKey as TranslationKey;
-  }
-
-  function getServicePrimaryColor(serviceKey: string): string {
-    return POSTAGE_RATES[serviceKey]?.primaryColor || '#059669';
-  }
-
-  function getServiceSecondaryColor(serviceKey: string): string {
-    return POSTAGE_RATES[serviceKey]?.secondaryColor || '#f59e0b';
-  }
-
-  function getZoneDescription(zone: string): string {
-    // Format: "international_sal_letter_1", "international_air_other_2", etc.
-    const [prefix, mailCategory, mailType, zoneNumber] = zone.split('_');
-    const zoneKey = {
-      international: `${prefix}_${mailCategory}`,
-      domestic: `${prefix}_${mailType}`,
-    }[prefix] as keyof typeof POSTAL_ZONES;
-
-    let zones = POSTAL_ZONES[zoneKey];
-    if (typeof zones !== 'object') {
-      return '';
-    }
-    zones = zones[mailType as keyof typeof zones] || zones;
-    return zones[parseInt(zoneNumber) as keyof typeof zones] || '';
-  }
-
   function calculate() {
     error = '';
     result = null;
@@ -187,22 +150,22 @@
       return;
     }
 
-    if (!originRegion || !destinationRegion) {
+    if (!fromRegion || !toRegion) {
       error = t('error.route', currentLang);
       return;
     }
 
     const calculatedResult = calculatePostageRate(
       selectedMailType,
-      originRegion,
-      destinationRegion,
+      fromRegion,
+      toRegion,
       weightNum,
-      selectedMailCategory || undefined,
+      selectedMailCategory,
       isRegistered,
     );
 
     if ('errorType' in calculatedResult) {
-      error = t(`error.${calculatedResult.errorType}` as TranslationKey, currentLang);
+      error = s('error', calculatedResult.errorType, currentLang);
       return;
     }
 
@@ -216,14 +179,14 @@
     <div class="region-row">
       <div class="region-col">
         <RegionSelector
-          bind:selectedRegion={originRegion}
+          bind:selectedRegion={fromRegion}
           label={t('sender', currentLang)}
           isDestination={false}
         />
       </div>
       <div class="region-col">
         <RegionSelector
-          bind:selectedRegion={destinationRegion}
+          bind:selectedRegion={toRegion}
           label={t('receiver', currentLang)}
           isDestination={true}
         />
@@ -243,7 +206,7 @@
             {#each mailTypeAvailability as { mailType, status }}
               {#if status !== 'unavailable'}
                 <option value={mailType} disabled={status === 'todo'}>
-                  {t(getMailTypeKey(mailType), currentLang)}
+                  {s('mail.type', mailType, currentLang)}
                   {#if status === 'todo'}
                     ({t('mail.type.todo', currentLang)})
                   {/if}
@@ -316,23 +279,26 @@
 
     <!-- Result Display -->
     {#if result}
+      {@const serviceData = POSTAGE_RATES[getRegionType(fromRegion) as RegionCode]}
+      {@const currency = s('currency', serviceData.currency.toLowerCase(), currentLang)}
       <div
         class="result-card"
         style="background: linear-gradient(135deg,
-        {getServicePrimaryColor(result.serviceKey)},
-        {getServiceSecondaryColor(result.serviceKey)});"
+        {serviceData.primaryColor || 'white'},
+        {serviceData.secondaryColor || 'white'});"
       >
         <div class="result-price">
           {result.price.toFixed(2)}
-          {t(getCurrencyKey(result.currency), currentLang)}
+          {currency}
         </div>
         <div class="result-details">
-          {t(getServiceNameKey(result.serviceKey), currentLang)} •
-          {#if result.isRegistered}{t('mail.supplement.registered', currentLang)}{/if}{t(
-            getMailTypeKey(result.mailType),
+          {s('service', serviceData.nameKey, currentLang)} •
+          {#if isRegistered}{t('mail.supplement.registered', currentLang)}{/if}{s(
+            'mail.type',
+            selectedMailType,
             currentLang,
           )}
-          {#if result.ruleId && RATE_RULES[result.ruleId]}
+          {#if result.ruleId}
             • <a
               href={RATE_RULES[result.ruleId].url}
               target="_blank"
@@ -346,18 +312,18 @@
 
         <!-- Rate Calculation Details -->
         <div class="calculation-details">
-          {#if result.mailCategory}
-            <p>{t(`mail.category.${result.mailCategory}`, currentLang)}</p>
+          {#if selectedMailCategory}
+            <p>{t(`mail.category.${selectedMailCategory}`, currentLang)}</p>
           {/if}
-          {#if result.zoneId}
-            <p>{getZoneDescription(result.zoneId)}</p>
+          {#if result.calculationDetails.zoneDescription}
+            <p>{result.calculationDetails.zoneDescription}</p>
           {/if}
 
           {#if result.calculationDetails.rateType === 'fixed'}
             <p>
               {t('calculation.fixed-rate', currentLang)}:
               {result.calculationDetails.basePrice?.toFixed(2)}
-              {t(getCurrencyKey(result.currency), currentLang)}
+              {currency}
             </p>
           {:else if result.calculationDetails.rateType === 'stepped' || result.calculationDetails.rateType === 'zonal'}
             {#if result.calculationDetails.baseWeight !== undefined}
@@ -366,7 +332,7 @@
                 {result.calculationDetails.baseWeight}
                 {t('weight.grams', currentLang)},
                 {result.calculationDetails.basePrice?.toFixed(2)}
-                {t(getCurrencyKey(result.currency), currentLang)}
+                {currency}
               </p>
             {/if}
             {#if result.calculationDetails.weightStep && result.calculationDetails.additionalWeight !== undefined && result.calculationDetails.additionalWeight > 0}
@@ -375,7 +341,7 @@
                 {result.calculationDetails.additionalWeight}
                 {t('weight.grams', currentLang)},
                 {result.calculationDetails.additionalPrice?.toFixed(2)}
-                {t(getCurrencyKey(result.currency), currentLang)}
+                {currency}
               </p>
             {/if}
           {:else if result.calculationDetails.rateType === 'tiered'}
@@ -386,14 +352,14 @@
               {result.calculationDetails.maxWeight}
               {t('weight.grams', currentLang)},
               {result.calculationDetails.basePrice?.toFixed(2)}
-              {t(getCurrencyKey(result.currency), currentLang)}
+              {currency}
             </p>
           {/if}
-          {#if result.calculationDetails.registrationFee !== undefined}
+          {#if result.calculationDetails.registrationFee}
             <p>
               {t('calculation.registration-fee', currentLang)}:
               {result.calculationDetails.registrationFee.toFixed(2)}
-              {t(getCurrencyKey(result.currency), currentLang)}
+              {currency}
             </p>
           {/if}
         </div>

@@ -1,5 +1,5 @@
-import type { MailType } from './mail-types';
-import type { RegionCode } from './regions';
+import type { MailType, MailCategory } from './mail-types';
+import type { RegionCode, PostalServiceName, DestinationType } from './regions';
 
 export interface SteppedRate {
   type: 'stepped';
@@ -34,60 +34,29 @@ export interface ZonalRate {
   registrationFee?: number;
 }
 
-export type RateCalculationMethod = SteppedRate | FixedRate | ZonalRate;
-
-export interface PostalServiceRates {
-  nameKey: string;
-  fromRegion: RegionCode;
+export interface PostalService {
+  nameKey: PostalServiceName;
   currency: string;
   primaryColor: string;
   secondaryColor: string;
   rates: {
-    domestic?: {
-      [key in MailType]?: RateCalculationMethod | null;
-    };
-    mainland?: {
-      [key in MailType]?:
-        | RateCalculationMethod
-        | null
-        | {
-            default?: RateCalculationMethod;
-            air?: RateCalculationMethod;
-            sal?: RateCalculationMethod;
-            surface?: RateCalculationMethod;
-          };
-    };
-    regional?: {
-      [key in MailType]?:
-        | RateCalculationMethod
-        | null
-        | {
-            default?: RateCalculationMethod;
-            air?: RateCalculationMethod;
-            sal?: RateCalculationMethod;
-            surface?: RateCalculationMethod;
-          };
-    };
-    international?: {
-      [key in MailType]?:
-        | RateCalculationMethod
-        | null
-        | {
-            default?: RateCalculationMethod;
-            air?: RateCalculationMethod;
-            sal?: RateCalculationMethod;
-            surface?: RateCalculationMethod;
-          };
+    [K in DestinationType]?: {
+      [K in MailType]?: CategoryRates | Rate | null;
     };
   };
 }
 
+export type CategoryRates = {
+  [K in MailCategory]?: Rate;
+};
+
+export type Rate = SteppedRate | FixedRate | ZonalRate;
+
 // Universal Postal Rate Data Table
-export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
+export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
   // China Post (中国邮政)
-  china_post: {
-    nameKey: 'service.china-post',
-    fromRegion: 'CN',
+  CN: {
+    nameKey: 'china_post',
     currency: 'CNY',
     primaryColor: '#059669', // Forest Green (from logo)
     secondaryColor: '#f59e0b', // Golden Yellow (from logo)
@@ -385,10 +354,9 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
     },
   },
 
-  // Taiwan Post (Chunghwa Post)
-  chunghwa_post: {
-    nameKey: 'service.chunghwa-post',
-    fromRegion: 'TW',
+  // Chunghwa Post (中華郵政)
+  TW: {
+    nameKey: 'chunghwa_post',
     currency: 'TWD',
     primaryColor: '#dd2222',
     secondaryColor: '#2147a5',
@@ -593,18 +561,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
       },
       international: {
         letter: {
-          default: {
-            type: 'stepped',
-            tiers: [
-              {
-                baseWeight: 0,
-                basePrice: 13,
-                weightStep: 20,
-                additionalPrice: 9,
-              },
-            ],
-            maxWeight: 100,
-          },
           air: {
             type: 'stepped',
             tiers: [
@@ -660,18 +616,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           },
         },
         printed_papers: {
-          default: {
-            type: 'stepped',
-            tiers: [
-              {
-                baseWeight: 0,
-                basePrice: 10,
-                weightStep: 20,
-                additionalPrice: 7,
-              },
-            ],
-            maxWeight: 500,
-          },
           air: {
             type: 'stepped',
             tiers: [
@@ -722,18 +666,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           maxWeight: 2000,
         },
         m_bags: {
-          default: {
-            type: 'stepped',
-            tiers: [
-              {
-                baseWeight: 0,
-                basePrice: 65,
-                weightStep: 100,
-                additionalPrice: 4,
-              },
-            ],
-            maxWeight: 30000,
-          },
           air: {
             type: 'stepped',
             tiers: [
@@ -772,17 +704,6 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
           },
         },
         parcel: {
-          default: {
-            type: 'stepped',
-            tiers: [
-              {
-                baseWeight: 0,
-                basePrice: 190,
-                weightStep: 500,
-                additionalPrice: 95,
-              },
-            ],
-          },
           air: {
             type: 'stepped',
             tiers: [
@@ -821,10 +742,9 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
     },
   },
 
-  // Hong Kong Post
-  hongkong_post: {
-    nameKey: 'service.hongkong-post',
-    fromRegion: 'HK',
+  // Hongkong Post (香港郵政)
+  HK: {
+    nameKey: 'hongkong_post',
     currency: 'HKD',
     primaryColor: '#16875a',
     secondaryColor: '#323092',
@@ -1152,10 +1072,9 @@ export const POSTAGE_RATES: Record<string, PostalServiceRates> = {
     },
   },
 
-  // Macau Post
-  macau_post: {
-    nameKey: 'service.macau-post',
-    fromRegion: 'MO',
+  // Macau Post (澳門郵電)
+  MO: {
+    nameKey: 'macau_post',
     currency: 'MOP',
     primaryColor: '#0071ba',
     secondaryColor: '#cf202e',
