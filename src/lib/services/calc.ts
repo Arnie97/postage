@@ -16,6 +16,8 @@ export interface RateCalculationDetails {
   rateType: 'fixed' | 'tiered' | 'stepped' | 'zonal';
   baseWeight?: number;
   basePrice?: number;
+  stepMinWeight?: number;
+  stepMaxWeight?: number;
   additionalWeight?: number;
   weightStep?: number;
   additionalPrice?: number;
@@ -142,11 +144,11 @@ export function calculatePostageRate(
       // Calculate price within the tier
       const weightInTier = weight - baseWeight;
       if (tier.weightStep && tier.additionalPrice) {
-        // Stepped pricing within tier
+        let additionalSteps = 0;
         if (weightInTier <= 0) {
           price = tier.basePrice;
         } else {
-          const additionalSteps = Math.ceil(weightInTier / tier.weightStep);
+          additionalSteps = Math.ceil(weightInTier / tier.weightStep);
           price = tier.basePrice + additionalSteps * tier.additionalPrice;
         }
 
@@ -154,6 +156,8 @@ export function calculatePostageRate(
           rateType: 'stepped',
           baseWeight: baseWeight,
           basePrice: tier.basePrice,
+          stepMinWeight: tier.weightStep * (additionalSteps - 1),
+          stepMaxWeight: tier.weightStep * additionalSteps,
           additionalWeight: weightInTier,
           additionalPrice: tier.additionalPrice,
           weightStep: tier.weightStep,
@@ -223,17 +227,20 @@ export function calculatePostageRate(
       // Calculate price using zonal rates
       const baseWeight = zoneRates.baseWeight || zoneRates.weightStep;
       let additionalWeight = 0;
+      let additionalSteps = 0;
       if (weight <= baseWeight) {
         price = zoneRates.basePrice;
       } else {
         additionalWeight = weight - baseWeight;
-        const additionalSteps = Math.ceil(additionalWeight / zoneRates.weightStep);
+        additionalSteps = Math.ceil(additionalWeight / zoneRates.weightStep);
         price = zoneRates.basePrice + additionalSteps * zoneRates.additionalPrice;
       }
       calculationDetails = {
         rateType: 'zonal',
         baseWeight,
         basePrice: zoneRates.basePrice,
+        stepMinWeight: zoneRates.weightStep * (additionalSteps - 1),
+        stepMaxWeight: zoneRates.weightStep * additionalSteps,
         additionalWeight,
         additionalPrice: zoneRates.additionalPrice,
         weightStep: zoneRates.weightStep,

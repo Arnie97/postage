@@ -335,13 +335,19 @@
                 {currency}
               </p>
             {/if}
-            {#if result.calculationDetails.weightStep && result.calculationDetails.additionalWeight !== undefined && result.calculationDetails.additionalWeight > 0}
+            {#if result.calculationDetails.weightStep && (result.calculationDetails.additionalWeight ?? 0) > 0}
               <p>
                 {t('calculation.additional-weight', currentLang)}:
-                {result.calculationDetails.additionalWeight}
-                {t('weight.grams', currentLang)},
+                {result.calculationDetails.stepMinWeight}
+                {t('weight.grams', currentLang)} -
+                {result.calculationDetails.stepMaxWeight}
+                {t('weight.grams', currentLang)}
+                ({result.calculationDetails.additionalWeight}
+                {t('weight.grams', currentLang)}),
                 {result.calculationDetails.additionalPrice?.toFixed(2)}
-                {currency}
+                {currency} /
+                {result.calculationDetails.weightStep}
+                {t('weight.grams', currentLang)}
               </p>
             {/if}
           {:else if result.calculationDetails.rateType === 'tiered'}
