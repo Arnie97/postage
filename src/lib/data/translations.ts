@@ -11,7 +11,6 @@ export type TranslationKey =
   | 'mail.type.small_packet'
   | 'mail.type.m_bags'
   | 'mail.type.parcel'
-  | 'mail.type.todo'
   | 'mail.category'
   | 'mail.category.air'
   | 'mail.category.sal'
@@ -67,7 +66,6 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type.small_packet': 'Small Packet',
     'mail.type.m_bags': 'M Bags',
     'mail.type.parcel': 'Parcel',
-    'mail.type.todo': 'todo',
     'mail.category': 'Mail Category',
     'mail.category.air': 'Air Mail',
     'mail.category.sal': 'Surface Air Lifted (SAL)',
@@ -122,7 +120,6 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type.small_packet': '小郵包',
     'mail.type.m_bags': '印刷品專袋',
     'mail.type.parcel': '包裹',
-    'mail.type.todo': '待實作',
     'mail.category': '郵件等級',
     'mail.category.air': '航空郵件',
     'mail.category.sal': '空運水陸路 (SAL)',
@@ -177,7 +174,6 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type.small_packet': '小包',
     'mail.type.m_bags': '印刷品专袋',
     'mail.type.parcel': '包裹',
-    'mail.type.todo': '待实现',
     'mail.category': '邮件等级',
     'mail.category.air': '航空邮件',
     'mail.category.sal': '空运水陆路 (SAL)',

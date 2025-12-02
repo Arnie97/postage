@@ -5,7 +5,7 @@ export interface SteppedRate {
   type: 'stepped';
   tiers: Array<{
     baseWeight?: number; // When to switch to this tier (defaults to weightStep)
-    basePrice: number; // Base price for this tier
+    basePrice?: number; // Base price for this tier
     weightStep?: number; // Optional: enables stepped pricing
     additionalPrice?: number; // Optional: price per additional step
   }>;
@@ -65,7 +65,7 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
         letter: {
           type: 'stepped',
           tiers: [
-            { basePrice: 1.2, weightStep: 20, additionalPrice: 1.2 },
+            { weightStep: 20, additionalPrice: 1.2 },
             { basePrice: 6.0, weightStep: 100, additionalPrice: 2.0 },
           ],
           maxWeight: 2000,
@@ -105,23 +105,46 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
       },
       regional: {
         letter: {
-          type: 'stepped',
-          tiers: [
-            { baseWeight: 0, basePrice: 1.5 },
-            { baseWeight: 20, basePrice: 2.8 },
-            { baseWeight: 50, basePrice: 4.0 },
-            { baseWeight: 100, basePrice: 8.5 },
-            { baseWeight: 250, basePrice: 16.7 },
-            { baseWeight: 500, basePrice: 31.7 },
-            { baseWeight: 1000, basePrice: 55.8 },
-          ],
-          maxWeight: 2000,
-          registrationFee: 16,
+          air: {
+            type: 'stepped',
+            tiers: [
+              { weightStep: 10, additionalPrice: 0.5, baseWeight: 0, basePrice: 1.5 },
+              { weightStep: 10, additionalPrice: 0.5, baseWeight: 20, basePrice: 3.8 },
+              { weightStep: 10, additionalPrice: 0.5, baseWeight: 50, basePrice: 6.5 },
+              { weightStep: 10, additionalPrice: 0.5, baseWeight: 100, basePrice: 13.5 },
+              { weightStep: 10, additionalPrice: 0.5, baseWeight: 250, basePrice: 29.2 },
+              { weightStep: 10, additionalPrice: 0.5, baseWeight: 500, basePrice: 56.7 },
+              { weightStep: 10, additionalPrice: 0.5, baseWeight: 1000, basePrice: 105.8 },
+            ],
+            maxWeight: 2000,
+            registrationFee: 16,
+          },
+          surface: {
+            type: 'stepped',
+            tiers: [
+              { baseWeight: 0, basePrice: 1.5 },
+              { baseWeight: 20, basePrice: 2.8 },
+              { baseWeight: 50, basePrice: 4.0 },
+              { baseWeight: 100, basePrice: 8.5 },
+              { baseWeight: 250, basePrice: 16.7 },
+              { baseWeight: 500, basePrice: 31.7 },
+              { baseWeight: 1000, basePrice: 55.8 },
+            ],
+            maxWeight: 2000,
+            registrationFee: 16,
+          },
         },
         postcard: {
-          type: 'fixed',
-          price: 3.5,
-          maxWeight: 20,
+          air: {
+            type: 'fixed',
+            price: 4.0, // + 0.5
+            maxWeight: 20,
+          },
+          surface: {
+            type: 'fixed',
+            price: 3.5,
+            maxWeight: 20,
+          },
         },
         aerogramme: {
           type: 'fixed',
@@ -189,6 +212,7 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
               3: { baseWeight: 20, basePrice: 6.0, weightStep: 10, additionalPrice: 1.8, maxWeight: 100 },
               4: { baseWeight: 20, basePrice: 7.0, weightStep: 10, additionalPrice: 2.3, maxWeight: 100 },
             },
+            registrationFee: 16,
           },
           sal: {
             type: 'zonal',
@@ -198,6 +222,7 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
               3: { baseWeight: 20, basePrice: 5.5, weightStep: 10, additionalPrice: 0.7, maxWeight: 100 },
               4: { baseWeight: 20, basePrice: 6.5, weightStep: 10, additionalPrice: 0.8, maxWeight: 100 },
             },
+            registrationFee: 16,
           },
           surface: {
             type: 'zonal',
@@ -205,6 +230,7 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
               1: { baseWeight: 20, basePrice: 3.5, weightStep: 10, additionalPrice: 0.4, maxWeight: 100 }, // 27 asia-pacific countries
               2: { baseWeight: 20, basePrice: 4.0, weightStep: 10, additionalPrice: 0.5, maxWeight: 100 }, // standard rate
             },
+            registrationFee: 16,
           },
         },
         postcard: {
@@ -225,21 +251,9 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
           },
         },
         aerogramme: {
-          air: {
-            type: 'fixed',
-            price: 5.5,
-            maxWeight: 20,
-          },
-          sal: {
-            type: 'fixed',
-            price: 5.5,
-            maxWeight: 20,
-          },
-          surface: {
-            type: 'fixed',
-            price: 5.5,
-            maxWeight: 20,
-          },
+          type: 'fixed',
+          price: 5.5,
+          maxWeight: 20,
         },
         printed_papers: {
           air: {
@@ -260,13 +274,7 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
           },
           surface: {
             type: 'stepped',
-            tiers: [
-              {
-                basePrice: 4.0,
-                weightStep: 10,
-                additionalPrice: 1.8,
-              },
-            ],
+            tiers: [{ basePrice: 4.0, weightStep: 10, additionalPrice: 1.8 }],
             maxWeight: 500,
           },
         },
@@ -312,13 +320,7 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
           },
           surface: {
             type: 'stepped',
-            tiers: [
-              {
-                basePrice: 18,
-                weightStep: 100,
-                additionalPrice: 13,
-              },
-            ],
+            tiers: [{ basePrice: 18, weightStep: 100, additionalPrice: 13 }],
           },
         },
         m_bags: {
@@ -329,6 +331,7 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
               2: { baseWeight: 5000, basePrice: 610, weightStep: 1000, additionalPrice: 120, maxWeight: 30000 },
               3: { baseWeight: 5000, basePrice: 730, weightStep: 1000, additionalPrice: 145, maxWeight: 30000 },
             },
+            registrationFee: 80,
           },
           sal: {
             type: 'zonal',
@@ -337,17 +340,13 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
               2: { baseWeight: 5000, basePrice: 600, weightStep: 1000, additionalPrice: 120, maxWeight: 30000 },
               3: { baseWeight: 5000, basePrice: 730, weightStep: 1000, additionalPrice: 145, maxWeight: 30000 },
             },
+            registrationFee: 80,
           },
           surface: {
             type: 'stepped',
-            tiers: [
-              {
-                basePrice: 200,
-                weightStep: 1000,
-                additionalPrice: 50,
-              },
-            ],
+            tiers: [{ basePrice: 200, weightStep: 1000, additionalPrice: 50 }],
             maxWeight: 30000,
+            registrationFee: 80,
           },
         },
       },
@@ -1205,7 +1204,6 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
             maxWeight: 30000,
           },
         },
-        parcel: null,
       },
       regional: {
         letter: {
@@ -1336,11 +1334,11 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
             maxWeight: 30000,
           },
         },
-        parcel: null,
       },
       international: {
         letter: {
           surface: {
+            // TODO: zonal tiers
             type: 'stepped',
             tiers: [
               { baseWeight: 0, basePrice: 5.0 },
@@ -1461,7 +1459,6 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
             maxWeight: 30000,
           },
         },
-        parcel: null,
       },
     },
   },
@@ -1472,7 +1469,7 @@ export const RATE_RULES: Record<string, { name: string; url: string }> = {
   // China Post Rules
   china_post_domestic: {
     name: '国内信函资费',
-    url: 'https://www.gz.gov.cn/zwgk/zdly/jghsf/jfbz/spjg/content/post_2852139.html',
+    url: 'https://zwfw.spb.gov.cn/spbptyjywzf/',
   },
   china_post_regional: {
     name: '港澳台地区函件资费表',

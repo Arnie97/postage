@@ -62,6 +62,8 @@ src/
 * Insured mails 保价
 * Presentation-to-customs charge 海关验关费
 * EMS
+* Zonal pricing tiers for Macau
+* Compound pricing for M-bags from mainland to HK/MO/TW
 * Postal services in other regions
 * Unit tests
 

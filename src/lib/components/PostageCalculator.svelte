@@ -13,6 +13,7 @@
   import RegionSelector from './RegionSelector.svelte';
 
   let selectedMailType: MailType = 'letter';
+  let previousMailType: MailType = selectedMailType;
   let selectedMailCategory: MailCategory | undefined;
   let fromRegion = 'CN-BJ';
   let toRegion = 'HK';
@@ -20,23 +21,21 @@
   let isRegistered = false;
   let result: CalculationResult | null;
   let error = '';
-  let previousMailType: MailType = 'letter';
 
   $: currentLang = $language;
 
   // Get available mail types based on origin and destination
   $: availableMailTypes = getAvailableMailTypes(fromRegion, toRegion);
-  $: mailTypeAvailability = getMailTypeAvailability(fromRegion, toRegion);
 
   // Reset mail type if not available
   $: {
-    if (availableMailTypes.length > 0 && !availableMailTypes.includes(selectedMailType)) {
+    if (!availableMailTypes.includes(selectedMailType)) {
       selectedMailType = availableMailTypes[0];
     }
   }
 
   // Get available mail categories for the destination
-  $: availableMailCategories = getAvailableMailCategories(fromRegion, toRegion);
+  $: availableMailCategories = getAvailableMailCategories(fromRegion, toRegion, selectedMailType);
 
   // Set default mail category when destination changes or category becomes unavailable
   $: {
@@ -71,7 +70,11 @@
     previousMailType = selectedMailType;
   }
 
-  function getAvailableMailCategories(fromRegion: string, toRegion: string): MailCategory[] {
+  function getAvailableMailCategories(
+    fromRegion: string,
+    toRegion: string,
+    mailType: MailType,
+  ): MailCategory[] {
     // Type guard: check if fromRegionType is a valid RegionCode
     const fromRegionType = getRegionType(fromRegion);
     if (fromRegionType === 'XX') {
@@ -79,9 +82,21 @@
     }
 
     const postalZone = getPostalZone(fromRegionType, toRegion);
-    if (!postalZone) return [];
+    if (postalZone) {
+      return Object.getOwnPropertyNames(postalZone) as MailCategory[];
+    }
 
-    return Object.keys(postalZone) as MailCategory[];
+    const serviceData = POSTAGE_RATES[fromRegionType];
+    if (!serviceData) {
+      return [];
+    }
+    const toRegionType = getRegionType(toRegion);
+    const destinationType = getDestinationType(fromRegionType, toRegionType);
+    const rate = serviceData.rates[destinationType]?.[mailType];
+    if (!rate || 'type' in rate) {
+      return [];
+    }
+    return Object.getOwnPropertyNames(rate) as MailCategory[];
   }
 
   // Auto-calculate when inputs change
@@ -97,18 +112,14 @@
     }
   }
 
-  interface MailTypeAvailability {
-    mailType: MailType;
-    status: 'available' | 'todo' | 'unavailable';
-  }
-
-  function getMailTypeAvailability(origin: string, destination: string): MailTypeAvailability[] {
+  function getAvailableMailTypes(origin: string, destination: string): MailType[] {
     const fromRegionType = getRegionType(origin);
     if (fromRegionType === 'XX') {
       return [];
     }
-    const serviceData = POSTAGE_RATES[fromRegionType];
+
     // If no service found, all mail types are unavailable
+    const serviceData = POSTAGE_RATES[fromRegionType];
     if (!serviceData) {
       return [];
     }
@@ -118,26 +129,7 @@
     const destinationType = getDestinationType(fromRegionType, toRegionType);
     const destinationRates = serviceData.rates[destinationType];
 
-    return ALL_MAIL_TYPES.map((mailType) => {
-      if (!destinationRates) {
-        return { mailType, status: 'unavailable' as const };
-      }
-
-      const rateConfig = destinationRates[mailType];
-      if (rateConfig === undefined) {
-        return { mailType, status: 'unavailable' as const };
-      } else if (rateConfig === null) {
-        return { mailType, status: 'todo' as const };
-      } else {
-        return { mailType, status: 'available' as const };
-      }
-    });
-  }
-
-  function getAvailableMailTypes(origin: string, destination: string): MailType[] {
-    return getMailTypeAvailability(origin, destination)
-      .filter((item) => item.status !== 'unavailable')
-      .map((item) => item.mailType);
+    return ALL_MAIL_TYPES.filter((mailType) => destinationRates?.[mailType]);
   }
 
   function calculate() {
@@ -203,15 +195,10 @@
           </label>
 
           <select id="mailType" class="form-control select" bind:value={selectedMailType} required>
-            {#each mailTypeAvailability as { mailType, status }}
-              {#if status !== 'unavailable'}
-                <option value={mailType} disabled={status === 'todo'}>
-                  {s('mail.type', mailType, currentLang)}
-                  {#if status === 'todo'}
-                    ({t('mail.type.todo', currentLang)})
-                  {/if}
-                </option>
-              {/if}
+            {#each availableMailTypes as mailType}
+              <option value={mailType}>
+                {s('mail.type', mailType, currentLang)}
+              </option>
             {/each}
           </select>
         </div>

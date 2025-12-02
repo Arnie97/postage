@@ -110,7 +110,7 @@ export function calculatePostageRate(
   }
 
   // Calculate price based on rate method
-  let price: number | null = null;
+  let price: number | undefined;
   let calculationDetails: RateCalculationDetails;
 
   switch (rate.type) {
@@ -145,17 +145,16 @@ export function calculatePostageRate(
       const weightInTier = weight - baseWeight;
       if (tier.weightStep && tier.additionalPrice) {
         let additionalSteps = 0;
-        if (weightInTier <= 0) {
-          price = tier.basePrice;
-        } else {
+        price = tier.basePrice ?? tier.additionalPrice;
+        if (weightInTier > 0) {
           additionalSteps = Math.ceil(weightInTier / tier.weightStep);
-          price = tier.basePrice + additionalSteps * tier.additionalPrice;
+          price += additionalSteps * tier.additionalPrice;
         }
 
         calculationDetails = {
           rateType: 'stepped',
           baseWeight: baseWeight,
-          basePrice: tier.basePrice,
+          basePrice: tier.basePrice ?? tier.additionalPrice,
           stepMinWeight: tier.weightStep * (additionalSteps - 1),
           stepMaxWeight: tier.weightStep * additionalSteps,
           additionalWeight: weightInTier,
@@ -250,7 +249,7 @@ export function calculatePostageRate(
     }
   }
 
-  if (price === null) {
+  if (price === undefined) {
     console.error(rate);
     return { errorType: 'calculation' };
   }
