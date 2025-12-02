@@ -25,13 +25,20 @@ export interface ZonalRate {
   zones: {
     [zoneNumber: number]: {
       baseWeight?: number; // Weight covered by base price (defaults to weightStep if not specified)
-      basePrice: number;
-      weightStep: number;
-      additionalPrice: number;
+      basePrice?: number;
+      weightStep?: number;
+      additionalPrice?: number;
       maxWeight?: number;
     };
   };
   registrationFee?: number;
+}
+
+export interface RateTier {
+  baseWeight?: number; // Weight covered by base price (defaults to weightStep if not specified)
+  basePrice?: number;
+  weightStep?: number;
+  additionalPrice?: number;
 }
 
 export interface PostalService {

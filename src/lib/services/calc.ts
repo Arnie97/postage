@@ -8,12 +8,19 @@ import {
   type ZoneDescriptions,
 } from '../data/regions';
 
-import { POSTAGE_RATES, RATE_RULES, type CategoryRates, type Rate } from '../data/rates';
+import {
+  POSTAGE_RATES,
+  RATE_RULES,
+  type CategoryRates,
+  type Rate,
+  type RateTier,
+} from '../data/rates';
 
 import type { MailType, MailCategory } from '../data/mail-types';
 
 export interface RateCalculationDetails {
-  rateType: 'fixed' | 'tiered' | 'stepped' | 'zonal';
+  rateType: 'fixed' | 'tiered' | 'stepped';
+  totalPrice?: number;
   baseWeight?: number;
   basePrice?: number;
   stepMinWeight?: number;
@@ -27,10 +34,9 @@ export interface RateCalculationDetails {
 }
 
 export interface CalculationResult {
-  price: number;
   serviceKey: string;
   ruleId?: string;
-  calculationDetails: RateCalculationDetails;
+  details: RateCalculationDetails;
 }
 
 export interface CalculationError {
@@ -110,8 +116,7 @@ export function calculatePostageRate(
   }
 
   // Calculate price based on rate method
-  let price: number | undefined;
-  let calculationDetails: RateCalculationDetails;
+  let details: RateCalculationDetails;
 
   switch (rate.type) {
     case 'stepped': {
@@ -141,46 +146,17 @@ export function calculatePostageRate(
         return { errorType: 'weight' };
       }
 
-      // Calculate price within the tier
-      const weightInTier = weight - baseWeight;
-      if (tier.weightStep && tier.additionalPrice) {
-        let additionalSteps = 0;
-        price = tier.basePrice ?? tier.additionalPrice;
-        if (weightInTier > 0) {
-          additionalSteps = Math.ceil(weightInTier / tier.weightStep);
-          price += additionalSteps * tier.additionalPrice;
-        }
-
-        calculationDetails = {
-          rateType: 'stepped',
-          baseWeight: baseWeight,
-          basePrice: tier.basePrice ?? tier.additionalPrice,
-          stepMinWeight: tier.weightStep * (additionalSteps - 1),
-          stepMaxWeight: tier.weightStep * additionalSteps,
-          additionalWeight: weightInTier,
-          additionalPrice: tier.additionalPrice,
-          weightStep: tier.weightStep,
-        };
-      } else {
-        // Fixed pricing within tier (pure tiered mode)
-        price = tier.basePrice;
-        calculationDetails = {
-          rateType: 'tiered',
-          baseWeight: baseWeight,
-          basePrice: price,
-          maxWeight: nextTierBaseWeight,
-        };
-      }
+      details = getCalculationDetails(weight, tier, nextTierBaseWeight);
       break;
     }
 
     case 'fixed':
-      if (rate.maxWeight && weight > rate.maxWeight) {
+      if (weight > (rate.maxWeight ?? Infinity)) {
         return { errorType: 'weight' };
       }
-      price = rate.price;
-      calculationDetails = {
+      details = {
         rateType: 'fixed',
+        totalPrice: rate.price,
         basePrice: rate.price,
       };
       break;
@@ -224,32 +200,17 @@ export function calculatePostageRate(
       }
 
       // Calculate price using zonal rates
-      const baseWeight = zoneRates.baseWeight || zoneRates.weightStep;
-      let additionalWeight = 0;
-      let additionalSteps = 0;
-      if (weight <= baseWeight) {
-        price = zoneRates.basePrice;
-      } else {
-        additionalWeight = weight - baseWeight;
-        additionalSteps = Math.ceil(additionalWeight / zoneRates.weightStep);
-        price = zoneRates.basePrice + additionalSteps * zoneRates.additionalPrice;
-      }
-      calculationDetails = {
-        rateType: 'zonal',
-        baseWeight,
-        basePrice: zoneRates.basePrice,
-        stepMinWeight: zoneRates.weightStep * (additionalSteps - 1),
-        stepMaxWeight: zoneRates.weightStep * additionalSteps,
-        additionalWeight,
-        additionalPrice: zoneRates.additionalPrice,
-        weightStep: zoneRates.weightStep,
-        zoneDescription: zoneDescriptions?.[zoneNumber],
-      };
+      details = getCalculationDetails(
+        weight,
+        zoneRates,
+        zoneRates.maxWeight ?? zoneRates.baseWeight ?? zoneRates.weightStep ?? 0,
+      );
+      details.zoneDescription = zoneDescriptions?.[zoneNumber];
       break;
     }
   }
 
-  if (price === undefined) {
+  if (details?.totalPrice === undefined) {
     console.error(rate);
     return { errorType: 'calculation' };
   }
@@ -259,15 +220,54 @@ export function calculatePostageRate(
       rate?.registrationFee ??
       getPricingModel(destinationRates['letter'], mailCategory)?.registrationFee;
     if (registrationFee) {
-      price += registrationFee;
-      calculationDetails.registrationFee = registrationFee;
+      details.registrationFee = registrationFee;
+      details.totalPrice += registrationFee;
     }
   }
 
   return {
-    price,
     serviceKey: serviceData.nameKey,
     ruleId: findBestMatchingRateRule(serviceData.nameKey, destinationType, mailType),
-    calculationDetails,
+    details,
   };
+}
+
+// Calculate price within the tier
+function getCalculationDetails(
+  weight: number,
+  tier: RateTier,
+  maxWeight?: number,
+): RateCalculationDetails {
+  const baseWeight = tier.baseWeight ?? tier.weightStep ?? 0;
+  const additionalWeight = weight - baseWeight;
+  let totalPrice: number | undefined;
+  if (tier.weightStep && tier.additionalPrice) {
+    let additionalSteps = 0;
+    totalPrice = tier.basePrice ?? tier.additionalPrice;
+    if (additionalWeight > 0) {
+      additionalSteps = Math.ceil(additionalWeight / tier.weightStep);
+      totalPrice += additionalSteps * tier.additionalPrice;
+    }
+
+    return {
+      rateType: 'stepped',
+      totalPrice,
+      baseWeight,
+      basePrice: tier.basePrice ?? tier.additionalPrice,
+      stepMinWeight: tier.weightStep * (additionalSteps - 1),
+      stepMaxWeight: tier.weightStep * additionalSteps,
+      additionalWeight,
+      additionalPrice: tier.additionalPrice,
+      weightStep: tier.weightStep,
+    };
+  } else {
+    // Fixed pricing within tier (pure tiered mode)
+    return {
+      rateType: 'tiered',
+      totalPrice: tier.basePrice,
+      baseWeight,
+      basePrice: tier.basePrice,
+      maxWeight: maxWeight,
+    };
+  }
 }

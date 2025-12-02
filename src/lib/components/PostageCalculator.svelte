@@ -275,7 +275,7 @@
         {serviceData.secondaryColor || 'white'});"
       >
         <div class="result-price">
-          {result.price.toFixed(2)}
+          {result.details.totalPrice?.toFixed(2)}
           {currency}
         </div>
         <div class="result-details">
@@ -302,56 +302,56 @@
           {#if selectedMailCategory}
             <p>{t(`mail.category.${selectedMailCategory}`, currentLang)}</p>
           {/if}
-          {#if result.calculationDetails.zoneDescription}
-            <p>{result.calculationDetails.zoneDescription}</p>
+          {#if result.details.zoneDescription}
+            <p>{result.details.zoneDescription}</p>
           {/if}
 
-          {#if result.calculationDetails.rateType === 'fixed'}
+          {#if result.details.rateType === 'fixed'}
             <p>
               {t('calculation.fixed-rate', currentLang)}:
-              {result.calculationDetails.basePrice?.toFixed(2)}
+              {result.details.basePrice?.toFixed(2)}
               {currency}
             </p>
-          {:else if result.calculationDetails.rateType === 'stepped' || result.calculationDetails.rateType === 'zonal'}
-            {#if result.calculationDetails.baseWeight !== undefined}
+          {:else if result.details.rateType === 'stepped'}
+            {#if result.details.baseWeight !== undefined}
               <p>
                 {t('calculation.base-weight', currentLang)}:
-                {result.calculationDetails.baseWeight}
+                {result.details.baseWeight}
                 {t('weight.grams', currentLang)},
-                {result.calculationDetails.basePrice?.toFixed(2)}
+                {result.details.basePrice?.toFixed(2)}
                 {currency}
               </p>
             {/if}
-            {#if result.calculationDetails.weightStep && (result.calculationDetails.additionalWeight ?? 0) > 0}
+            {#if result.details.weightStep && (result.details.additionalWeight ?? 0) > 0}
               <p>
                 {t('calculation.additional-weight', currentLang)}:
-                {result.calculationDetails.stepMinWeight}
+                {result.details.stepMinWeight}
                 {t('weight.grams', currentLang)} -
-                {result.calculationDetails.stepMaxWeight}
+                {result.details.stepMaxWeight}
                 {t('weight.grams', currentLang)}
-                ({result.calculationDetails.additionalWeight}
+                ({result.details.additionalWeight}
                 {t('weight.grams', currentLang)}),
-                {result.calculationDetails.additionalPrice?.toFixed(2)}
+                {result.details.additionalPrice?.toFixed(2)}
                 {currency} /
-                {result.calculationDetails.weightStep}
+                {result.details.weightStep}
                 {t('weight.grams', currentLang)}
               </p>
             {/if}
-          {:else if result.calculationDetails.rateType === 'tiered'}
+          {:else if result.details.rateType === 'tiered'}
             <p>
               {t('calculation.tier-range', currentLang)}:
-              {result.calculationDetails.baseWeight || 0}
+              {result.details.baseWeight || 0}
               {t('weight.grams', currentLang)} –
-              {result.calculationDetails.maxWeight}
+              {result.details.maxWeight}
               {t('weight.grams', currentLang)},
-              {result.calculationDetails.basePrice?.toFixed(2)}
+              {result.details.basePrice?.toFixed(2)}
               {currency}
             </p>
           {/if}
-          {#if result.calculationDetails.registrationFee}
+          {#if result.details.registrationFee}
             <p>
               {t('calculation.registration-fee', currentLang)}:
-              {result.calculationDetails.registrationFee.toFixed(2)}
+              {result.details.registrationFee.toFixed(2)}
               {currency}
             </p>
           {/if}
