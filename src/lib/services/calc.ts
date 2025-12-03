@@ -2,7 +2,7 @@ import {
   getRegionType,
   getDestinationType,
   getPostalZone,
-  getChinaPostMainlandZone,
+  getChinaPostMainlandParcelZone,
   POSTAL_ZONE_DESCRIPTIONS,
   type CategoryZoneDescriptions,
   type ZoneDescriptions,
@@ -168,7 +168,7 @@ export function calculatePostageRate(
       let zoneDescriptions: ZoneDescriptions | undefined;
       let zoneNumber: number | undefined;
       if (fromRegionType === 'CN' && destinationType === 'domestic' && mailType === 'parcel') {
-        zoneNumber = getChinaPostMainlandZone(fromRegion, toRegion);
+        zoneNumber = getChinaPostMainlandParcelZone(fromRegion, toRegion);
         zoneDescriptions = destinationZoneDescriptions as ZoneDescriptions;
       } else {
         const postalZone = getPostalZone(fromRegionType, toRegion);

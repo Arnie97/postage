@@ -1,5 +1,7 @@
 # Postage Calculator for Greater China 两岸四地邮费计算器
 
+[![codecov](https://codecov.io/github/Arnie97/postage/graph/badge.svg?token=WEKZP1HYR9)](https://codecov.io/github/Arnie97/postage)
+
 ## Architecture Highlights
 
 - **Svelte + TypeScript**: Modern reactive framework with type safety
@@ -21,6 +23,12 @@ npm run dev
 
 # Build for production
 npm run build
+
+# Run unit tests
+npm run test
+
+# Calculate test coverage
+npm run coverage
 
 # Preview production build
 npm run preview
@@ -65,7 +73,6 @@ src/
 * Zonal pricing tiers for Macau
 * Compound pricing for M-bags from mainland to HK/MO/TW
 * Postal services in other regions
-* Unit tests
 
 ## Contributing
 
