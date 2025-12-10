@@ -9,6 +9,11 @@
   // PWA registration
   import { onMount } from 'svelte';
 
+  // Update document title dynamically when language changes
+  $: if (typeof document !== 'undefined') {
+    document.title = t('app.title', $language);
+  }
+
   onMount(async () => {
     if ('serviceWorker' in navigator) {
       try {
