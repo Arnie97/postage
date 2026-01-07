@@ -21,6 +21,9 @@
   let isRegistered = false;
   let isInsured = false;
   let packageValue = '200';
+  let discountRuleName = '';
+  let hasStampDiscount = false;
+  let stampPricePercent = '45';
   let result: CalculationResult | null;
   let error = '';
 
@@ -103,11 +106,13 @@
 
   // Auto-calculate when inputs change
   $: {
-    // Include selectedMailCategory, isRegistered, isInsured, and packageValue in dependencies to trigger recalculation
+    // Include selectedMailCategory, isRegistered, isInsured, packageValue, hasStampDiscount, and stampPricePercent in dependencies to trigger recalculation
     void selectedMailCategory;
     void isRegistered;
     void isInsured;
     void packageValue;
+    void hasStampDiscount;
+    void stampPricePercent;
     if (fromRegion && toRegion && weight && selectedMailType) {
       calculate();
     } else {
@@ -168,6 +173,8 @@
       selectedMailCategory,
       isRegistered,
       packageValueNum,
+      discountRuleName,
+      hasStampDiscount && stampPricePercent ? parseFloat(stampPricePercent) : undefined,
     );
 
     if ('errorType' in calculatedResult) {
@@ -280,6 +287,10 @@
             <input type="checkbox" bind:checked={isInsured} name="insuredMail" />
             <span>{t('mail.supplement.insured', currentLang)}</span>
           </label>
+          <label class="checkbox-item">
+            <input type="checkbox" bind:checked={hasStampDiscount} name="stampDiscount" />
+            <span>{t('calculation.stamp-discount', currentLang)}</span>
+          </label>
         </div>
         <!-- Package Value Input (shown when insurance is enabled) -->
       </fieldset>
@@ -301,6 +312,23 @@
       </div>
     {/if}
 
+    {#if hasStampDiscount}
+      <div class="form-group">
+        <label for="stampDiscount" class="form-label">
+          {t('calculation.stamp-discount', currentLang)} (%)
+        </label>
+        <input
+          id="stampDiscount"
+          type="number"
+          min="1"
+          max="100"
+          step="1"
+          bind:value={stampPricePercent}
+          class="form-control"
+        />
+      </div>
+    {/if}
+
     {#if error}
       <div class="error-message">{error}</div>
     {/if}
@@ -316,8 +344,17 @@
         {serviceData.secondaryColor || 'white'});"
       >
         <div class="result-price">
-          {result.details.totalPrice?.toFixed(2)}
-          {currency}
+          {#if result.supplements.discountedPrice}
+            <span class="original-price">
+              {result.supplements.originalPrice.toFixed(2)}
+              {currency}
+            </span>
+            {result.supplements.discountedPrice.toFixed(2)}
+            {currency}
+          {:else}
+            {result.supplements.originalPrice.toFixed(2)}
+            {currency}
+          {/if}
         </div>
         <div class="result-details">
           {s('service', serviceData.nameKey, currentLang)} •
@@ -410,6 +447,24 @@
               {currency}
             </p>
           {/if}
+
+          <!-- Discount Information -->
+          {#if result.supplements.ruleDiscount}
+            <p>
+              {t('calculation.rule-discount', currentLang)}: -{result.supplements.ruleDiscount.toFixed(
+                2,
+              )}
+              {currency}
+            </p>
+          {/if}
+          {#if result.supplements.stampDiscount}
+            <p>
+              {t('calculation.stamp-discount', currentLang)}: -{result.supplements.stampDiscount.toFixed(
+                2,
+              )}
+              {currency}
+            </p>
+          {/if}
         </div>
       </div>
     {/if}
@@ -456,6 +511,12 @@
     font-size: 0.875rem;
     color: rgba(255, 255, 255, 0.9);
     line-height: 1.4;
+  }
+
+  .original-price {
+    text-decoration: line-through;
+    opacity: 0.7;
+    margin-right: 0.5rem;
   }
 
   .checkbox-group {

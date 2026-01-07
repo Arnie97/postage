@@ -36,10 +36,13 @@ export interface RateCalculationDetails {
 }
 
 export interface SupplementFees {
-  totalPrice: number;
+  originalPrice: number;
   registrationFee?: number;
   insuranceCommission?: number;
   insuranceFee?: number;
+  ruleDiscount?: number;
+  stampDiscount?: number;
+  discountedPrice?: number;
 }
 
 export interface CalculationResult {
@@ -47,7 +50,6 @@ export interface CalculationResult {
   ruleId?: string;
   details: RateCalculationDetails;
   supplements: SupplementFees;
-  originalPrice: number;
 }
 
 export interface CalculationError {
@@ -101,6 +103,8 @@ export function calculatePostage(
   mailCategory?: MailCategory,
   isRegistered?: boolean,
   packageValue?: number,
+  discountRuleName?: string,
+  stampDiscountPercent?: number,
 ): CalculationResult | CalculationError {
   // Type guard: check if fromRegionType is a valid RegionCode
   const fromRegionType = getRegionType(fromRegion);
@@ -175,11 +179,14 @@ export function calculatePostage(
 
   // Apply supplements
   const supplements = calculateSupplementFees(
+    rateResults.totalPrice,
     rate,
     destinationRates,
     mailCategory,
     isRegistered,
     packageValue,
+    discountRuleName,
+    stampDiscountPercent,
   );
   if ('errorType' in supplements) {
     return supplements;
@@ -190,7 +197,6 @@ export function calculatePostage(
     ruleId: findBestMatchingRateRule(serviceData.nameKey, destinationType, mailType),
     details: rateResults,
     supplements,
-    originalPrice: rateResults.totalPrice + supplements.totalPrice,
   };
 }
 
@@ -269,19 +275,22 @@ function calculateZonalRate(
 
 // Calculate supplement fees (registration and insurance)
 function calculateSupplementFees(
+  originalPrice: number,
   rate: Rate,
   destinationRates?: { [K in MailType]?: CategoryRates | Rate | null },
   mailCategory?: MailCategory,
   isRegistered?: boolean,
   packageValue?: number,
+  discountRuleName?: string,
+  stampDiscountPercent?: number,
 ): SupplementFees | CalculationError {
-  const supplements: SupplementFees = { totalPrice: 0 };
+  const supplements: SupplementFees = { originalPrice };
 
   if (isRegistered) {
     supplements.registrationFee =
       rate?.registrationFee ??
       getPricingModel(destinationRates?.letter, mailCategory)?.registrationFee;
-    supplements.totalPrice += supplements.registrationFee ?? 0;
+    supplements.originalPrice += supplements.registrationFee ?? 0;
   }
 
   if (packageValue) {
@@ -295,8 +304,24 @@ function calculateSupplementFees(
       }
 
       supplements.insuranceFee = insuranceResult.totalPrice;
-      supplements.totalPrice += supplements.insuranceCommission + supplements.insuranceFee;
+      supplements.originalPrice += supplements.insuranceCommission + supplements.insuranceFee;
     }
+  }
+
+  if (discountRuleName && rate.discounts) {
+    const discount = rate.discounts.find((d) => d.name === discountRuleName);
+    if (discount) {
+      supplements.ruleDiscount = (supplements.originalPrice * (100 - discount.pricePercent)) / 100;
+      supplements.discountedPrice = supplements.originalPrice - supplements.ruleDiscount;
+    }
+  }
+
+  if (stampDiscountPercent && stampDiscountPercent < 100) {
+    if (!supplements.discountedPrice) {
+      supplements.discountedPrice = supplements.originalPrice;
+    }
+    supplements.stampDiscount = (supplements.discountedPrice * (100 - stampDiscountPercent)) / 100;
+    supplements.discountedPrice -= supplements.stampDiscount;
   }
 
   return supplements;

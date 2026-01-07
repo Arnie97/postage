@@ -235,7 +235,7 @@ describe('calculatePostage', () => {
           } else if (testCase.input.isRegistered === false) {
             expect(result.supplements.registrationFee).toBeUndefined();
           }
-          expect(result.originalPrice).toBe(testCase.expected.originalPrice);
+          expect(result.supplements.originalPrice).toBe(testCase.expected.originalPrice);
 
           // Check service key
           if (testCase.expected.serviceKey !== undefined) {

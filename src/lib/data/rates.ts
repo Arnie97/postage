@@ -1,6 +1,11 @@
 import type { MailType, MailCategory } from './mail-types';
 import type { RegionCode, PostalServiceName, DestinationType } from './regions';
 
+export interface DiscountRule {
+  name: string;
+  pricePercent: number;
+}
+
 export interface SteppedRate {
   type: 'stepped';
   tiers: Array<{
@@ -11,6 +16,7 @@ export interface SteppedRate {
   }>;
   maxWeight?: number; // Global max weight constraint
   registrationFee?: number;
+  discounts?: DiscountRule[];
 }
 
 export interface FixedRate {
@@ -18,6 +24,7 @@ export interface FixedRate {
   price: number;
   maxWeight?: number;
   registrationFee?: number;
+  discounts?: DiscountRule[];
 }
 
 export interface ZonalRate {
@@ -32,6 +39,7 @@ export interface ZonalRate {
     };
   };
   registrationFee?: number;
+  discounts?: DiscountRule[];
 }
 
 export interface RateTier {

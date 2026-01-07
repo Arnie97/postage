@@ -55,6 +55,8 @@ export type TranslationKey =
   | 'calculation.registration-fee'
   | 'calculation.insurance-commission'
   | 'calculation.insurance-fee'
+  | 'calculation.rule-discount'
+  | 'calculation.stamp-discount'
   | 'footer.description'
   | 'footer.license'
   | 'footer.source-code';
@@ -115,6 +117,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'calculation.registration-fee': 'Registration Fee',
     'calculation.insurance-commission': 'Insurance Commission',
     'calculation.insurance-fee': 'Insurance Fee',
+    'calculation.rule-discount': 'General discount',
+    'calculation.stamp-discount': 'Stamp Discount',
     'footer.description': 'Postage calculator for Greater China',
     'footer.source-code': 'Source code',
     'footer.license': ' licensed under GNU AGPL v3',
@@ -174,6 +178,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'calculation.registration-fee': '掛號費',
     'calculation.insurance-commission': '保價手續費',
     'calculation.insurance-fee': '保價費',
+    'calculation.rule-discount': '一般折扣',
+    'calculation.stamp-discount': '郵票折扣',
     'footer.description': '兩岸四地郵費計算機',
     'footer.source-code': '原始碼',
     'footer.license': '以 GNU AGPL v3 授權',
@@ -233,6 +239,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'calculation.registration-fee': '挂号费',
     'calculation.insurance-commission': '保价手续费',
     'calculation.insurance-fee': '保价费',
+    'calculation.rule-discount': '一般折扣',
+    'calculation.stamp-discount': '邮票折扣',
     'footer.description': '两岸四地邮费计算器',
     'footer.source-code': '源代码',
     'footer.license': '以 GNU AGPL v3 授权',
