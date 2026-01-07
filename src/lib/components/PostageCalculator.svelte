@@ -1,6 +1,6 @@
 <script lang="ts">
   import { language } from '../utils/language';
-  import { calculatePostageRate, type CalculationResult } from '../services/calc';
+  import { calculatePostage, type CalculationResult } from '../services/calc';
   import { ALL_MAIL_TYPES, type MailType, type MailCategory } from '../data/mail-types';
   import {
     getDestinationType,
@@ -149,7 +149,7 @@
       return;
     }
 
-    const calculatedResult = calculatePostageRate(
+    const calculatedResult = calculatePostage(
       selectedMailType,
       fromRegion,
       toRegion,

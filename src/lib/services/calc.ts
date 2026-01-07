@@ -6,8 +6,6 @@ import {
   POSTAL_ZONE_DESCRIPTIONS,
   type CategoryZoneDescriptions,
   type ZoneDescriptions,
-  type RegionCode,
-  type DestinationType,
 } from '../data/regions';
 
 import {
@@ -15,8 +13,10 @@ import {
   RATE_RULES,
   type CategoryRates,
   type Rate,
+  type SteppedRate,
+  type FixedRate,
+  type ZonalRate,
   type RateTier,
-  type PostalService,
 } from '../data/rates';
 
 import type { MailType, MailCategory } from '../data/mail-types';
@@ -92,7 +92,7 @@ function findBestMatchingRateRule(
 }
 
 // 主计算函数，根据出发地自动选择邮政服务
-export function calculatePostageRate(
+export function calculatePostage(
   mailType: MailType,
   fromRegion: string,
   toRegion: string,
@@ -127,57 +127,74 @@ export function calculatePostageRate(
   }
 
   // Calculate price based on rate method
-  const rateResult = calculateRatePrice(
-    rate,
-    weight,
-    serviceData,
-    destinationType,
-    mailType,
-    mailCategory,
-    fromRegionType,
-    fromRegion,
-    toRegion,
-  );
-  if ('errorType' in rateResult) {
-    return rateResult;
+  let rateResults: RateCalculationDetails | CalculationError;
+  switch (rate.type) {
+    case 'stepped':
+      rateResults = calculateSteppedRate(rate, weight);
+      break;
+    case 'fixed':
+      rateResults = calculateFixedRate(rate, weight);
+      break;
+    case 'zonal': {
+      const destinationZoneDescriptions =
+        POSTAL_ZONE_DESCRIPTIONS[serviceData.nameKey]?.[destinationType];
+      let zoneDescriptions: ZoneDescriptions | undefined;
+      let zoneNumber: number | undefined;
+      if (fromRegionType === 'CN' && destinationType === 'domestic' && mailType === 'parcel') {
+        zoneNumber = getChinaPostMainlandParcelZone(fromRegion, toRegion);
+        zoneDescriptions = destinationZoneDescriptions as ZoneDescriptions;
+      } else {
+        const postalZone = getPostalZone(fromRegionType, toRegion);
+        if (!postalZone || !mailCategory) {
+          return { errorType: 'mail_category' };
+        }
+
+        // Determine which zone to use based on mail category and mail type
+        const zoneNumberMap = postalZone[mailCategory];
+        const letterTag = mailType !== 'letter' ? 'other' : mailType;
+        zoneNumber = typeof zoneNumberMap === 'object' ? zoneNumberMap?.[letterTag] : zoneNumberMap;
+        zoneDescriptions =
+          (destinationZoneDescriptions as CategoryZoneDescriptions)?.[mailCategory]?.[letterTag] ??
+          (destinationZoneDescriptions as ZoneDescriptions);
+      }
+
+      if (!zoneNumber) {
+        return { errorType: 'route' };
+      }
+      rateResults = calculateZonalRate(rate, weight, zoneNumber, zoneDescriptions);
+      break;
+    }
+  }
+  if (!rateResults) {
+    console.error(rate);
+    return { errorType: 'calculation' };
+  } else if ('errorType' in rateResults) {
+    return rateResults;
   }
 
   // Apply supplements
   const supplements = calculateSupplementFees(
-    isRegistered,
-    packageValue,
     rate,
     destinationRates,
+    serviceData.insuranceRate,
     mailCategory,
-    serviceData,
+    isRegistered,
+    packageValue,
   );
-
-  const originalPrice = rateResult.totalPrice + supplements.totalPrice;
 
   return {
     serviceKey: serviceData.nameKey,
     ruleId: findBestMatchingRateRule(serviceData.nameKey, destinationType, mailType),
-    details: rateResult,
+    details: rateResults,
     supplements,
-    originalPrice,
+    originalPrice: rateResults.totalPrice + supplements.totalPrice,
   };
 }
 
-function calculateRatePrice(
-  rate: Rate,
+function calculateSteppedRate(
+  rate: SteppedRate,
   weight: number,
-  serviceData: PostalService,
-  destinationType: DestinationType,
-  mailType: MailType,
-  mailCategory?: MailCategory,
-  fromRegionType?: RegionCode,
-  fromRegion?: string,
-  toRegion?: string,
 ): RateCalculationDetails | CalculationError {
-  let details: RateCalculationDetails;
-
-  switch (rate.type) {
-    case 'stepped': {
       if (weight > (rate.maxWeight ?? Infinity)) {
         return { errorType: 'weight' };
       }
@@ -204,49 +221,29 @@ function calculateRatePrice(
         return { errorType: 'weight' };
       }
 
-      details = getCalculationDetails(weight, tier, nextTierBaseWeight);
-      break;
-    }
+      return getCalculationDetails(weight, tier, nextTierBaseWeight);
+}
 
-    case 'fixed':
+function calculateFixedRate(
+  rate: FixedRate,
+  weight: number,
+): RateCalculationDetails | CalculationError {
       if (weight > (rate.maxWeight ?? Infinity)) {
         return { errorType: 'weight' };
       }
-      details = {
+      return {
         rateType: 'fixed',
         totalPrice: rate.price,
         basePrice: rate.price,
       };
-      break;
+}
 
-    case 'zonal': {
-      const destinationZoneDescriptions =
-        POSTAL_ZONE_DESCRIPTIONS[serviceData.nameKey]?.[destinationType];
-
-      let zoneDescriptions: ZoneDescriptions | undefined;
-      let zoneNumber: number | undefined;
-      if (fromRegionType === 'CN' && destinationType === 'domestic' && mailType === 'parcel') {
-        zoneNumber = getChinaPostMainlandParcelZone(fromRegion, toRegion);
-        zoneDescriptions = destinationZoneDescriptions as ZoneDescriptions;
-      } else {
-        const postalZone = getPostalZone(fromRegionType, toRegion);
-        if (!postalZone || !mailCategory) {
-          return { errorType: 'mail_category' };
-        }
-
-        // Determine which zone to use based on mail category and mail type
-        const zoneNumberMap = postalZone[mailCategory];
-        const letterTag = mailType !== 'letter' ? 'other' : mailType;
-        zoneNumber = typeof zoneNumberMap === 'object' ? zoneNumberMap?.[letterTag] : zoneNumberMap;
-        zoneDescriptions =
-          (destinationZoneDescriptions as CategoryZoneDescriptions)?.[mailCategory]?.[letterTag] ??
-          (destinationZoneDescriptions as ZoneDescriptions);
-      }
-
-      if (!zoneNumber) {
-        return { errorType: 'route' };
-      }
-
+function calculateZonalRate(
+  rate: ZonalRate,
+  weight: number,
+  zoneNumber: number,
+  zoneDescriptions?: ZoneDescriptions,
+): RateCalculationDetails | CalculationError {
       const zoneRates = rate.zones[zoneNumber];
       if (!zoneRates) {
         return { errorType: 'route' };
@@ -258,32 +255,23 @@ function calculateRatePrice(
       }
 
       // Calculate price using zonal rates
-      details = getCalculationDetails(
+      const details = getCalculationDetails(
         weight,
         zoneRates,
         zoneRates.maxWeight ?? zoneRates.baseWeight ?? zoneRates.weightStep ?? 0,
       );
       details.zoneDescription = zoneDescriptions?.[zoneNumber];
-      break;
-    }
-  }
-
-  if (details?.totalPrice === undefined) {
-    console.error(rate);
-    return { errorType: 'calculation' };
-  }
-
-  return details;
+      return details;
 }
 
 // Calculate supplement fees (registration and insurance)
 function calculateSupplementFees(
-  isRegistered: boolean | undefined,
-  packageValue: number | undefined,
-  rate: Rate | undefined,
-  destinationRates: { [K in MailType]?: CategoryRates | Rate | null } | undefined,
-  mailCategory: MailCategory | undefined,
-  serviceData: PostalService,
+  rate: Rate,
+  destinationRates?: { [K in MailType]?: CategoryRates | Rate | null },
+  insuranceRate?: SteppedRate,
+  mailCategory?: MailCategory,
+  isRegistered?: boolean,
+  packageValue?: number,
 ): SupplementFees {
   const supplements: SupplementFees = { totalPrice: 0 };
 
@@ -294,14 +282,8 @@ function calculateSupplementFees(
     supplements.totalPrice += supplements.registrationFee ?? 0;
   }
 
-  if (packageValue && packageValue > 0 && serviceData.insuranceRate) {
-    const insuranceResult = calculateRatePrice(
-      serviceData.insuranceRate,
-      packageValue,
-      serviceData,
-      'domestic',
-      'letter',
-    );
+  if (packageValue && insuranceRate) {
+    const insuranceResult = calculateSteppedRate(insuranceRate, packageValue);
     if (!('errorType' in insuranceResult) && insuranceResult.totalPrice) {
       supplements.insuranceFee = insuranceResult.totalPrice;
       supplements.totalPrice += supplements.insuranceFee;

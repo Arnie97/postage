@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { calculatePostageRate } from './calc';
-import type { MailType } from '../data/mail-types';
+import { calculatePostage } from './calc';
+import type { MailType, MailCategory } from '../data/mail-types';
 import type { CalculationResult, CalculationError, RateCalculationDetails } from './calc';
 
-describe('calculatePostageRate', () => {
+describe('calculatePostage', () => {
   // Helper function to check if result is an error
   function isError(result: CalculationResult | CalculationError): result is CalculationError {
     return 'errorType' in result;
@@ -13,11 +13,11 @@ describe('calculatePostageRate', () => {
     interface TestCase {
       description: string;
       input: {
-        mailType: string;
+        mailType: MailType;
         fromRegion: string;
         toRegion: string;
         weight: number;
-        mailCategory?: 'air' | 'sal';
+        mailCategory?: MailCategory;
         isRegistered?: boolean;
       };
       expected: Partial<RateCalculationDetails> & {
@@ -195,8 +195,8 @@ describe('calculatePostageRate', () => {
 
     successTestCases.forEach((testCase) => {
       it(testCase.description, () => {
-        const result = calculatePostageRate(
-          testCase.input.mailType as MailType,
+        const result = calculatePostage(
+          testCase.input.mailType,
           testCase.input.fromRegion,
           testCase.input.toRegion,
           testCase.input.weight,
@@ -247,8 +247,8 @@ describe('calculatePostageRate', () => {
 
     // Special test for mail category comparison
     it('China Post international air vs sal comparison', () => {
-      const airResult = calculatePostageRate('letter', 'CN-BJ', 'US', 20, 'air');
-      const salResult = calculatePostageRate('letter', 'CN-BJ', 'US', 20, 'sal');
+      const airResult = calculatePostage('letter', 'CN-BJ', 'US', 20, 'air');
+      const salResult = calculatePostage('letter', 'CN-BJ', 'US', 20, 'sal');
 
       expect(isError(airResult)).toBe(false);
       expect(isError(salResult)).toBe(false);
@@ -262,11 +262,11 @@ describe('calculatePostageRate', () => {
     interface ErrorTestCase {
       description: string;
       input: {
-        mailType: string;
+        mailType: MailType;
         fromRegion: string;
         toRegion: string;
         weight: number;
-        mailCategory?: 'air' | 'sal';
+        mailCategory?: MailCategory;
         isRegistered?: boolean;
       };
       expectedError: CalculationError['errorType'];
@@ -327,8 +327,8 @@ describe('calculatePostageRate', () => {
 
     errorTestCases.forEach((testCase) => {
       it(`should return ${testCase.expectedError} error for ${testCase.description}`, () => {
-        const result = calculatePostageRate(
-          testCase.input.mailType as MailType,
+        const result = calculatePostage(
+          testCase.input.mailType,
           testCase.input.fromRegion,
           testCase.input.toRegion,
           testCase.input.weight,
