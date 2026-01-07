@@ -51,6 +51,7 @@ export interface PostalService {
       [K in MailType]?: CategoryRates | Rate | null;
     };
   };
+  insuranceRate?: Rate;
 }
 
 export type CategoryRates = {

@@ -6,6 +6,8 @@ import {
   POSTAL_ZONE_DESCRIPTIONS,
   type CategoryZoneDescriptions,
   type ZoneDescriptions,
+  type RegionCode,
+  type DestinationType,
 } from '../data/regions';
 
 import {
@@ -14,13 +16,14 @@ import {
   type CategoryRates,
   type Rate,
   type RateTier,
+  type PostalService,
 } from '../data/rates';
 
 import type { MailType, MailCategory } from '../data/mail-types';
 
 export interface RateCalculationDetails {
   rateType: 'fixed' | 'tiered' | 'stepped';
-  totalPrice?: number;
+  totalPrice: number;
   baseWeight?: number;
   basePrice?: number;
   stepMinWeight?: number;
@@ -30,13 +33,20 @@ export interface RateCalculationDetails {
   additionalPrice?: number;
   maxWeight?: number;
   zoneDescription?: string;
+}
+
+export interface SupplementFees {
+  totalPrice: number;
   registrationFee?: number;
+  insuranceFee?: number;
 }
 
 export interface CalculationResult {
   serviceKey: string;
   ruleId?: string;
   details: RateCalculationDetails;
+  supplements: SupplementFees;
+  originalPrice: number;
 }
 
 export interface CalculationError {
@@ -89,6 +99,7 @@ export function calculatePostageRate(
   weight: number,
   mailCategory?: MailCategory,
   isRegistered?: boolean,
+  packageValue?: number,
 ): CalculationResult | CalculationError {
   // Type guard: check if fromRegionType is a valid RegionCode
   const fromRegionType = getRegionType(fromRegion);
@@ -116,6 +127,53 @@ export function calculatePostageRate(
   }
 
   // Calculate price based on rate method
+  const rateResult = calculateRatePrice(
+    rate,
+    weight,
+    serviceData,
+    destinationType,
+    mailType,
+    mailCategory,
+    fromRegionType,
+    fromRegion,
+    toRegion,
+  );
+  if ('errorType' in rateResult) {
+    return rateResult;
+  }
+
+  // Apply supplements
+  const supplements = calculateSupplementFees(
+    isRegistered,
+    packageValue,
+    rate,
+    destinationRates,
+    mailCategory,
+    serviceData,
+  );
+
+  const originalPrice = rateResult.totalPrice + supplements.totalPrice;
+
+  return {
+    serviceKey: serviceData.nameKey,
+    ruleId: findBestMatchingRateRule(serviceData.nameKey, destinationType, mailType),
+    details: rateResult,
+    supplements,
+    originalPrice,
+  };
+}
+
+function calculateRatePrice(
+  rate: Rate,
+  weight: number,
+  serviceData: PostalService,
+  destinationType: DestinationType,
+  mailType: MailType,
+  mailCategory?: MailCategory,
+  fromRegionType?: RegionCode,
+  fromRegion?: string,
+  toRegion?: string,
+): RateCalculationDetails | CalculationError {
   let details: RateCalculationDetails;
 
   switch (rate.type) {
@@ -215,21 +273,42 @@ export function calculatePostageRate(
     return { errorType: 'calculation' };
   }
 
+  return details;
+}
+
+// Calculate supplement fees (registration and insurance)
+function calculateSupplementFees(
+  isRegistered: boolean | undefined,
+  packageValue: number | undefined,
+  rate: Rate | undefined,
+  destinationRates: { [K in MailType]?: CategoryRates | Rate | null } | undefined,
+  mailCategory: MailCategory | undefined,
+  serviceData: PostalService,
+): SupplementFees {
+  const supplements: SupplementFees = { totalPrice: 0 };
+
   if (isRegistered) {
-    const registrationFee =
+    supplements.registrationFee =
       rate?.registrationFee ??
-      getPricingModel(destinationRates['letter'], mailCategory)?.registrationFee;
-    if (registrationFee) {
-      details.registrationFee = registrationFee;
-      details.totalPrice += registrationFee;
+      getPricingModel(destinationRates?.['letter'], mailCategory)?.registrationFee;
+    supplements.totalPrice += supplements.registrationFee ?? 0;
+  }
+
+  if (packageValue && packageValue > 0 && serviceData.insuranceRate) {
+    const insuranceResult = calculateRatePrice(
+      serviceData.insuranceRate,
+      packageValue,
+      serviceData,
+      'domestic',
+      'letter',
+    );
+    if (!('errorType' in insuranceResult) && insuranceResult.totalPrice) {
+      supplements.insuranceFee = insuranceResult.totalPrice;
+      supplements.totalPrice += supplements.insuranceFee;
     }
   }
 
-  return {
-    serviceKey: serviceData.nameKey,
-    ruleId: findBestMatchingRateRule(serviceData.nameKey, destinationType, mailType),
-    details,
-  };
+  return supplements;
 }
 
 // Calculate price within the tier
@@ -264,7 +343,7 @@ function getCalculationDetails(
     // Fixed pricing within tier (pure tiered mode)
     return {
       rateType: 'tiered',
-      totalPrice: tier.basePrice,
+      totalPrice: tier.basePrice ?? 0,
       baseWeight,
       basePrice: tier.basePrice,
       maxWeight: maxWeight,

@@ -19,6 +19,8 @@
   let toRegion = 'HK';
   let weight = '20';
   let isRegistered = false;
+  let isInsured = false;
+  let packageValue = '';
   let result: CalculationResult | null;
   let error = '';
 
@@ -154,6 +156,7 @@
       weightNum,
       selectedMailCategory,
       isRegistered,
+      isInsured ? parseFloat(packageValue) : NaN,
     );
 
     if ('errorType' in calculatedResult) {
@@ -260,9 +263,31 @@
             <input type="checkbox" bind:checked={isRegistered} name="registeredMail" />
             <span>{t('mail.supplement.registered', currentLang)}</span>
           </label>
+          <label class="checkbox-item">
+            <input type="checkbox" bind:checked={isInsured} name="insuredMail" />
+            <span>{t('mail.supplement.insured', currentLang)}</span>
+          </label>
         </div>
       </fieldset>
     </div>
+
+    <!-- Package Value Input (shown when insurance is enabled) -->
+    {#if isInsured}
+      <div class="form-group">
+        <label for="packageValue" class="form-label">
+          {t('mail.supplement.package-value', currentLang)}
+        </label>
+        <input
+          id="packageValue"
+          type="number"
+          min="0"
+          step="0.01"
+          bind:value={packageValue}
+          placeholder="0.00"
+          class="form-control"
+        />
+      </div>
+    {/if}
 
     <!-- Result Display -->
     {#if result}
@@ -348,10 +373,17 @@
               {currency}
             </p>
           {/if}
-          {#if result.details.registrationFee}
+          {#if result.supplements.registrationFee}
             <p>
               {t('calculation.registration-fee', currentLang)}:
-              {result.details.registrationFee.toFixed(2)}
+              {result.supplements.registrationFee.toFixed(2)}
+              {currency}
+            </p>
+          {/if}
+          {#if result.supplements.insuranceFee}
+            <p>
+              {t('calculation.insurance-fee', currentLang)}:
+              {result.supplements.insuranceFee.toFixed(2)}
               {currency}
             </p>
           {/if}
