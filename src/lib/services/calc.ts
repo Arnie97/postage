@@ -195,47 +195,47 @@ function calculateSteppedRate(
   rate: SteppedRate,
   weight: number,
 ): RateCalculationDetails | CalculationError {
-      if (weight > (rate.maxWeight ?? Infinity)) {
-        return { errorType: 'weight' };
-      }
+  if (weight > (rate.maxWeight ?? Infinity)) {
+    return { errorType: 'weight' };
+  }
 
-      // Find the appropriate tier based on weight and baseWeight values
-      let tier, baseWeight, nextTier, nextTierBaseWeight;
+  // Find the appropriate tier based on weight and baseWeight values
+  let tier, baseWeight, nextTier, nextTierBaseWeight;
 
-      for (let i = 0; i < rate.tiers.length; i++) {
-        const currentTier = rate.tiers[i];
-        baseWeight = currentTier.baseWeight ?? currentTier.weightStep ?? 0;
-        nextTier = rate.tiers[i + 1];
-        nextTierBaseWeight = nextTier
-          ? (nextTier.baseWeight ?? nextTier.weightStep ?? 0)
-          : (rate.maxWeight ?? Infinity);
+  for (let i = 0; i < rate.tiers.length; i++) {
+    const currentTier = rate.tiers[i];
+    baseWeight = currentTier.baseWeight ?? currentTier.weightStep ?? 0;
+    nextTier = rate.tiers[i + 1];
+    nextTierBaseWeight = nextTier
+      ? (nextTier.baseWeight ?? nextTier.weightStep ?? 0)
+      : (rate.maxWeight ?? Infinity);
 
-        if (weight <= nextTierBaseWeight) {
-          tier = currentTier;
-          break;
-        }
-      }
+    if (weight <= nextTierBaseWeight) {
+      tier = currentTier;
+      break;
+    }
+  }
 
-      if (!tier || baseWeight === undefined) {
-        console.error(rate);
-        return { errorType: 'weight' };
-      }
+  if (!tier || baseWeight === undefined) {
+    console.error(rate);
+    return { errorType: 'weight' };
+  }
 
-      return getCalculationDetails(weight, tier, nextTierBaseWeight);
+  return getCalculationDetails(weight, tier, nextTierBaseWeight);
 }
 
 function calculateFixedRate(
   rate: FixedRate,
   weight: number,
 ): RateCalculationDetails | CalculationError {
-      if (weight > (rate.maxWeight ?? Infinity)) {
-        return { errorType: 'weight' };
-      }
-      return {
-        rateType: 'fixed',
-        totalPrice: rate.price,
-        basePrice: rate.price,
-      };
+  if (weight > (rate.maxWeight ?? Infinity)) {
+    return { errorType: 'weight' };
+  }
+  return {
+    rateType: 'fixed',
+    totalPrice: rate.price,
+    basePrice: rate.price,
+  };
 }
 
 function calculateZonalRate(
@@ -244,24 +244,24 @@ function calculateZonalRate(
   zoneNumber: number,
   zoneDescriptions?: ZoneDescriptions,
 ): RateCalculationDetails | CalculationError {
-      const zoneRates = rate.zones[zoneNumber];
-      if (!zoneRates) {
-        return { errorType: 'route' };
-      }
+  const zoneRates = rate.zones[zoneNumber];
+  if (!zoneRates) {
+    return { errorType: 'route' };
+  }
 
-      // Check weight limit
-      if (zoneRates.maxWeight && weight > zoneRates.maxWeight) {
-        return { errorType: 'weight' };
-      }
+  // Check weight limit
+  if (zoneRates.maxWeight && weight > zoneRates.maxWeight) {
+    return { errorType: 'weight' };
+  }
 
-      // Calculate price using zonal rates
-      const details = getCalculationDetails(
-        weight,
-        zoneRates,
-        zoneRates.maxWeight ?? zoneRates.baseWeight ?? zoneRates.weightStep ?? 0,
-      );
-      details.zoneDescription = zoneDescriptions?.[zoneNumber];
-      return details;
+  // Calculate price using zonal rates
+  const details = getCalculationDetails(
+    weight,
+    zoneRates,
+    zoneRates.maxWeight ?? zoneRates.baseWeight ?? zoneRates.weightStep ?? 0,
+  );
+  details.zoneDescription = zoneDescriptions?.[zoneNumber];
+  return details;
 }
 
 // Calculate supplement fees (registration and insurance)
