@@ -20,7 +20,7 @@
   let weight = '20';
   let isRegistered = false;
   let isInsured = false;
-  let packageValue = '';
+  let packageValue = '200';
   let result: CalculationResult | null;
   let error = '';
 
@@ -103,9 +103,11 @@
 
   // Auto-calculate when inputs change
   $: {
-    // Include selectedMailCategory and isRegistered in dependencies to trigger recalculation
+    // Include selectedMailCategory, isRegistered, isInsured, and packageValue in dependencies to trigger recalculation
     void selectedMailCategory;
     void isRegistered;
+    void isInsured;
+    void packageValue;
     if (fromRegion && toRegion && weight && selectedMailType) {
       calculate();
     } else {
@@ -149,6 +151,15 @@
       return;
     }
 
+    let packageValueNum = undefined;
+    if (isInsured && packageValue) {
+      packageValueNum = parseFloat(packageValue);
+      if (isNaN(packageValueNum) || packageValueNum <= 0) {
+        error = t('error.package_value', currentLang);
+        return;
+      }
+    }
+
     const calculatedResult = calculatePostage(
       selectedMailType,
       fromRegion,
@@ -156,7 +167,7 @@
       weightNum,
       selectedMailCategory,
       isRegistered,
-      isInsured ? parseFloat(packageValue) : NaN,
+      packageValueNum,
     );
 
     if ('errorType' in calculatedResult) {
@@ -221,9 +232,6 @@
             step="1"
             required
           />
-          {#if error}
-            <div class="error-message">{error}</div>
-          {/if}
         </div>
       </div>
     </div>
@@ -268,10 +276,10 @@
             <span>{t('mail.supplement.insured', currentLang)}</span>
           </label>
         </div>
+        <!-- Package Value Input (shown when insurance is enabled) -->
       </fieldset>
     </div>
 
-    <!-- Package Value Input (shown when insurance is enabled) -->
     {#if isInsured}
       <div class="form-group">
         <label for="packageValue" class="form-label">
@@ -283,10 +291,13 @@
           min="0"
           step="0.01"
           bind:value={packageValue}
-          placeholder="0.00"
           class="form-control"
         />
       </div>
+    {/if}
+
+    {#if error}
+      <div class="error-message">{error}</div>
     {/if}
 
     <!-- Result Display -->

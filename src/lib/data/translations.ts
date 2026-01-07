@@ -42,6 +42,7 @@ export type TranslationKey =
   | 'currency.hkd'
   | 'currency.mop'
   | 'error.weight'
+  | 'error.package_value'
   | 'error.calculation'
   | 'error.service'
   | 'error.route'
@@ -100,6 +101,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'currency.hkd': 'HKD',
     'currency.mop': 'MOP',
     'error.weight': 'Invalid weight',
+    'error.package_value': 'Invalid package value',
     'error.calculation': 'Unable to calculate postage',
     'error.service': 'Postal service is not available for this origin region',
     'error.route': 'Shipping route is not available for this destination',
@@ -133,7 +135,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.supplement': '附加服務',
     'mail.supplement.registered': '掛號',
     'mail.supplement.insured': '保價',
-    'mail.supplement.package-value': '包裹價值',
+    'mail.supplement.package-value': '函件價值',
     'sender': '寄件地',
     'receiver': '收件地',
     'region.select': '選擇地區',
@@ -157,6 +159,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'currency.hkd': '港幣',
     'currency.mop': '澳門元',
     'error.weight': '重量無效',
+    'error.package_value': '函件價值無效',
     'error.calculation': '無法計算郵費',
     'error.service': '出發地無郵政服務可用',
     'error.route': '目的地無運送路線可用',
@@ -190,7 +193,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.supplement': '附加业务',
     'mail.supplement.registered': '挂号',
     'mail.supplement.insured': '保价',
-    'mail.supplement.package-value': '包裹价值',
+    'mail.supplement.package-value': '函件价值',
     'sender': '寄件地',
     'receiver': '收件地',
     'region.select': '选择地区',
@@ -214,6 +217,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'currency.hkd': '港币',
     'currency.mop': '澳门元',
     'error.weight': '重量无效',
+    'error.package_value': '函件价值无效',
     'error.calculation': '无法计算邮费',
     'error.service': '出发地无邮政服务可用',
     'error.route': '目的地无运送路线可用',

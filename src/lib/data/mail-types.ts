@@ -1,6 +1,7 @@
 export type MailCategory = 'air' | 'sal' | 'surface';
 
 export type MailType =
+  | 'insurance'
   | 'letter'
   | 'postcard'
   | 'aerogramme'

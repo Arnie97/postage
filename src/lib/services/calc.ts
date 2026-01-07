@@ -176,11 +176,13 @@ export function calculatePostage(
   const supplements = calculateSupplementFees(
     rate,
     destinationRates,
-    serviceData.insuranceRate,
     mailCategory,
     isRegistered,
     packageValue,
   );
+  if ('errorType' in supplements) {
+    return supplements;
+  }
 
   return {
     serviceKey: serviceData.nameKey,
@@ -268,28 +270,35 @@ function calculateZonalRate(
 function calculateSupplementFees(
   rate: Rate,
   destinationRates?: { [K in MailType]?: CategoryRates | Rate | null },
-  insuranceRate?: SteppedRate,
   mailCategory?: MailCategory,
   isRegistered?: boolean,
   packageValue?: number,
-): SupplementFees {
+): SupplementFees | CalculationError {
   const supplements: SupplementFees = { totalPrice: 0 };
 
   if (isRegistered) {
     supplements.registrationFee =
       rate?.registrationFee ??
-      getPricingModel(destinationRates?.['letter'], mailCategory)?.registrationFee;
+      getPricingModel(destinationRates?.letter, mailCategory)?.registrationFee;
     supplements.totalPrice += supplements.registrationFee ?? 0;
   }
 
-  if (packageValue && insuranceRate) {
-    const insuranceResult = calculateSteppedRate(insuranceRate, packageValue);
-    if (!('errorType' in insuranceResult) && insuranceResult.totalPrice) {
-      supplements.insuranceFee = insuranceResult.totalPrice;
-      supplements.totalPrice += supplements.insuranceFee;
-    }
+  if (!packageValue) {
+    return supplements;
   }
 
+  const insuranceRate = getPricingModel(destinationRates?.insurance, mailCategory);
+  if (!insuranceRate) {
+    return supplements;
+  }
+
+  const insuranceResult = calculateSteppedRate(insuranceRate as SteppedRate, packageValue);
+  if ('errorType' in insuranceResult) {
+    return insuranceResult;
+  }
+
+  supplements.insuranceFee = insuranceResult.totalPrice;
+  supplements.totalPrice += supplements.insuranceFee;
   return supplements;
 }
 

@@ -51,7 +51,6 @@ export interface PostalService {
       [K in MailType]?: CategoryRates | Rate | null;
     };
   };
-  insuranceRate?: SteppedRate;
 }
 
 export type CategoryRates = {
@@ -70,6 +69,11 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
     secondaryColor: '#f59e0b', // Golden Yellow (from logo)
     rates: {
       domestic: {
+        insurance: {
+          type: 'stepped',
+          tiers: [{ baseWeight: 100, basePrice: 1, weightStep: 1, additionalPrice: 0.01 }],
+          maxWeight: 20000,
+        },
         letter: {
           type: 'stepped',
           tiers: [
@@ -112,6 +116,11 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
         },
       },
       regional: {
+        insurance: {
+          type: 'stepped',
+          tiers: [{ basePrice: 5, weightStep: 200, additionalPrice: 3 }],
+          maxWeight: 20000,
+        },
         letter: {
           air: {
             type: 'stepped',
@@ -213,6 +222,11 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
         },
       },
       international: {
+        insurance: {
+          type: 'stepped',
+          tiers: [{ basePrice: 3, weightStep: 100, additionalPrice: 1 }],
+          maxWeight: 20000,
+        },
         letter: {
           air: {
             type: 'zonal',
