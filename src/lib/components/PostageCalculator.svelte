@@ -182,15 +182,15 @@
 <div class="card">
   <div class="card-content">
     <!-- Region Selection Row -->
-    <div class="region-row">
-      <div class="region-col">
+    <div class="pair-row">
+      <div class="half-col">
         <RegionSelector
           bind:selectedRegion={fromRegion}
           label={t('sender', currentLang)}
           isDestination={false}
         />
       </div>
-      <div class="region-col">
+      <div class="half-col">
         <RegionSelector
           bind:selectedRegion={toRegion}
           label={t('receiver', currentLang)}
@@ -200,8 +200,8 @@
     </div>
 
     <!-- Mail Type and Weight Row -->
-    <div class="mail-type-weight-row">
-      <div class="mail-type-col">
+    <div class="pair-row">
+      <div class="half-col">
         <!-- Mail Type Selection -->
         <div class="form-group">
           <label class="form-label" for="mailType">
@@ -217,7 +217,7 @@
           </select>
         </div>
       </div>
-      <div class="weight-col">
+      <div class="half-col">
         <!-- Weight Input -->
         <div class="form-group">
           <label class="form-label" for="weight">
@@ -405,27 +405,20 @@
 </div>
 
 <style>
-  .region-row {
+  .pair-row {
     display: flex;
     gap: 1rem;
     margin-bottom: 1rem;
   }
 
-  .region-col {
-    flex: 1;
+  @media (max-width: 768px) {
+    .pair-row {
+      flex-direction: column;
+      gap: 0;
+    }
   }
 
-  .mail-type-weight-row {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .mail-type-col {
-    flex: 1;
-  }
-
-  .weight-col {
+  .half-col {
     flex: 1;
   }
 
@@ -471,17 +464,5 @@
 
   .checkbox-item:hover {
     background: var(--bg-tertiary);
-  }
-
-  @media (max-width: 768px) {
-    .region-row {
-      flex-direction: column;
-      gap: 0;
-    }
-
-    .mail-type-weight-row {
-      flex-direction: column;
-      gap: 0;
-    }
   }
 </style>
