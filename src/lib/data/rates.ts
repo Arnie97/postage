@@ -118,8 +118,9 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
       regional: {
         insurance: {
           type: 'stepped',
-          tiers: [{ basePrice: 5, weightStep: 200, additionalPrice: 3 }],
+          tiers: [{ weightStep: 200, additionalPrice: 3 }],
           maxWeight: 20000,
+          registrationFee: 2,
         },
         letter: {
           air: {
@@ -224,8 +225,9 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
       international: {
         insurance: {
           type: 'stepped',
-          tiers: [{ basePrice: 3, weightStep: 100, additionalPrice: 1 }],
+          tiers: [{ weightStep: 100, additionalPrice: 1 }],
           maxWeight: 20000,
+          registrationFee: 2,
         },
         letter: {
           air: {

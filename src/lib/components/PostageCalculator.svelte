@@ -175,6 +175,11 @@
       return;
     }
 
+    if (!isRegistered && isInsured && calculatedResult.supplements.insuranceCommission) {
+      isRegistered = true;
+      return calculate();
+    }
+
     result = calculatedResult;
   }
 </script>
@@ -388,6 +393,13 @@
             <p>
               {t('calculation.registration-fee', currentLang)}:
               {result.supplements.registrationFee.toFixed(2)}
+              {currency}
+            </p>
+          {/if}
+          {#if result.supplements.insuranceCommission}
+            <p>
+              {t('calculation.insurance-commission', currentLang)}:
+              {result.supplements.insuranceCommission.toFixed(2)}
               {currency}
             </p>
           {/if}

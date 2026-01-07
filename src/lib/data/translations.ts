@@ -53,6 +53,7 @@ export type TranslationKey =
   | 'calculation.additional-weight'
   | 'calculation.tier-range'
   | 'calculation.registration-fee'
+  | 'calculation.insurance-commission'
   | 'calculation.insurance-fee'
   | 'footer.description'
   | 'footer.license'
@@ -112,6 +113,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'calculation.additional-weight': 'Additional Weight',
     'calculation.tier-range': 'Weight',
     'calculation.registration-fee': 'Registration Fee',
+    'calculation.insurance-commission': 'Insurance Commission',
     'calculation.insurance-fee': 'Insurance Fee',
     'footer.description': 'Postage calculator for Greater China',
     'footer.source-code': 'Source code',
@@ -170,6 +172,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'calculation.additional-weight': '續重',
     'calculation.tier-range': '重量',
     'calculation.registration-fee': '掛號費',
+    'calculation.insurance-commission': '保價手續費',
     'calculation.insurance-fee': '保價費',
     'footer.description': '兩岸四地郵費計算機',
     'footer.source-code': '原始碼',
@@ -228,6 +231,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'calculation.additional-weight': '续重',
     'calculation.tier-range': '重量',
     'calculation.registration-fee': '挂号费',
+    'calculation.insurance-commission': '保价手续费',
     'calculation.insurance-fee': '保价费',
     'footer.description': '两岸四地邮费计算器',
     'footer.source-code': '源代码',

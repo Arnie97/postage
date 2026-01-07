@@ -38,6 +38,7 @@ export interface RateCalculationDetails {
 export interface SupplementFees {
   totalPrice: number;
   registrationFee?: number;
+  insuranceCommission?: number;
   insuranceFee?: number;
 }
 
@@ -283,22 +284,21 @@ function calculateSupplementFees(
     supplements.totalPrice += supplements.registrationFee ?? 0;
   }
 
-  if (!packageValue) {
-    return supplements;
+  if (packageValue) {
+    const insuranceRate = getPricingModel(destinationRates?.insurance, mailCategory);
+    if (insuranceRate) {
+      supplements.insuranceCommission = insuranceRate.registrationFee ?? 0;
+
+      const insuranceResult = calculateSteppedRate(insuranceRate as SteppedRate, packageValue);
+      if ('errorType' in insuranceResult) {
+        return insuranceResult;
+      }
+
+      supplements.insuranceFee = insuranceResult.totalPrice;
+      supplements.totalPrice += supplements.insuranceCommission + supplements.insuranceFee;
+    }
   }
 
-  const insuranceRate = getPricingModel(destinationRates?.insurance, mailCategory);
-  if (!insuranceRate) {
-    return supplements;
-  }
-
-  const insuranceResult = calculateSteppedRate(insuranceRate as SteppedRate, packageValue);
-  if ('errorType' in insuranceResult) {
-    return insuranceResult;
-  }
-
-  supplements.insuranceFee = insuranceResult.totalPrice;
-  supplements.totalPrice += supplements.insuranceFee;
   return supplements;
 }
 
