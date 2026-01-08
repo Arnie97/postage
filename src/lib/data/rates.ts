@@ -109,9 +109,9 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
           type: 'stepped',
           tiers: [
             { baseWeight: 0, basePrice: 0.8 },
-            { baseWeight: 20, basePrice: 4 },
-            { baseWeight: 1000, basePrice: 6 },
-            { baseWeight: 3000, basePrice: 11 },
+            { baseWeight: 20, basePrice: 6 }, // 2 + 4
+            { baseWeight: 1000, basePrice: 8 }, // 2 + 6
+            { baseWeight: 3000, basePrice: 13 }, // 2 + 11
           ],
           maxWeight: 5000,
           discounts: [

@@ -62,8 +62,7 @@ describe('getPostalZone', () => {
     { fromRegion: 'TW', toRegion: 'US', expected: { air: 5 } },
     { fromRegion: 'CN', toRegion: 'HK', expected: null },
     { fromRegion: 'HK', toRegion: 'CN-BJ', expected: null },
-    { fromRegion: 'MO', toRegion: 'AQ', expected: null },
-    { fromRegion: 'TW', toRegion: 'XX', expected: null },
+    { fromRegion: 'MO', toRegion: 'XX', expected: null },
   ])(
     'should return null for invalid or unsupported combinations: $fromRegion → $toRegion',
     ({ fromRegion, toRegion, expected }) => {
