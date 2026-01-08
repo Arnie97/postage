@@ -293,6 +293,12 @@ function calculateSupplementFees(
     supplements.originalPrice += supplements.registrationFee ?? 0;
   }
 
+  if (discountRuleIndex !== undefined && rate.discounts && rate.discounts[discountRuleIndex]) {
+    const discount = rate.discounts[discountRuleIndex];
+    supplements.ruleDiscount = ((discount.pricePercent - 100) / 100) * supplements.originalPrice;
+    supplements.discountedPrice = supplements.originalPrice + supplements.ruleDiscount;
+  }
+
   if (packageValue) {
     const insuranceRate = getPricingModel(destinationRates?.insurance, mailCategory);
     if (insuranceRate) {
@@ -305,21 +311,18 @@ function calculateSupplementFees(
 
       supplements.insuranceFee = insuranceResult.totalPrice;
       supplements.originalPrice += supplements.insuranceCommission + supplements.insuranceFee;
+      if (supplements.discountedPrice) {
+        supplements.discountedPrice += supplements.insuranceCommission + supplements.insuranceFee;
+      }
     }
-  }
-
-  if (discountRuleIndex !== undefined && rate.discounts && rate.discounts[discountRuleIndex]) {
-    const discount = rate.discounts[discountRuleIndex];
-    supplements.ruleDiscount = (supplements.originalPrice * (100 - discount.pricePercent)) / 100;
-    supplements.discountedPrice = supplements.originalPrice - supplements.ruleDiscount;
   }
 
   if (stampDiscountPercent && stampDiscountPercent != 100) {
     if (!supplements.discountedPrice) {
       supplements.discountedPrice = supplements.originalPrice;
     }
-    supplements.stampDiscount = (supplements.discountedPrice * (100 - stampDiscountPercent)) / 100;
-    supplements.discountedPrice -= supplements.stampDiscount;
+    supplements.stampDiscount = ((stampDiscountPercent - 100) / 100) * supplements.discountedPrice;
+    supplements.discountedPrice += supplements.stampDiscount;
   }
 
   return supplements;

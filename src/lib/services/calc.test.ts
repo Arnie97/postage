@@ -33,13 +33,13 @@ describe('calculatePostage', () => {
     const successTestCases: TestCase[] = [
       // Fixed Rate Pricing
       {
-        description: 'China Post domestic postcard - fixed rate',
+        description: 'China Post domestic postcard - tiered rate',
         input: { mailType: 'postcard', fromRegion: 'CN-BJ', toRegion: 'CN-SH', weight: 15 },
         expected: {
           totalPrice: 0.8,
           originalPrice: 0.8,
           serviceKey: 'china_post',
-          rateType: 'fixed',
+          rateType: 'tiered',
           basePrice: 0.8,
         },
       },
@@ -295,7 +295,7 @@ describe('calculatePostage', () => {
       },
       {
         description: 'weight exceeding maxWeight for fixed rate',
-        input: { mailType: 'postcard', fromRegion: 'CN-BJ', toRegion: 'CN-SH', weight: 25 },
+        input: { mailType: 'aerogramme', fromRegion: 'CN-BJ', toRegion: 'CN-SH', weight: 25 },
         expectedError: 'weight',
       },
       {

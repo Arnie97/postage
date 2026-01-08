@@ -94,6 +94,16 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
           ],
           maxWeight: 2000,
           registrationFee: 3,
+          discounts: [
+            {
+              name: {
+                'zh-CN': '义务兵免费信件',
+                'zh-TW': '義務兵免費信件',
+                'en': 'Free Mail for PLA / PAP Conscripts',
+              },
+              pricePercent: 0,
+            },
+          ],
         },
         postcard: {
           type: 'stepped',
@@ -104,6 +114,16 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
             { baseWeight: 3000, basePrice: 11 },
           ],
           maxWeight: 5000,
+          discounts: [
+            {
+              name: {
+                'zh-CN': '义务兵免费信件',
+                'zh-TW': '義務兵免費信件',
+                'en': 'Free Mail for PLA / PAP Conscripts',
+              },
+              pricePercent: 0,
+            },
+          ],
         },
         aerogramme: {
           type: 'fixed',
@@ -130,6 +150,24 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
             5: { basePrice: 0x9, weightStep: 1000, additionalPrice: 4.0, maxWeight: 50000 },
             6: { basePrice: 0xa, weightStep: 1000, additionalPrice: 5.0, maxWeight: 50000 },
           },
+          discounts: [
+            {
+              name: {
+                'zh-CN': '师生及新市民U+卡持卡人',
+                'zh-TW': '師生及新市民U+卡持卡人',
+                'en': 'Teachers, Students and U+ Cardholders',
+              },
+              pricePercent: 80,
+            },
+            {
+              name: {
+                'zh-CN': '解放军和武警官兵、文职及退役军人；残疾人',
+                'zh-TW': '解放軍和武警官兵、文職及退役軍人；殘障人士',
+                'en': 'Disabled People, PLA / PAP Military Personnel, and Veterans',
+              },
+              pricePercent: 70,
+            },
+          ],
         },
       },
       regional: {

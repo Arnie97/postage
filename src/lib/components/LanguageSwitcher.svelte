@@ -2,9 +2,9 @@
   import { language, setLanguage, type Language } from '../utils/language';
 
   const LANGUAGES: { code: Language; name: string }[] = [
-    { code: 'en', name: 'EN' },
     { code: 'zh-TW', name: '繁' },
     { code: 'zh-CN', name: '简' },
+    { code: 'en', name: 'EN' },
   ];
 
   function handleLanguageChange(lang: Language) {

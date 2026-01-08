@@ -316,6 +316,39 @@
       </div>
     {/if}
 
+    <!-- Discount Rules Selection -->
+    {#if availableDiscountRules.length > 0}
+      <div class="form-group">
+        <fieldset class="fieldset-reset">
+          <legend class="form-label">
+            {t('calculation.rule-discount', currentLang)}
+          </legend>
+          <div class="radio-group">
+            <label class="radio-item">
+              <input
+                type="radio"
+                bind:group={discountRuleIndex}
+                value={undefined}
+                name="discountRule"
+              />
+              <span>- (100%)</span>
+            </label>
+            {#each availableDiscountRules as rule, index}
+              <label class="radio-item">
+                <input
+                  type="radio"
+                  bind:group={discountRuleIndex}
+                  value={index}
+                  name="discountRule"
+                />
+                <span>{rule.name[currentLang]} ({rule.pricePercent}%)</span>
+              </label>
+            {/each}
+          </div>
+        </fieldset>
+      </div>
+    {/if}
+
     <!-- Registered Mail Option -->
     <div class="form-group">
       <fieldset class="fieldset-reset">
@@ -373,39 +406,6 @@
       </div>
     {/if}
 
-    <!-- Discount Rules Selection -->
-    {#if availableDiscountRules.length > 0}
-      <div class="form-group">
-        <fieldset class="fieldset-reset">
-          <legend class="form-label">
-            {t('calculation.rule-discount', currentLang)}
-          </legend>
-          <div class="radio-group">
-            <label class="radio-item">
-              <input
-                type="radio"
-                bind:group={discountRuleIndex}
-                value={undefined}
-                name="discountRule"
-              />
-              <span>None</span>
-            </label>
-            {#each availableDiscountRules as rule, index}
-              <label class="radio-item">
-                <input
-                  type="radio"
-                  bind:group={discountRuleIndex}
-                  value={index}
-                  name="discountRule"
-                />
-                <span>{rule.name[currentLang]} ({rule.pricePercent}%)</span>
-              </label>
-            {/each}
-          </div>
-        </fieldset>
-      </div>
-    {/if}
-
     {#if error}
       <div class="error-message">{error}</div>
     {/if}
@@ -421,16 +421,15 @@
         {serviceData.secondaryColor || 'white'});"
       >
         <div class="result-price">
-          {#if result.supplements.discountedPrice}
+          {#if result.supplements.discountedPrice !== undefined}
             <span class="original-price">
               {result.supplements.originalPrice.toFixed(2)}
             </span>
             {result.supplements.discountedPrice.toFixed(2)}
-            {currency}
           {:else}
             {result.supplements.originalPrice.toFixed(2)}
-            {currency}
           {/if}
+          {currency}
         </div>
         <div class="result-details">
           {s('service', serviceData.nameKey, currentLang)} •
@@ -527,17 +526,15 @@
           <!-- Discount Information -->
           {#if result.supplements.ruleDiscount}
             <p>
-              {t('calculation.rule-discount', currentLang)}: -{result.supplements.ruleDiscount.toFixed(
-                2,
-              )}
+              {t('calculation.rule-discount', currentLang)}:
+              {result.supplements.ruleDiscount.toFixed(2)}
               {currency}
             </p>
           {/if}
           {#if result.supplements.stampDiscount}
             <p>
-              {t('calculation.stamp-discount', currentLang)}: -{result.supplements.stampDiscount.toFixed(
-                2,
-              )}
+              {t('calculation.stamp-discount', currentLang)}:
+              {result.supplements.stampDiscount.toFixed(2)}
               {currency}
             </p>
           {/if}
