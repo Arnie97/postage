@@ -2,7 +2,11 @@ import type { MailType, MailCategory } from './mail-types';
 import type { RegionCode, PostalServiceName, DestinationType } from './regions';
 
 export interface DiscountRule {
-  name: string;
+  name: {
+    'zh-CN': string;
+    'zh-TW': string;
+    'en': string;
+  };
   pricePercent: number;
 }
 
@@ -92,9 +96,14 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
           registrationFee: 3,
         },
         postcard: {
-          type: 'fixed',
-          price: 0.8,
-          maxWeight: 20,
+          type: 'stepped',
+          tiers: [
+            { baseWeight: 0, basePrice: 0.8 },
+            { baseWeight: 20, basePrice: 4 },
+            { baseWeight: 1000, basePrice: 6 },
+            { baseWeight: 3000, basePrice: 11 },
+          ],
+          maxWeight: 5000,
         },
         aerogramme: {
           type: 'fixed',
@@ -1351,6 +1360,10 @@ export const RATE_RULES: Record<string, { name: string; url: string }> = {
   china_post_domestic_parcel: {
     name: '国内包裹资费',
     url: 'https://www.ndrc.gov.cn/xxgk/zcfb/ghxwj/201704/t20170412_960915.html',
+  },
+  china_post_domestic_postcard: {
+    name: '家乡包裹贴',
+    url: 'http://www.lc0011.com/show.aspx?id=302478&cid=10',
   },
 
   // Chunghwa Post Rules

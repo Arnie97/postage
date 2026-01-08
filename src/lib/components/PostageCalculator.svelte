@@ -1,6 +1,6 @@
 <script lang="ts">
   import { language } from '../utils/language';
-  import { calculatePostage, type CalculationResult } from '../services/calc';
+  import { calculatePostage, type CalculationResult, getPricingModel } from '../services/calc';
   import { ALL_MAIL_TYPES, type MailType, type MailCategory } from '../data/mail-types';
   import {
     getDestinationType,
@@ -21,7 +21,7 @@
   let isRegistered = false;
   let isInsured = false;
   let packageValue = '200';
-  let discountRuleName = '';
+  let discountRuleIndex: number | undefined;
   let hasStampDiscount = false;
   let stampPricePercent = '45';
   let result: CalculationResult | null;
@@ -42,6 +42,14 @@
   // Get available mail categories for the destination
   $: availableMailCategories = getAvailableMailCategories(fromRegion, toRegion, selectedMailType);
 
+  // Get available discount rules for the current rate
+  $: availableDiscountRules = getAvailableDiscountRules(
+    fromRegion,
+    toRegion,
+    selectedMailType,
+    selectedMailCategory,
+  );
+
   // Set default mail category when destination changes or category becomes unavailable
   $: {
     if (!availableMailCategories.includes(selectedMailCategory as MailCategory)) {
@@ -53,6 +61,13 @@
       } else {
         selectedMailCategory = undefined;
       }
+    }
+  }
+
+  // Reset discount rule selection when it's no longer available
+  $: {
+    if (discountRuleIndex !== undefined && discountRuleIndex >= availableDiscountRules.length) {
+      discountRuleIndex = undefined;
     }
   }
 
@@ -104,13 +119,42 @@
     return Object.getOwnPropertyNames(rate) as MailCategory[];
   }
 
+  function getAvailableDiscountRules(
+    fromRegion: string,
+    toRegion: string,
+    mailType: MailType,
+    mailCategory?: MailCategory,
+  ) {
+    // Type guard: check if fromRegionType is a valid RegionCode
+    const fromRegionType = getRegionType(fromRegion);
+    if (fromRegionType === 'XX') {
+      return [];
+    }
+
+    const serviceData = POSTAGE_RATES[fromRegionType];
+    if (!serviceData) {
+      return [];
+    }
+
+    const toRegionType = getRegionType(toRegion);
+    const destinationType = getDestinationType(fromRegionType, toRegionType);
+    const destinationRates = serviceData.rates[destinationType];
+    if (!destinationRates) {
+      return [];
+    }
+
+    const rate = getPricingModel(destinationRates[mailType], mailCategory);
+    return rate?.discounts || [];
+  }
+
   // Auto-calculate when inputs change
   $: {
-    // Include selectedMailCategory, isRegistered, isInsured, packageValue, hasStampDiscount, and stampPricePercent in dependencies to trigger recalculation
+    // Include selectedMailCategory, isRegistered, isInsured, packageValue, discountRuleIndex, hasStampDiscount, and stampPricePercent in dependencies to trigger recalculation
     void selectedMailCategory;
     void isRegistered;
     void isInsured;
     void packageValue;
+    void discountRuleIndex;
     void hasStampDiscount;
     void stampPricePercent;
     if (fromRegion && toRegion && weight && selectedMailType) {
@@ -173,7 +217,7 @@
       selectedMailCategory,
       isRegistered,
       packageValueNum,
-      discountRuleName,
+      discountRuleIndex,
       hasStampDiscount && stampPricePercent ? parseFloat(stampPricePercent) : undefined,
     );
 
@@ -329,6 +373,39 @@
       </div>
     {/if}
 
+    <!-- Discount Rules Selection -->
+    {#if availableDiscountRules.length > 0}
+      <div class="form-group">
+        <fieldset class="fieldset-reset">
+          <legend class="form-label">
+            {t('calculation.rule-discount', currentLang)}
+          </legend>
+          <div class="radio-group">
+            <label class="radio-item">
+              <input
+                type="radio"
+                bind:group={discountRuleIndex}
+                value={undefined}
+                name="discountRule"
+              />
+              <span>None</span>
+            </label>
+            {#each availableDiscountRules as rule, index}
+              <label class="radio-item">
+                <input
+                  type="radio"
+                  bind:group={discountRuleIndex}
+                  value={index}
+                  name="discountRule"
+                />
+                <span>{rule.name[currentLang]} ({rule.pricePercent}%)</span>
+              </label>
+            {/each}
+          </div>
+        </fieldset>
+      </div>
+    {/if}
+
     {#if error}
       <div class="error-message">{error}</div>
     {/if}
@@ -347,7 +424,6 @@
           {#if result.supplements.discountedPrice}
             <span class="original-price">
               {result.supplements.originalPrice.toFixed(2)}
-              {currency}
             </span>
             {result.supplements.discountedPrice.toFixed(2)}
             {currency}

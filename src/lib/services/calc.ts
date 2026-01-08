@@ -57,7 +57,7 @@ export interface CalculationError {
 }
 
 // Helper function to get pricing model for a specific mail category
-function getPricingModel(
+export function getPricingModel(
   mailTypeRate?: Rate | CategoryRates | null,
   mailCategory?: MailCategory,
 ): Rate | undefined {
@@ -103,7 +103,7 @@ export function calculatePostage(
   mailCategory?: MailCategory,
   isRegistered?: boolean,
   packageValue?: number,
-  discountRuleName?: string,
+  discountRuleIndex?: number,
   stampDiscountPercent?: number,
 ): CalculationResult | CalculationError {
   // Type guard: check if fromRegionType is a valid RegionCode
@@ -185,7 +185,7 @@ export function calculatePostage(
     mailCategory,
     isRegistered,
     packageValue,
-    discountRuleName,
+    discountRuleIndex,
     stampDiscountPercent,
   );
   if ('errorType' in supplements) {
@@ -281,7 +281,7 @@ function calculateSupplementFees(
   mailCategory?: MailCategory,
   isRegistered?: boolean,
   packageValue?: number,
-  discountRuleName?: string,
+  discountRuleIndex?: number,
   stampDiscountPercent?: number,
 ): SupplementFees | CalculationError {
   const supplements: SupplementFees = { originalPrice };
@@ -308,15 +308,13 @@ function calculateSupplementFees(
     }
   }
 
-  if (discountRuleName && rate.discounts) {
-    const discount = rate.discounts.find((d) => d.name === discountRuleName);
-    if (discount) {
-      supplements.ruleDiscount = (supplements.originalPrice * (100 - discount.pricePercent)) / 100;
-      supplements.discountedPrice = supplements.originalPrice - supplements.ruleDiscount;
-    }
+  if (discountRuleIndex !== undefined && rate.discounts && rate.discounts[discountRuleIndex]) {
+    const discount = rate.discounts[discountRuleIndex];
+    supplements.ruleDiscount = (supplements.originalPrice * (100 - discount.pricePercent)) / 100;
+    supplements.discountedPrice = supplements.originalPrice - supplements.ruleDiscount;
   }
 
-  if (stampDiscountPercent && stampDiscountPercent < 100) {
+  if (stampDiscountPercent && stampDiscountPercent != 100) {
     if (!supplements.discountedPrice) {
       supplements.discountedPrice = supplements.originalPrice;
     }
