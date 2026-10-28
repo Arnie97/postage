@@ -18,7 +18,7 @@
     if ('serviceWorker' in navigator) {
       try {
         const { Workbox } = await import('workbox-window');
-        const wb = new Workbox('/sw.js');
+        const wb = new Workbox(`${import.meta.env.BASE_URL}sw.js`);
 
         wb.addEventListener('controlling', () => {
           window.location.reload();
