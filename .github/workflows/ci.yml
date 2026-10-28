@@ -1,6 +1,7 @@
 name: Continuous Integration and Deployment
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - master
