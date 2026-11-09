@@ -55,6 +55,8 @@ export type TranslationKey =
   | 'calculation.registration-fee'
   | 'calculation.insurance-commission'
   | 'calculation.insurance-fee'
+  | 'calculation.no-discount'
+  | 'calculation.max-discount'
   | 'calculation.rule-discount'
   | 'calculation.stamp-discount'
   | 'footer.description'
@@ -117,6 +119,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'calculation.registration-fee': 'Registration Fee',
     'calculation.insurance-commission': 'Insurance Commission',
     'calculation.insurance-fee': 'Insurance Fee',
+    'calculation.no-discount': 'None',
+    'calculation.max-discount': 'up to {} off',
     'calculation.rule-discount': 'Discounts for Specific Customers',
     'calculation.stamp-discount': 'Stamp Discount',
     'footer.description': 'Postage calculator for Greater China',
@@ -178,6 +182,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'calculation.registration-fee': '掛號費',
     'calculation.insurance-commission': '保價手續費',
     'calculation.insurance-fee': '保價費',
+    'calculation.no-discount': '無',
+    'calculation.max-discount': '最多減免 {}',
     'calculation.rule-discount': '特定人群優惠',
     'calculation.stamp-discount': '郵品折扣',
     'footer.description': '兩岸四地郵費計算機',
@@ -239,6 +245,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'calculation.registration-fee': '挂号费',
     'calculation.insurance-commission': '保价手续费',
     'calculation.insurance-fee': '保价费',
+    'calculation.no-discount': '无',
+    'calculation.max-discount': '最多减免 {}',
     'calculation.rule-discount': '特定人群优惠',
     'calculation.stamp-discount': '邮品折扣',
     'footer.description': '两岸四地邮费计算器',

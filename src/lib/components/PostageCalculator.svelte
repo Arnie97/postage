@@ -8,7 +8,7 @@
     getPostalZone,
     type RegionCode,
   } from '../data/regions';
-  import { RATE_RULES, POSTAGE_RATES } from '../data/rates';
+  import { RATE_RULES, POSTAGE_RATES, type DiscountRule } from '../data/rates';
   import { t, s } from '../data/translations';
   import RegionSelector from './RegionSelector.svelte';
 
@@ -22,6 +22,7 @@
   let isInsured = false;
   let packageValue = '200';
   let discountRuleIndex: number | undefined;
+  let previousDiscountRules: DiscountRule[] | undefined;
   let hasStampDiscount = false;
   let stampPricePercent = '45';
   let result: CalculationResult | null;
@@ -41,6 +42,9 @@
 
   // Get available mail categories for the destination
   $: availableMailCategories = getAvailableMailCategories(fromRegion, toRegion, selectedMailType);
+
+  $: serviceData = POSTAGE_RATES[getRegionType(fromRegion) as RegionCode];
+  $: currency = serviceData ? s('currency', serviceData.currency.toLowerCase(), currentLang) : '';
 
   // Get available discount rules for the current rate
   $: availableDiscountRules = getAvailableDiscountRules(
@@ -66,9 +70,17 @@
 
   // Reset discount rule selection when it's no longer available
   $: {
-    if (discountRuleIndex !== undefined && discountRuleIndex >= availableDiscountRules.length) {
+    if (
+      previousDiscountRules !== undefined &&
+      discountRuleIndex !== undefined &&
+      previousDiscountRules[discountRuleIndex] !== availableDiscountRules[discountRuleIndex]
+    ) {
       discountRuleIndex = undefined;
     }
+    if (discountRuleIndex !== undefined && !availableDiscountRules[discountRuleIndex]) {
+      discountRuleIndex = undefined;
+    }
+    previousDiscountRules = availableDiscountRules;
   }
 
   // Set default weight based on mail type only when mail type changes
@@ -331,7 +343,7 @@
                 value={undefined}
                 name="discountRule"
               />
-              <span>- (100%)</span>
+              <span>{t('calculation.no-discount', currentLang)} (100%)</span>
             </label>
             {#each availableDiscountRules as rule, index}
               <label class="radio-item">
@@ -341,7 +353,13 @@
                   value={index}
                   name="discountRule"
                 />
-                <span>{rule.name[currentLang]} ({rule.pricePercent}%)</span>
+                <span>
+                  {rule.name[currentLang]} ({rule.pricePercent}%{#if rule.maxDiscount},
+                    {t('calculation.max-discount', currentLang).replace(
+                      '{}',
+                      `${rule.maxDiscount} ${currency}`,
+                    )}{/if})
+                </span>
               </label>
             {/each}
           </div>
@@ -412,8 +430,6 @@
 
     <!-- Result Display -->
     {#if result}
-      {@const serviceData = POSTAGE_RATES[getRegionType(fromRegion) as RegionCode]}
-      {@const currency = s('currency', serviceData.currency.toLowerCase(), currentLang)}
       <div
         class="result-card"
         style="background: linear-gradient(135deg,

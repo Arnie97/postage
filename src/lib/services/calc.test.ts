@@ -258,6 +258,73 @@ describe('calculatePostage', () => {
     });
   });
 
+  describe('Domestic conscript discount', () => {
+    it.each([
+      { weight: 20, registered: false, stamp: undefined, original: 1.2, expected: 0 },
+      { weight: 20, registered: true, stamp: undefined, original: 4.2, expected: 3 },
+      { weight: 21, registered: false, stamp: undefined, original: 2.4, expected: 1.2 },
+      { weight: 101, registered: true, stamp: undefined, original: 11, expected: 9.8 },
+      { weight: 20, registered: false, stamp: 45, original: 1.2, expected: 0 },
+      { weight: 21, registered: true, stamp: 50, original: 5.4, expected: 2.1 },
+      { weight: 60, registered: false, stamp: 75, original: 3.6, expected: 1.8 },
+    ])(
+      'charges only the payable portion: $weight g, registered=$registered, stamp=$stamp',
+      ({ weight, registered, stamp, original, expected }) => {
+        const result = calculatePostage(
+          'letter',
+          'CN-HI',
+          'CN-XJ',
+          weight,
+          undefined,
+          registered,
+          undefined,
+          0,
+          stamp,
+        );
+        expect(isError(result)).toBe(false);
+        if (!isError(result)) {
+          expect(result.supplements.originalPrice).toBeCloseTo(original);
+          expect(result.supplements.ruleDiscount).toBeCloseTo(-1.2);
+          expect(result.supplements.discountedPrice).toBeCloseTo(expected);
+        }
+      },
+    );
+
+    it('keeps excess postcard charges payable', () => {
+      const result = calculatePostage(
+        'postcard',
+        'CN-HI',
+        'CN-XJ',
+        21,
+        undefined,
+        false,
+        undefined,
+        0,
+        50,
+      );
+      expect(isError(result)).toBe(false);
+      if (!isError(result)) expect(result.supplements.discountedPrice).toBeCloseTo(2.6);
+    });
+
+    it('preserves parcel percentage discounts', () => {
+      const result = calculatePostage(
+        'parcel',
+        'CN-BJ',
+        'CN-SH',
+        500,
+        undefined,
+        false,
+        undefined,
+        0,
+      );
+      expect(isError(result)).toBe(false);
+      if (!isError(result))
+        expect(result.supplements.discountedPrice).toBeCloseTo(
+          result.supplements.originalPrice * 0.8,
+        );
+    });
+  });
+
   describe('Error Handling', () => {
     interface ErrorTestCase {
       description: string;

@@ -296,6 +296,9 @@ function calculateSupplementFees(
   if (discountRuleIndex !== undefined && rate.discounts && rate.discounts[discountRuleIndex]) {
     const discount = rate.discounts[discountRuleIndex];
     supplements.ruleDiscount = ((discount.pricePercent - 100) / 100) * supplements.originalPrice;
+    if (discount.maxDiscount !== undefined && supplements.ruleDiscount < -discount.maxDiscount) {
+      supplements.ruleDiscount = -discount.maxDiscount;
+    }
     supplements.discountedPrice = supplements.originalPrice + supplements.ruleDiscount;
   }
 
@@ -311,14 +314,14 @@ function calculateSupplementFees(
 
       supplements.insuranceFee = insuranceResult.totalPrice;
       supplements.originalPrice += supplements.insuranceCommission + supplements.insuranceFee;
-      if (supplements.discountedPrice) {
+      if (supplements.discountedPrice !== undefined) {
         supplements.discountedPrice += supplements.insuranceCommission + supplements.insuranceFee;
       }
     }
   }
 
   if (stampDiscountPercent && stampDiscountPercent != 100) {
-    if (!supplements.discountedPrice) {
+    if (supplements.discountedPrice === undefined) {
       supplements.discountedPrice = supplements.originalPrice;
     }
     supplements.stampDiscount = ((stampDiscountPercent - 100) / 100) * supplements.discountedPrice;

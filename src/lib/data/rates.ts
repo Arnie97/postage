@@ -8,6 +8,7 @@ export interface DiscountRule {
     'en': string;
   };
   pricePercent: number;
+  maxDiscount?: number;
 }
 
 export interface SteppedRate {
@@ -102,6 +103,7 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
                 'en': 'Free Mail for PLA / PAP Conscripts',
               },
               pricePercent: 0,
+              maxDiscount: 1.2,
             },
           ],
         },
@@ -122,6 +124,7 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
                 'en': 'Free Mail for PLA / PAP Conscripts',
               },
               pricePercent: 0,
+              maxDiscount: 0.8,
             },
           ],
         },
