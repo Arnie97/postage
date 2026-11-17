@@ -65,7 +65,6 @@ src/
 ## Todo
 
 * Local exchange 本埠邮资处理
-* Avis de réception 回执
 * Poste restante 存局候领
 * Insured mails 保价
 * Presentation-to-customs charge 海关验关费

@@ -19,6 +19,7 @@ export type TranslationKey =
   | 'mail.supplement.registered'
   | 'mail.supplement.insured'
   | 'mail.supplement.package-value'
+  | 'mail.supplement.advice-of-receipt'
   | 'sender'
   | 'receiver'
   | 'region.select'
@@ -83,6 +84,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.supplement.registered': 'Registered ',
     'mail.supplement.insured': 'Insured',
     'mail.supplement.package-value': 'Package Value',
+    'mail.supplement.advice-of-receipt': 'Advice of Delivery',
     'sender': 'From',
     'receiver': 'To',
     'region.select': 'Select Region',
@@ -133,10 +135,10 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.type.letter': '信件',
     'mail.type.postcard': '明信片',
     'mail.type.aerogramme': '航空郵簡',
-    'mail.type.printed_papers': '印刷品',
+    'mail.type.printed_papers': '印刷物',
     'mail.type.items_for_blind': '盲人郵件',
     'mail.type.small_packet': '小郵包',
-    'mail.type.m_bags': '印刷品專袋',
+    'mail.type.m_bags': '印刷物專袋',
     'mail.type.parcel': '包裹',
     'mail.category': '郵件等級',
     'mail.category.air': '航空郵件',
@@ -146,6 +148,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.supplement.registered': '掛號',
     'mail.supplement.insured': '保價',
     'mail.supplement.package-value': '函件價值',
+    'mail.supplement.advice-of-receipt': '回執',
     'sender': '寄件地',
     'receiver': '收件地',
     'region.select': '選擇地區',
@@ -209,6 +212,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.supplement.registered': '挂号',
     'mail.supplement.insured': '保价',
     'mail.supplement.package-value': '函件价值',
+    'mail.supplement.advice-of-receipt': '回执',
     'sender': '寄件地',
     'receiver': '收件地',
     'region.select': '选择地区',

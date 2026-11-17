@@ -1,6 +1,11 @@
 <script lang="ts">
   import { language } from '../utils/language';
-  import { calculatePostage, type CalculationResult, getPricingModel } from '../services/calc';
+  import {
+    calculatePostage,
+    type CalculationResult,
+    getPricingModel,
+    getSupplementRates,
+  } from '../services/calc';
   import { ALL_MAIL_TYPES, type MailType, type MailCategory } from '../data/mail-types';
   import {
     getDestinationType,
@@ -18,9 +23,10 @@
   let fromRegion = 'CN-BJ';
   let toRegion = 'HK';
   let weight = '20';
-  let isRegistered = false;
+  let registeredMail = false;
   let isInsured = false;
   let packageValue = '200';
+  let adviceOfReceipt = false;
   let discountRuleIndex: number | undefined;
   let previousDiscountRules: DiscountRule[] | undefined;
   let hasStampDiscount = false;
@@ -45,6 +51,27 @@
 
   $: serviceData = POSTAGE_RATES[getRegionType(fromRegion) as RegionCode];
   $: currency = serviceData ? s('currency', serviceData.currency.toLowerCase(), currentLang) : '';
+  $: fromRegionType = getRegionType(fromRegion);
+  $: destinationRates =
+    fromRegionType === 'XX'
+      ? undefined
+      : serviceData?.rates[getDestinationType(fromRegionType, getRegionType(toRegion))];
+  $: availableSupplements = getSupplementRates(
+    destinationRates?.[selectedMailType],
+    destinationRates,
+    selectedMailCategory,
+  );
+  $: canRegister = availableSupplements.registrationFee !== undefined;
+  $: canInsure =
+    canRegister && getPricingModel(destinationRates?.insurance, selectedMailCategory) !== undefined;
+  $: canRequestAdviceOfReceipt =
+    canRegister && availableSupplements.adviceOfReceipt !== undefined;
+  $: {
+    if (!canRegister) registeredMail = false;
+    if (!canInsure) isInsured = false;
+    if (!canRequestAdviceOfReceipt) adviceOfReceipt = false;
+  }
+  $: if (isInsured || adviceOfReceipt) registeredMail = true;
 
   // Get available discount rules for the current rate
   $: availableDiscountRules = getAvailableDiscountRules(
@@ -128,7 +155,9 @@
     if (!rate || 'type' in rate) {
       return [];
     }
-    return Object.getOwnPropertyNames(rate) as MailCategory[];
+    return (Object.keys(rate) as Array<keyof typeof rate>).filter(
+      (key): key is MailCategory => key !== 'supplements',
+    );
   }
 
   function getAvailableDiscountRules(
@@ -161,11 +190,11 @@
 
   // Auto-calculate when inputs change
   $: {
-    // Include selectedMailCategory, isRegistered, isInsured, packageValue, discountRuleIndex, hasStampDiscount, and stampPricePercent in dependencies to trigger recalculation
     void selectedMailCategory;
-    void isRegistered;
+    void registeredMail;
     void isInsured;
     void packageValue;
+    void adviceOfReceipt;
     void discountRuleIndex;
     void hasStampDiscount;
     void stampPricePercent;
@@ -227,8 +256,9 @@
       toRegion,
       weightNum,
       selectedMailCategory,
-      isRegistered,
+      registeredMail,
       packageValueNum,
+      adviceOfReceipt,
       discountRuleIndex,
       hasStampDiscount && stampPricePercent ? parseFloat(stampPricePercent) : undefined,
     );
@@ -236,11 +266,6 @@
     if ('errorType' in calculatedResult) {
       error = s('error', calculatedResult.errorType, currentLang);
       return;
-    }
-
-    if (!isRegistered && isInsured && calculatedResult.supplements.insuranceCommission) {
-      isRegistered = true;
-      return calculate();
     }
 
     result = calculatedResult;
@@ -374,14 +399,34 @@
           {t('mail.supplement', currentLang)}
         </legend>
         <div class="checkbox-group">
-          <label class="checkbox-item">
-            <input type="checkbox" bind:checked={isRegistered} name="registeredMail" />
-            <span>{t('mail.supplement.registered', currentLang)}</span>
-          </label>
-          <label class="checkbox-item">
-            <input type="checkbox" bind:checked={isInsured} name="insuredMail" />
-            <span>{t('mail.supplement.insured', currentLang)}</span>
-          </label>
+          {#if canRegister}
+            <label class="checkbox-item">
+              <input
+                type="checkbox"
+                bind:checked={registeredMail}
+                name="registeredMail"
+                on:change={(event) => {
+                  if (!event.currentTarget.checked) {
+                    isInsured = false;
+                    adviceOfReceipt = false;
+                  }
+                }}
+              />
+              <span>{t('mail.supplement.registered', currentLang)}</span>
+            </label>
+          {/if}
+          {#if canInsure}
+            <label class="checkbox-item">
+              <input type="checkbox" bind:checked={isInsured} name="insuredMail" />
+              <span>{t('mail.supplement.insured', currentLang)}</span>
+            </label>
+          {/if}
+          {#if canRequestAdviceOfReceipt}
+            <label class="checkbox-item">
+              <input type="checkbox" bind:checked={adviceOfReceipt} name="adviceOfReceipt" />
+              <span>{t('mail.supplement.advice-of-receipt', currentLang)}</span>
+            </label>
+          {/if}
           <label class="checkbox-item">
             <input type="checkbox" bind:checked={hasStampDiscount} name="stampDiscount" />
             <span>{t('calculation.stamp-discount', currentLang)}</span>
@@ -449,7 +494,7 @@
         </div>
         <div class="result-details">
           {s('service', serviceData.nameKey, currentLang)} •
-          {#if isRegistered}{t('mail.supplement.registered', currentLang)}{/if}{s(
+          {#if registeredMail}{t('mail.supplement.registered', currentLang)}{/if}{s(
             'mail.type',
             selectedMailType,
             currentLang,
@@ -535,6 +580,13 @@
             <p>
               {t('calculation.insurance-fee', currentLang)}:
               {result.supplements.insuranceFee.toFixed(2)}
+              {currency}
+            </p>
+          {/if}
+          {#if result.supplements.adviceOfReceiptFee}
+            <p>
+              {t('mail.supplement.advice-of-receipt', currentLang)}:
+              {result.supplements.adviceOfReceiptFee.toFixed(2)}
               {currency}
             </p>
           {/if}

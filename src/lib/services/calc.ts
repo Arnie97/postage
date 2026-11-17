@@ -12,11 +12,13 @@ import {
   POSTAGE_RATES,
   RATE_RULES,
   type CategoryRates,
+  type DestinationRates,
   type Rate,
   type SteppedRate,
   type FixedRate,
   type ZonalRate,
   type RateTier,
+  type SupplementRates,
 } from '../data/rates';
 
 import type { MailType, MailCategory } from '../data/mail-types';
@@ -40,6 +42,8 @@ export interface SupplementFees {
   registrationFee?: number;
   insuranceCommission?: number;
   insuranceFee?: number;
+  adviceOfReceiptFee?: number;
+  posteRestanteFee?: number;
   ruleDiscount?: number;
   stampDiscount?: number;
   discountedPrice?: number;
@@ -61,11 +65,40 @@ export function getPricingModel(
   mailTypeRate?: Rate | CategoryRates | null,
   mailCategory?: MailCategory,
 ): Rate | undefined {
-  if (!mailTypeRate || !mailCategory || 'type' in mailTypeRate) {
-    return mailTypeRate as Rate;
-  }
-  const categoryRates = mailTypeRate as CategoryRates;
-  return categoryRates[mailCategory] ?? categoryRates.air;
+  if (!mailTypeRate) return undefined;
+  if ('type' in mailTypeRate) return mailTypeRate;
+  if (!mailCategory) return undefined;
+  return mailTypeRate[mailCategory] ?? mailTypeRate.air;
+}
+
+function getOwnSupplementRates(
+  mailTypeRate?: Rate | CategoryRates | null,
+  mailCategory?: MailCategory,
+): SupplementRates {
+  const rate = getPricingModel(mailTypeRate, mailCategory);
+  if (!rate || !mailTypeRate) return {};
+
+  const common = 'type' in mailTypeRate ? undefined : mailTypeRate.supplements;
+  return {
+    registrationFee: rate.supplements?.registrationFee ?? common?.registrationFee,
+    adviceOfReceipt: rate.supplements?.adviceOfReceipt ?? common?.adviceOfReceipt,
+  };
+}
+
+export function getSupplementRates(
+  mailTypeRate?: Rate | CategoryRates | null,
+  destinationRates?: DestinationRates,
+  mailCategory?: MailCategory,
+): SupplementRates {
+  if (!getPricingModel(mailTypeRate, mailCategory)) return {};
+
+  const ownSupplements = getOwnSupplementRates(mailTypeRate, mailCategory);
+  return {
+    registrationFee:
+      ownSupplements.registrationFee ?? destinationRates?.supplements?.registrationFee,
+    adviceOfReceipt:
+      ownSupplements.adviceOfReceipt ?? destinationRates?.supplements?.adviceOfReceipt,
+  };
 }
 
 // Find the best matching rate rule for the given service and destination type
@@ -101,8 +134,9 @@ export function calculatePostage(
   toRegion: string,
   weight: number,
   mailCategory?: MailCategory,
-  isRegistered?: boolean,
+  registeredMail?: boolean,
   packageValue?: number,
+  adviceOfReceipt?: boolean,
   discountRuleIndex?: number,
   stampDiscountPercent?: number,
 ): CalculationResult | CalculationError {
@@ -126,9 +160,13 @@ export function calculatePostage(
     return { errorType: 'route' };
   }
 
-  const rate = getPricingModel(destinationRates[mailType], mailCategory);
-  if (!rate) {
+  const mailTypeRate = destinationRates[mailType];
+  if (!mailTypeRate) {
     return { errorType: 'mail_type' };
+  }
+  const rate = getPricingModel(mailTypeRate, mailCategory);
+  if (!rate) {
+    return { errorType: mailCategory ? 'mail_type' : 'calculation' };
   }
 
   // Calculate price based on rate method
@@ -181,10 +219,12 @@ export function calculatePostage(
   const supplements = calculateSupplementFees(
     rateResults.totalPrice,
     rate,
+    mailTypeRate,
     destinationRates,
     mailCategory,
-    isRegistered,
+    registeredMail,
     packageValue,
+    adviceOfReceipt,
     discountRuleIndex,
     stampDiscountPercent,
   );
@@ -273,39 +313,35 @@ function calculateZonalRate(
   return details;
 }
 
-// Calculate supplement fees (registration and insurance)
+// Calculate supplement fees and discounts
 function calculateSupplementFees(
   originalPrice: number,
   rate: Rate,
-  destinationRates?: { [K in MailType]?: CategoryRates | Rate | null },
+  mailTypeRate: Rate | CategoryRates,
+  destinationRates?: DestinationRates,
   mailCategory?: MailCategory,
-  isRegistered?: boolean,
+  registeredMail?: boolean,
   packageValue?: number,
+  adviceOfReceipt?: boolean,
   discountRuleIndex?: number,
   stampDiscountPercent?: number,
 ): SupplementFees | CalculationError {
   const supplements: SupplementFees = { originalPrice };
+  const supplementRates = getSupplementRates(mailTypeRate, destinationRates, mailCategory);
+  // Customer discounts do not apply to insurance charges.
+  let discountablePrice = originalPrice;
+  let insuranceCharge = 0;
 
-  if (isRegistered) {
-    supplements.registrationFee =
-      rate?.registrationFee ??
-      getPricingModel(destinationRates?.letter, mailCategory)?.registrationFee;
-    supplements.originalPrice += supplements.registrationFee ?? 0;
-  }
-
-  if (discountRuleIndex !== undefined && rate.discounts && rate.discounts[discountRuleIndex]) {
-    const discount = rate.discounts[discountRuleIndex];
-    supplements.ruleDiscount = ((discount.pricePercent - 100) / 100) * supplements.originalPrice;
-    if (discount.maxDiscount !== undefined && supplements.ruleDiscount < -discount.maxDiscount) {
-      supplements.ruleDiscount = -discount.maxDiscount;
-    }
-    supplements.discountedPrice = supplements.originalPrice + supplements.ruleDiscount;
+  if (registeredMail) {
+    supplements.registrationFee = supplementRates.registrationFee;
+    discountablePrice += supplements.registrationFee ?? 0;
   }
 
   if (packageValue) {
     const insuranceRate = getPricingModel(destinationRates?.insurance, mailCategory);
     if (insuranceRate) {
-      supplements.insuranceCommission = insuranceRate.registrationFee ?? 0;
+      supplements.insuranceCommission =
+        getOwnSupplementRates(destinationRates?.insurance, mailCategory).registrationFee ?? 0;
 
       const insuranceResult = calculateSteppedRate(insuranceRate as SteppedRate, packageValue);
       if ('errorType' in insuranceResult) {
@@ -313,11 +349,24 @@ function calculateSupplementFees(
       }
 
       supplements.insuranceFee = insuranceResult.totalPrice;
-      supplements.originalPrice += supplements.insuranceCommission + supplements.insuranceFee;
-      if (supplements.discountedPrice !== undefined) {
-        supplements.discountedPrice += supplements.insuranceCommission + supplements.insuranceFee;
-      }
+      insuranceCharge = supplements.insuranceCommission + supplements.insuranceFee;
     }
+  }
+
+  if (adviceOfReceipt) {
+    supplements.adviceOfReceiptFee = supplementRates.adviceOfReceipt;
+    discountablePrice += supplements.adviceOfReceiptFee ?? 0;
+  }
+
+  supplements.originalPrice = discountablePrice + insuranceCharge;
+
+  if (discountRuleIndex !== undefined && rate.discounts && rate.discounts[discountRuleIndex]) {
+    const discount = rate.discounts[discountRuleIndex];
+    supplements.ruleDiscount = ((discount.pricePercent - 100) / 100) * discountablePrice;
+    if (discount.maxDiscount !== undefined && supplements.ruleDiscount < -discount.maxDiscount) {
+      supplements.ruleDiscount = -discount.maxDiscount;
+    }
+    supplements.discountedPrice = discountablePrice + supplements.ruleDiscount + insuranceCharge;
   }
 
   if (stampDiscountPercent && stampDiscountPercent != 100) {

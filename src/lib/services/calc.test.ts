@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { calculatePostage } from './calc';
+import { calculatePostage, getSupplementRates } from './calc';
 import type { MailType, MailCategory } from '../data/mail-types';
+import { POSTAGE_RATES, type CategoryRates, type FixedRate } from '../data/rates';
 import type { CalculationResult, CalculationError, RateCalculationDetails } from './calc';
 
 describe('calculatePostage', () => {
@@ -18,7 +19,7 @@ describe('calculatePostage', () => {
         toRegion: string;
         weight: number;
         mailCategory?: MailCategory;
-        isRegistered?: boolean;
+        registeredMail?: boolean;
       };
       expected: Partial<RateCalculationDetails> & {
         serviceKey?: string;
@@ -147,7 +148,7 @@ describe('calculatePostage', () => {
           fromRegion: 'CN-BJ',
           toRegion: 'CN-SH',
           weight: 20,
-          isRegistered: true,
+          registeredMail: true,
         },
         expected: { totalPrice: 1.2, supplements: { registrationFee: 3.0 }, originalPrice: 4.2 },
       },
@@ -158,7 +159,7 @@ describe('calculatePostage', () => {
           fromRegion: 'CN-BJ',
           toRegion: 'CN-SH',
           weight: 20,
-          isRegistered: false,
+          registeredMail: false,
         },
         expected: { totalPrice: 1.2, originalPrice: 1.2 },
       },
@@ -201,7 +202,7 @@ describe('calculatePostage', () => {
           testCase.input.toRegion,
           testCase.input.weight,
           testCase.input.mailCategory,
-          testCase.input.isRegistered,
+          testCase.input.registeredMail,
         );
 
         expect(isError(result)).toBe(false);
@@ -232,7 +233,7 @@ describe('calculatePostage', () => {
             expect(result.supplements.registrationFee).toBe(
               testCase.expected.supplements.registrationFee,
             );
-          } else if (testCase.input.isRegistered === false) {
+          } else if (testCase.input.registeredMail === false) {
             expect(result.supplements.registrationFee).toBeUndefined();
           }
           expect(result.supplements.originalPrice).toBe(testCase.expected.originalPrice);
@@ -258,6 +259,423 @@ describe('calculatePostage', () => {
     });
   });
 
+  describe('Advice of receipt', () => {
+    it.each([
+      { registered: false, advice: false, total: 1.2 },
+      { registered: false, advice: true, total: 4.2 },
+      { registered: true, advice: false, total: 4.2 },
+      { registered: true, advice: true, total: 7.2 },
+    ])(
+      'charges selected services: registered=$registered, advice=$advice',
+      ({ registered, advice, total }) => {
+        const result = calculatePostage(
+          'letter',
+          'CN-BJ',
+          'CN-SH',
+          20,
+          undefined,
+          registered,
+          undefined,
+          advice,
+        );
+
+        expect(isError(result)).toBe(false);
+        if (!isError(result)) {
+          expect(result.supplements.registrationFee).toBe(registered ? 3 : undefined);
+          expect(result.supplements.adviceOfReceiptFee).toBe(advice ? 3 : undefined);
+          expect(result.supplements.posteRestanteFee).toBeUndefined();
+          expect(result.supplements.originalPrice).toBeCloseTo(total);
+        }
+      },
+    );
+
+    it.each([
+      { destination: 'HK', category: 'air' as const, postage: 2.5 },
+      { destination: 'HK', category: 'surface' as const, postage: 1.5 },
+      { destination: 'MO', category: 'air' as const, postage: 2.5 },
+      { destination: 'MO', category: 'surface' as const, postage: 1.5 },
+      { destination: 'TW', category: 'air' as const, postage: 2.5 },
+      { destination: 'TW', category: 'surface' as const, postage: 1.5 },
+    ])(
+      'charges 3 yuan for $category letters to $destination',
+      ({ destination, category, postage }) => {
+        const result = calculatePostage(
+          'letter',
+          'CN-BJ',
+          destination,
+          20,
+          category,
+          true,
+          undefined,
+          true,
+        );
+
+        expect(isError(result)).toBe(false);
+        if (!isError(result)) {
+          expect(result.details.totalPrice).toBe(postage);
+          expect(result.supplements.registrationFee).toBe(16);
+          expect(result.supplements.adviceOfReceiptFee).toBe(3);
+          expect(result.supplements.originalPrice).toBeCloseTo(postage + 16 + 3);
+        }
+      },
+    );
+
+    it.each(['HK', 'MO', 'TW'])(
+      'uses the regional supplement fees for a postcard to %s',
+      (destination) => {
+        const result = calculatePostage(
+          'postcard',
+          'CN-BJ',
+          destination,
+          20,
+          'air',
+          true,
+          undefined,
+          true,
+        );
+
+        expect(isError(result)).toBe(false);
+        if (!isError(result)) {
+          expect(result.supplements.registrationFee).toBe(16);
+          expect(result.supplements.adviceOfReceiptFee).toBe(3);
+          expect(result.supplements.originalPrice).toBeCloseTo(23);
+        }
+      },
+    );
+
+    it('uses the domestic supplement fees for an aerogramme', () => {
+      const result = calculatePostage(
+        'aerogramme',
+        'CN-BJ',
+        'CN-SH',
+        20,
+        undefined,
+        true,
+        undefined,
+        true,
+      );
+
+      expect(isError(result)).toBe(false);
+      if (!isError(result)) {
+        expect(result.supplements.registrationFee).toBe(3);
+        expect(result.supplements.adviceOfReceiptFee).toBe(3);
+        expect(result.supplements.posteRestanteFee).toBeUndefined();
+        expect(result.supplements.originalPrice).toBeCloseTo(6.8);
+      }
+    });
+
+    it('charges the domestic postcard registration and receipt fees', () => {
+      const result = calculatePostage(
+        'postcard',
+        'CN-BJ',
+        'CN-SH',
+        20,
+        undefined,
+        true,
+        undefined,
+        true,
+      );
+
+      expect(isError(result)).toBe(false);
+      if (!isError(result)) {
+        expect(result.supplements.registrationFee).toBe(3);
+        expect(result.supplements.adviceOfReceiptFee).toBe(3);
+        expect(result.supplements.originalPrice).toBeCloseTo(6.8);
+      }
+    });
+
+    it('does not apply fees configured for a different route', () => {
+      const result = calculatePostage('letter', 'CN-BJ', 'US', 20, 'air', false, undefined, true);
+
+      expect(isError(result)).toBe(false);
+      if (!isError(result)) {
+        expect(result.supplements.adviceOfReceiptFee).toBeUndefined();
+        expect(result.supplements.posteRestanteFee).toBeUndefined();
+        expect(result.supplements.originalPrice).toBeCloseTo(6);
+      }
+    });
+
+    it('includes the added services when calculating discounts', () => {
+      const result = calculatePostage(
+        'letter',
+        'CN-BJ',
+        'CN-SH',
+        20,
+        undefined,
+        true,
+        undefined,
+        true,
+        0,
+        50,
+      );
+
+      expect(isError(result)).toBe(false);
+      if (!isError(result)) {
+        expect(result.supplements.originalPrice).toBeCloseTo(7.2);
+        expect(result.supplements.ruleDiscount).toBeCloseTo(-1.2);
+        expect(result.supplements.stampDiscount).toBeCloseTo(-3);
+        expect(result.supplements.discountedPrice).toBeCloseTo(3);
+      }
+    });
+
+    it('excludes insurance from the customer discount before applying the stamp discount', () => {
+      const result = calculatePostage(
+        'parcel',
+        'CN-BJ',
+        'CN-SH',
+        500,
+        undefined,
+        true,
+        200,
+        true,
+        0,
+        50,
+      );
+
+      expect(isError(result)).toBe(false);
+      if (!isError(result)) {
+        expect(result.details.totalPrice).toBe(8);
+        expect(result.supplements.registrationFee).toBe(3);
+        expect(result.supplements.insuranceCommission).toBe(0);
+        expect(result.supplements.insuranceFee).toBe(2);
+        expect(result.supplements.adviceOfReceiptFee).toBe(3);
+        expect(result.supplements.posteRestanteFee).toBeUndefined();
+        expect(result.supplements.originalPrice).toBeCloseTo(16);
+        expect(result.supplements.ruleDiscount).toBeCloseTo(-2.8);
+        expect(result.supplements.stampDiscount).toBeCloseTo(-6.6);
+        expect(result.supplements.discountedPrice).toBeCloseTo(6.6);
+      }
+    });
+
+    it('combines registration, insurance and receipt before the stamp discount', () => {
+      const result = calculatePostage(
+        'letter',
+        'CN-BJ',
+        'HK',
+        20,
+        'air',
+        true,
+        200,
+        true,
+        undefined,
+        50,
+      );
+
+      expect(isError(result)).toBe(false);
+      if (!isError(result)) {
+        expect(result.supplements.registrationFee).toBe(16);
+        expect(result.supplements.insuranceCommission).toBe(2);
+        expect(result.supplements.insuranceFee).toBe(3);
+        expect(result.supplements.adviceOfReceiptFee).toBe(3);
+        expect(result.supplements.posteRestanteFee).toBeUndefined();
+        expect(result.supplements.originalPrice).toBeCloseTo(26.5);
+        expect(result.supplements.stampDiscount).toBeCloseTo(-13.25);
+        expect(result.supplements.discountedPrice).toBeCloseTo(13.25);
+      }
+    });
+
+    it('prefers a mail-specific fee, including zero, to the route defaults', () => {
+      const rate: FixedRate = { type: 'fixed', price: 1, supplements: { adviceOfReceipt: 0 } };
+      const destinationRates = { supplements: { registrationFee: 3, adviceOfReceipt: 3 } };
+
+      expect(getSupplementRates(rate, destinationRates)).toMatchObject({
+        registrationFee: 3,
+        adviceOfReceipt: 0,
+      });
+      expect(getSupplementRates(undefined, destinationRates)).toEqual({});
+    });
+  });
+
+  describe('Shared supplement rates', () => {
+    it.each(['HK', 'MO', 'TW'])(
+      'uses regional defaults for an aerogramme to %s without a mail category',
+      (destination) => {
+        const result = calculatePostage(
+          'aerogramme',
+          'CN-BJ',
+          destination,
+          20,
+          undefined,
+          true,
+          undefined,
+          true,
+        );
+
+        expect(isError(result)).toBe(false);
+        if (!isError(result)) {
+          expect(result.supplements.registrationFee).toBe(16);
+          expect(result.supplements.adviceOfReceiptFee).toBe(3);
+          expect(result.supplements.originalPrice).toBeCloseTo(20.8);
+        }
+      },
+    );
+
+    it('keeps the M-bag registration override and uses the regional receipt fee', () => {
+      const result = calculatePostage('m_bags', 'CN-BJ', 'HK', 5000, 'air', true, undefined, true);
+
+      expect(isError(result)).toBe(false);
+      if (!isError(result)) {
+        expect(result.supplements.registrationFee).toBe(80);
+        expect(result.supplements.adviceOfReceiptFee).toBe(3);
+        expect(result.supplements.originalPrice).toBeCloseTo(263);
+      }
+    });
+
+    it.each([
+      {
+        mailType: 'postcard' as const,
+        from: 'CN-BJ',
+        to: 'US',
+        weight: 20,
+        category: 'air' as const,
+        registration: 16,
+        total: 21,
+      },
+      {
+        mailType: 'aerogramme' as const,
+        from: 'CN-BJ',
+        to: 'US',
+        weight: 20,
+        category: undefined,
+        registration: 16,
+        total: 21.5,
+      },
+      {
+        mailType: 'postcard' as const,
+        from: 'TW-TPE',
+        to: 'TW-KHH',
+        weight: 20,
+        category: undefined,
+        registration: 20,
+        total: 25,
+      },
+      {
+        mailType: 'postcard' as const,
+        from: 'TW-TPE',
+        to: 'US',
+        weight: 20,
+        category: 'air' as const,
+        registration: 65,
+        total: 76,
+      },
+      {
+        mailType: 'm_bags' as const,
+        from: 'TW-TPE',
+        to: 'US',
+        weight: 10000,
+        category: 'air' as const,
+        registration: 150,
+        total: 3730,
+      },
+    ])(
+      'uses the configured registration fee for $mailType from $from to $to',
+      ({ mailType, from, to, weight, category, registration, total }) => {
+        const result = calculatePostage(mailType, from, to, weight, category, true);
+        expect(isError(result)).toBe(false);
+        if (!isError(result)) {
+          expect(result.supplements.registrationFee).toBe(registration);
+          expect(result.supplements.originalPrice).toBeCloseTo(total);
+        }
+      },
+    );
+
+    it.each(['air', 'sal', 'surface'] as const)(
+      'uses the shared registration fee for international %s letters',
+      (category) => {
+        const result = calculatePostage('letter', 'CN-BJ', 'US', 20, category, true);
+        expect(isError(result)).toBe(false);
+        if (!isError(result)) {
+          expect(result.supplements.registrationFee).toBe(16);
+          expect(result.supplements.originalPrice).toBeCloseTo(result.details.totalPrice + 16);
+        }
+      },
+    );
+
+    it.each([
+      { destination: 'HK', category: 'air' as const },
+      { destination: 'HK', category: 'surface' as const },
+      { destination: 'US', category: 'air' as const },
+      { destination: 'US', category: 'sal' as const },
+      { destination: 'US', category: 'surface' as const },
+    ])(
+      'uses the shared registration fee for $category M-bags to $destination',
+      ({ destination, category }) => {
+        const result = calculatePostage('m_bags', 'CN-BJ', destination, 5000, category, true);
+        expect(isError(result)).toBe(false);
+        if (!isError(result)) {
+          expect(result.supplements.registrationFee).toBe(80);
+          expect(result.supplements.originalPrice).toBeCloseTo(result.details.totalPrice + 80);
+        }
+      },
+    );
+
+    it('prefers a category override, then the mail-type fee, then the route defaults', () => {
+      const destinationRates = { supplements: { registrationFee: 16, adviceOfReceipt: 3 } };
+      const rates: CategoryRates = {
+        supplements: { registrationFee: 80 },
+        air: { type: 'fixed', price: 1, supplements: { registrationFee: 0 } },
+        surface: { type: 'fixed', price: 1 },
+      };
+
+      expect(getSupplementRates(rates, destinationRates, 'air')).toMatchObject({
+        registrationFee: 0,
+        adviceOfReceipt: 3,
+      });
+      expect(getSupplementRates(rates, destinationRates, 'surface')).toMatchObject({
+        registrationFee: 80,
+        adviceOfReceipt: 3,
+      });
+      expect(getSupplementRates(rates, destinationRates)).toEqual({});
+    });
+
+    it('does not use letter-only fees for other mail types', () => {
+      const letter: FixedRate = {
+        type: 'fixed',
+        price: 1,
+        supplements: { registrationFee: 33, adviceOfReceipt: 7 },
+      };
+      const rate: FixedRate = { type: 'fixed', price: 1 };
+      expect(getSupplementRates(rate, { letter })).toEqual({
+        registrationFee: undefined,
+        adviceOfReceipt: undefined,
+      });
+      expect(
+        getSupplementRates(rate, {
+          supplements: { registrationFee: 16, adviceOfReceipt: 3 },
+          letter,
+        }),
+      ).toMatchObject({
+        registrationFee: 16,
+        adviceOfReceipt: 3,
+      });
+    });
+
+    it('uses a shared insurance commission without falling back to the letter fee', () => {
+      const regionalRates = POSTAGE_RATES.CN.rates.regional!;
+      const previousInsurance = regionalRates.insurance;
+      regionalRates.insurance = {
+        supplements: { registrationFee: 2 },
+        air: {
+          type: 'stepped',
+          tiers: [{ weightStep: 200, additionalPrice: 3 }],
+          maxWeight: 20000,
+        },
+      };
+
+      try {
+        const result = calculatePostage('letter', 'CN-BJ', 'HK', 20, 'air', false, 200);
+        expect(isError(result)).toBe(false);
+        if (!isError(result)) {
+          expect(result.supplements.insuranceCommission).toBe(2);
+          expect(result.supplements.insuranceFee).toBe(3);
+          expect(result.supplements.originalPrice).toBeCloseTo(7.5);
+        }
+      } finally {
+        regionalRates.insurance = previousInsurance;
+      }
+    });
+  });
+
   describe('Domestic conscript discount', () => {
     it.each([
       { weight: 20, registered: false, stamp: undefined, original: 1.2, expected: 0 },
@@ -277,6 +695,7 @@ describe('calculatePostage', () => {
           weight,
           undefined,
           registered,
+          undefined,
           undefined,
           0,
           stamp,
@@ -299,6 +718,7 @@ describe('calculatePostage', () => {
         undefined,
         false,
         undefined,
+        undefined,
         0,
         50,
       );
@@ -314,6 +734,7 @@ describe('calculatePostage', () => {
         500,
         undefined,
         false,
+        undefined,
         undefined,
         0,
       );
@@ -334,7 +755,7 @@ describe('calculatePostage', () => {
         toRegion: string;
         weight: number;
         mailCategory?: MailCategory;
-        isRegistered?: boolean;
+        registeredMail?: boolean;
       };
       expectedError: CalculationError['errorType'];
     }
@@ -400,7 +821,7 @@ describe('calculatePostage', () => {
           testCase.input.toRegion,
           testCase.input.weight,
           testCase.input.mailCategory,
-          testCase.input.isRegistered,
+          testCase.input.registeredMail,
         );
 
         expect(isError(result)).toBe(true);
