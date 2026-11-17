@@ -17,6 +17,7 @@ export type TranslationKey =
   | 'mail.category.surface'
   | 'mail.supplement'
   | 'mail.supplement.registered'
+  | 'mail.supplement.doorstep-delivery'
   | 'mail.supplement.insured'
   | 'mail.supplement.package-value'
   | 'mail.supplement.advice-of-receipt'
@@ -82,6 +83,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.category.surface': 'Surface Mail',
     'mail.supplement': 'Supplementary Services',
     'mail.supplement.registered': 'Registered ',
+    'mail.supplement.doorstep-delivery': 'Doorstep Delivery by Appointment',
     'mail.supplement.insured': 'Insured',
     'mail.supplement.package-value': 'Package Value',
     'mail.supplement.advice-of-receipt': 'Advice of Delivery',
@@ -146,6 +148,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.category.surface': '水陸路郵件',
     'mail.supplement': '附加服務',
     'mail.supplement.registered': '掛號',
+    'mail.supplement.doorstep-delivery': '約配服務',
     'mail.supplement.insured': '保價',
     'mail.supplement.package-value': '函件價值',
     'mail.supplement.advice-of-receipt': '回執',
@@ -210,6 +213,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.category.surface': '水陆路邮件',
     'mail.supplement': '附加业务',
     'mail.supplement.registered': '挂号',
+    'mail.supplement.doorstep-delivery': '约投服务',
     'mail.supplement.insured': '保价',
     'mail.supplement.package-value': '函件价值',
     'mail.supplement.advice-of-receipt': '回执',

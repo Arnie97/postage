@@ -24,6 +24,7 @@
   let toRegion = 'HK';
   let weight = '20';
   let registeredMail = false;
+  let doorstepDelivery = false;
   let isInsured = false;
   let packageValue = '200';
   let adviceOfReceipt = false;
@@ -62,16 +63,18 @@
     selectedMailCategory,
   );
   $: canRegister = availableSupplements.registrationFee !== undefined;
+  $: canDeliverToDoor = canRegister && availableSupplements.doorstepDelivery !== undefined;
   $: canInsure =
     canRegister && getPricingModel(destinationRates?.insurance, selectedMailCategory) !== undefined;
   $: canRequestAdviceOfReceipt =
     canRegister && availableSupplements.adviceOfReceipt !== undefined;
   $: {
     if (!canRegister) registeredMail = false;
+    if (!canDeliverToDoor) doorstepDelivery = false;
     if (!canInsure) isInsured = false;
     if (!canRequestAdviceOfReceipt) adviceOfReceipt = false;
   }
-  $: if (isInsured || adviceOfReceipt) registeredMail = true;
+  $: if (doorstepDelivery || isInsured || adviceOfReceipt) registeredMail = true;
 
   // Get available discount rules for the current rate
   $: availableDiscountRules = getAvailableDiscountRules(
@@ -192,6 +195,7 @@
   $: {
     void selectedMailCategory;
     void registeredMail;
+    void doorstepDelivery;
     void isInsured;
     void packageValue;
     void adviceOfReceipt;
@@ -257,6 +261,7 @@
       weightNum,
       selectedMailCategory,
       registeredMail,
+      doorstepDelivery,
       packageValueNum,
       adviceOfReceipt,
       discountRuleIndex,
@@ -407,12 +412,19 @@
                 name="registeredMail"
                 on:change={(event) => {
                   if (!event.currentTarget.checked) {
+                    doorstepDelivery = false;
                     isInsured = false;
                     adviceOfReceipt = false;
                   }
                 }}
               />
               <span>{t('mail.supplement.registered', currentLang)}</span>
+            </label>
+          {/if}
+          {#if canDeliverToDoor}
+            <label class="checkbox-item">
+              <input type="checkbox" bind:checked={doorstepDelivery} name="doorstepDelivery" />
+              <span>{t('mail.supplement.doorstep-delivery', currentLang)}</span>
             </label>
           {/if}
           {#if canInsure}
@@ -566,6 +578,13 @@
             <p>
               {t('calculation.registration-fee', currentLang)}:
               {result.supplements.registrationFee.toFixed(2)}
+              {currency}
+            </p>
+          {/if}
+          {#if result.supplements.doorstepDeliveryFee !== undefined}
+            <p>
+              {t('mail.supplement.doorstep-delivery', currentLang)}:
+              {result.supplements.doorstepDeliveryFee.toFixed(2)}
               {currency}
             </p>
           {/if}

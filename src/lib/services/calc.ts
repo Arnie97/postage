@@ -40,6 +40,7 @@ export interface RateCalculationDetails {
 export interface SupplementFees {
   originalPrice: number;
   registrationFee?: number;
+  doorstepDeliveryFee?: number;
   insuranceCommission?: number;
   insuranceFee?: number;
   adviceOfReceiptFee?: number;
@@ -81,6 +82,7 @@ function getOwnSupplementRates(
   const common = 'type' in mailTypeRate ? undefined : mailTypeRate.supplements;
   return {
     registrationFee: rate.supplements?.registrationFee ?? common?.registrationFee,
+    doorstepDelivery: rate.supplements?.doorstepDelivery ?? common?.doorstepDelivery,
     adviceOfReceipt: rate.supplements?.adviceOfReceipt ?? common?.adviceOfReceipt,
   };
 }
@@ -96,6 +98,8 @@ export function getSupplementRates(
   return {
     registrationFee:
       ownSupplements.registrationFee ?? destinationRates?.supplements?.registrationFee,
+    doorstepDelivery:
+      ownSupplements.doorstepDelivery ?? destinationRates?.supplements?.doorstepDelivery,
     adviceOfReceipt:
       ownSupplements.adviceOfReceipt ?? destinationRates?.supplements?.adviceOfReceipt,
   };
@@ -135,6 +139,7 @@ export function calculatePostage(
   weight: number,
   mailCategory?: MailCategory,
   registeredMail?: boolean,
+  doorstepDelivery?: boolean,
   packageValue?: number,
   adviceOfReceipt?: boolean,
   discountRuleIndex?: number,
@@ -223,6 +228,7 @@ export function calculatePostage(
     destinationRates,
     mailCategory,
     registeredMail,
+    doorstepDelivery,
     packageValue,
     adviceOfReceipt,
     discountRuleIndex,
@@ -321,6 +327,7 @@ function calculateSupplementFees(
   destinationRates?: DestinationRates,
   mailCategory?: MailCategory,
   registeredMail?: boolean,
+  doorstepDelivery?: boolean,
   packageValue?: number,
   adviceOfReceipt?: boolean,
   discountRuleIndex?: number,
@@ -335,6 +342,11 @@ function calculateSupplementFees(
   if (registeredMail) {
     supplements.registrationFee = supplementRates.registrationFee;
     discountablePrice += supplements.registrationFee ?? 0;
+  }
+
+  if (doorstepDelivery) {
+    supplements.doorstepDeliveryFee = supplementRates.doorstepDelivery;
+    discountablePrice += supplements.doorstepDeliveryFee ?? 0;
   }
 
   if (packageValue) {

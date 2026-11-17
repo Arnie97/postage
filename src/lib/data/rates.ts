@@ -13,6 +13,7 @@ export interface DiscountRule {
 
 export interface SupplementRates {
   registrationFee?: number;
+  doorstepDelivery?: number;
   adviceOfReceipt?: number;
   posteRestante?: number;
 }
@@ -106,11 +107,14 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
         },
         letter: {
           type: 'stepped',
+          supplements: {
+            doorstepDelivery: 2,
+          },
           tiers: [
             { weightStep: 20, additionalPrice: 1.2 },
             { basePrice: 6.0, weightStep: 100, additionalPrice: 2.0 },
           ],
-          maxWeight: 2000,
+          maxWeight: 500,
           discounts: [
             {
               name: {

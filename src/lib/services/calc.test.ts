@@ -259,6 +259,108 @@ describe('calculatePostage', () => {
     });
   });
 
+  describe('Doorstep delivery', () => {
+    it.each([
+      { weight: 20, postage: 1.2 },
+      { weight: 35, postage: 2.4 },
+    ])(
+      'charges 2 yuan for a registered domestic letter weighing $weight g',
+      ({ weight, postage }) => {
+        const result = calculatePostage('letter', 'CN-BJ', 'CN-SH', weight, undefined, true, true);
+
+        expect(isError(result)).toBe(false);
+        if (!isError(result)) {
+          expect(result.supplements.registrationFee).toBe(3);
+          expect(result.supplements.doorstepDeliveryFee).toBe(2);
+          expect(result.supplements.originalPrice).toBeCloseTo(postage + 3 + 2);
+        }
+      },
+    );
+
+    it.each([
+      { mailType: 'postcard' as const, weight: 20 },
+      { mailType: 'aerogramme' as const, weight: 20 },
+      { mailType: 'printed_papers' as const, weight: 20 },
+      { mailType: 'items_for_blind' as const, weight: 20 },
+      { mailType: 'parcel' as const, weight: 500 },
+    ])('does not charge doorstep delivery for domestic $mailType', ({ mailType, weight }) => {
+      const result = calculatePostage(mailType, 'CN-BJ', 'CN-SH', weight, undefined, true, true);
+
+      expect(isError(result)).toBe(false);
+      if (!isError(result)) {
+        expect(result.supplements.registrationFee).toBe(3);
+        expect(result.supplements.doorstepDeliveryFee).toBeUndefined();
+        expect(result.supplements.originalPrice).toBeCloseTo(result.details.totalPrice + 3);
+      }
+    });
+
+    it.each([
+      { from: 'CN-BJ', to: 'HK', category: 'air' as const },
+      { from: 'CN-BJ', to: 'MO', category: 'air' as const },
+      { from: 'CN-BJ', to: 'TW', category: 'air' as const },
+      { from: 'CN-BJ', to: 'US', category: 'air' as const },
+      { from: 'TW-TPE', to: 'TW-KHH', category: undefined },
+    ])('does not charge doorstep delivery from $from to $to', ({ from, to, category }) => {
+      const result = calculatePostage('letter', from, to, 20, category, true, true);
+
+      expect(isError(result)).toBe(false);
+      if (!isError(result)) {
+        expect(result.supplements.doorstepDeliveryFee).toBeUndefined();
+        expect(result.supplements.originalPrice).toBeCloseTo(
+          result.details.totalPrice + (result.supplements.registrationFee ?? 0),
+        );
+      }
+    });
+
+    it('does not charge doorstep delivery when it is not selected', () => {
+      const result = calculatePostage('letter', 'CN-BJ', 'CN-SH', 20, undefined, true, false);
+
+      expect(isError(result)).toBe(false);
+      if (!isError(result)) {
+        expect(result.supplements.doorstepDeliveryFee).toBeUndefined();
+        expect(result.supplements.originalPrice).toBeCloseTo(4.2);
+      }
+    });
+
+    it('combines doorstep delivery with insurance, receipt, and discounts', () => {
+      const result = calculatePostage(
+        'letter',
+        'CN-BJ',
+        'CN-SH',
+        20,
+        undefined,
+        true,
+        true,
+        200,
+        true,
+        0,
+        50,
+      );
+
+      expect(isError(result)).toBe(false);
+      if (!isError(result)) {
+        expect(result.supplements.registrationFee).toBe(3);
+        expect(result.supplements.doorstepDeliveryFee).toBe(2);
+        expect(result.supplements.insuranceFee).toBe(2);
+        expect(result.supplements.adviceOfReceiptFee).toBe(3);
+        expect(result.supplements.originalPrice).toBeCloseTo(11.2);
+        expect(result.supplements.ruleDiscount).toBeCloseTo(-1.2);
+        expect(result.supplements.stampDiscount).toBeCloseTo(-5);
+        expect(result.supplements.discountedPrice).toBeCloseTo(5);
+      }
+    });
+
+    it('reads the domestic doorstep rate only for letters', () => {
+      const destinationRates = POSTAGE_RATES.CN.rates.domestic!;
+      expect(getSupplementRates(destinationRates.letter, destinationRates).doorstepDelivery).toBe(
+        2,
+      );
+      expect(
+        getSupplementRates(destinationRates.postcard, destinationRates).doorstepDelivery,
+      ).toBeUndefined();
+    });
+  });
+
   describe('Advice of receipt', () => {
     it.each([
       { registered: false, advice: false, total: 1.2 },
@@ -275,6 +377,7 @@ describe('calculatePostage', () => {
           20,
           undefined,
           registered,
+          undefined,
           undefined,
           advice,
         );
@@ -307,6 +410,7 @@ describe('calculatePostage', () => {
           category,
           true,
           undefined,
+          undefined,
           true,
         );
 
@@ -331,6 +435,7 @@ describe('calculatePostage', () => {
           'air',
           true,
           undefined,
+          undefined,
           true,
         );
 
@@ -351,6 +456,7 @@ describe('calculatePostage', () => {
         20,
         undefined,
         true,
+        undefined,
         undefined,
         true,
       );
@@ -373,6 +479,7 @@ describe('calculatePostage', () => {
         undefined,
         true,
         undefined,
+        undefined,
         true,
       );
 
@@ -385,7 +492,17 @@ describe('calculatePostage', () => {
     });
 
     it('does not apply fees configured for a different route', () => {
-      const result = calculatePostage('letter', 'CN-BJ', 'US', 20, 'air', false, undefined, true);
+      const result = calculatePostage(
+        'letter',
+        'CN-BJ',
+        'US',
+        20,
+        'air',
+        false,
+        undefined,
+        undefined,
+        true,
+      );
 
       expect(isError(result)).toBe(false);
       if (!isError(result)) {
@@ -403,6 +520,7 @@ describe('calculatePostage', () => {
         20,
         undefined,
         true,
+        undefined,
         undefined,
         true,
         0,
@@ -426,6 +544,7 @@ describe('calculatePostage', () => {
         500,
         undefined,
         true,
+        undefined,
         200,
         true,
         0,
@@ -455,6 +574,7 @@ describe('calculatePostage', () => {
         20,
         'air',
         true,
+        undefined,
         200,
         true,
         undefined,
@@ -498,6 +618,7 @@ describe('calculatePostage', () => {
           undefined,
           true,
           undefined,
+          undefined,
           true,
         );
 
@@ -511,7 +632,17 @@ describe('calculatePostage', () => {
     );
 
     it('keeps the M-bag registration override and uses the regional receipt fee', () => {
-      const result = calculatePostage('m_bags', 'CN-BJ', 'HK', 5000, 'air', true, undefined, true);
+      const result = calculatePostage(
+        'm_bags',
+        'CN-BJ',
+        'HK',
+        5000,
+        'air',
+        true,
+        undefined,
+        undefined,
+        true,
+      );
 
       expect(isError(result)).toBe(false);
       if (!isError(result)) {
@@ -637,6 +768,7 @@ describe('calculatePostage', () => {
       const rate: FixedRate = { type: 'fixed', price: 1 };
       expect(getSupplementRates(rate, { letter })).toEqual({
         registrationFee: undefined,
+        doorstepDelivery: undefined,
         adviceOfReceipt: undefined,
       });
       expect(
@@ -663,7 +795,7 @@ describe('calculatePostage', () => {
       };
 
       try {
-        const result = calculatePostage('letter', 'CN-BJ', 'HK', 20, 'air', false, 200);
+        const result = calculatePostage('letter', 'CN-BJ', 'HK', 20, 'air', false, undefined, 200);
         expect(isError(result)).toBe(false);
         if (!isError(result)) {
           expect(result.supplements.insuranceCommission).toBe(2);
@@ -697,6 +829,7 @@ describe('calculatePostage', () => {
           registered,
           undefined,
           undefined,
+          undefined,
           0,
           stamp,
         );
@@ -719,6 +852,7 @@ describe('calculatePostage', () => {
         false,
         undefined,
         undefined,
+        undefined,
         0,
         50,
       );
@@ -734,6 +868,7 @@ describe('calculatePostage', () => {
         500,
         undefined,
         false,
+        undefined,
         undefined,
         undefined,
         0,
