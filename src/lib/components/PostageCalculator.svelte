@@ -199,6 +199,7 @@
 
   // Auto-calculate when inputs change
   $: {
+    void currentLang;
     void selectedMailCategory;
     void registeredMail;
     void doorstepDelivery;
@@ -526,11 +527,14 @@
         </div>
         <div class="result-details">
           {s('service', serviceData.nameKey, currentLang)} •
-          {#if registrationIncluded || registeredMail}{t('mail.supplement.registered', currentLang)}{/if}{s(
-            'mail.type',
-            selectedMailType,
-            currentLang,
-          )}
+          {#if registrationIncluded || registeredMail}
+            {t('mail.supplement.registered', currentLang).replace(
+              '{}',
+              s('mail.type', selectedMailType, currentLang),
+            )}
+          {:else}
+            {s('mail.type', selectedMailType, currentLang)}
+          {/if}
           {#if result.ruleId}
             • <a
               href={RATE_RULES[result.ruleId].url}

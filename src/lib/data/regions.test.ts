@@ -2,9 +2,23 @@ import { describe, test, expect } from 'vitest';
 import {
   getPostalZone,
   getChinaPostMainlandParcelZone,
+  ALL_REGIONS,
   MAINLAND_PROVINCES,
   type RegionCode,
 } from './regions';
+
+describe('region names', () => {
+  test('provides French names for every selectable region', () => {
+    for (const region of ALL_REGIONS) {
+      expect(region.name.fr, region.code).toBeTruthy();
+    }
+    expect(ALL_REGIONS.find((region) => region.code === 'CN-BJ')?.name.fr).toBe('Pékin');
+    expect(ALL_REGIONS.find((region) => region.code === 'JP')?.name.fr).toBe('Japon');
+    expect(ALL_REGIONS.find((region) => region.code === 'XA')?.name.fr).toBe(
+      'Autres pays et territoires d’Asie',
+    );
+  });
+});
 
 describe('getChinaPostMainlandParcelParcelZone', () => {
   test.each(

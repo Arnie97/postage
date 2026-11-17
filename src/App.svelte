@@ -12,6 +12,7 @@
   // Update document title dynamically when language changes
   $: if (typeof document !== 'undefined') {
     document.title = t('app.title', $language);
+    document.documentElement.lang = $language;
   }
 
   onMount(async () => {
