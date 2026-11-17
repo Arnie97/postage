@@ -339,14 +339,22 @@ function calculateSupplementFees(
   let discountablePrice = originalPrice;
   let insuranceCharge = 0;
 
-  if (registeredMail) {
+  if (
+    registeredMail &&
+    supplementRates.registrationFee !== undefined &&
+    supplementRates.registrationFee !== 0
+  ) {
     supplements.registrationFee = supplementRates.registrationFee;
-    discountablePrice += supplements.registrationFee ?? 0;
+    discountablePrice += supplements.registrationFee;
   }
 
-  if (doorstepDelivery) {
+  if (
+    doorstepDelivery &&
+    supplementRates.doorstepDelivery !== undefined &&
+    supplementRates.doorstepDelivery !== 0
+  ) {
     supplements.doorstepDeliveryFee = supplementRates.doorstepDelivery;
-    discountablePrice += supplements.doorstepDeliveryFee ?? 0;
+    discountablePrice += supplements.doorstepDeliveryFee;
   }
 
   if (packageValue) {
@@ -365,9 +373,13 @@ function calculateSupplementFees(
     }
   }
 
-  if (adviceOfReceipt) {
+  if (
+    adviceOfReceipt &&
+    supplementRates.adviceOfReceipt !== undefined &&
+    supplementRates.adviceOfReceipt !== 0
+  ) {
     supplements.adviceOfReceiptFee = supplementRates.adviceOfReceipt;
-    discountablePrice += supplements.adviceOfReceiptFee ?? 0;
+    discountablePrice += supplements.adviceOfReceiptFee;
   }
 
   supplements.originalPrice = discountablePrice + insuranceCharge;

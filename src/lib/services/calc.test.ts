@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { calculatePostage, getSupplementRates } from './calc';
 import type { MailType, MailCategory } from '../data/mail-types';
-import { POSTAGE_RATES, type CategoryRates, type FixedRate } from '../data/rates';
+import { POSTAGE_RATES, type CategoryRates, type FixedRate, type Rate } from '../data/rates';
 import type { CalculationResult, CalculationError, RateCalculationDetails } from './calc';
 
 describe('calculatePostage', () => {
@@ -282,7 +282,6 @@ describe('calculatePostage', () => {
       { mailType: 'aerogramme' as const, weight: 20 },
       { mailType: 'printed_papers' as const, weight: 20 },
       { mailType: 'items_for_blind' as const, weight: 20 },
-      { mailType: 'parcel' as const, weight: 500 },
     ])('does not charge doorstep delivery for domestic $mailType', ({ mailType, weight }) => {
       const result = calculatePostage(mailType, 'CN-BJ', 'CN-SH', weight, undefined, true, true);
 
@@ -350,7 +349,7 @@ describe('calculatePostage', () => {
       }
     });
 
-    it('reads the domestic doorstep rate only for letters', () => {
+    it('reads the domestic doorstep rate for letters and postcards', () => {
       const destinationRates = POSTAGE_RATES.CN.rates.domestic!;
       expect(getSupplementRates(destinationRates.letter, destinationRates).doorstepDelivery).toBe(
         2,
@@ -359,6 +358,42 @@ describe('calculatePostage', () => {
         getSupplementRates(destinationRates.postcard, destinationRates).doorstepDelivery,
       ).toBeUndefined();
     });
+
+    it.each([
+      { registered: false, doorstep: false, insuredValue: undefined, total: 8 },
+      { registered: true, doorstep: true, insuredValue: undefined, total: 8 },
+      { registered: false, doorstep: false, insuredValue: 200, total: 10 },
+      { registered: true, doorstep: true, insuredValue: 200, total: 10 },
+    ])(
+      'includes registration and delivery in domestic parcel postage with insurance value $insuredValue',
+      ({ registered, doorstep, insuredValue, total }) => {
+        const destinationRates = POSTAGE_RATES.CN.rates.domestic!;
+        expect(getSupplementRates(destinationRates.parcel, destinationRates)).toMatchObject({
+          registrationFee: 0,
+          doorstepDelivery: 0,
+          adviceOfReceipt: 3,
+        });
+
+        const result = calculatePostage(
+          'parcel',
+          'CN-BJ',
+          'CN-SH',
+          500,
+          undefined,
+          registered,
+          doorstep,
+          insuredValue,
+        );
+
+        expect(isError(result)).toBe(false);
+        if (!isError(result)) {
+          expect(result.supplements.registrationFee).toBeUndefined();
+          expect(result.supplements.doorstepDeliveryFee).toBeUndefined();
+          expect(result.supplements.insuranceFee).toBe(insuredValue ? 2 : undefined);
+          expect(result.supplements.originalPrice).toBeCloseTo(total);
+        }
+      },
+    );
   });
 
   describe('Advice of receipt', () => {
@@ -554,15 +589,15 @@ describe('calculatePostage', () => {
       expect(isError(result)).toBe(false);
       if (!isError(result)) {
         expect(result.details.totalPrice).toBe(8);
-        expect(result.supplements.registrationFee).toBe(3);
+        expect(result.supplements.registrationFee).toBeUndefined();
         expect(result.supplements.insuranceCommission).toBe(0);
         expect(result.supplements.insuranceFee).toBe(2);
         expect(result.supplements.adviceOfReceiptFee).toBe(3);
         expect(result.supplements.posteRestanteFee).toBeUndefined();
-        expect(result.supplements.originalPrice).toBeCloseTo(16);
-        expect(result.supplements.ruleDiscount).toBeCloseTo(-2.8);
-        expect(result.supplements.stampDiscount).toBeCloseTo(-6.6);
-        expect(result.supplements.discountedPrice).toBeCloseTo(6.6);
+        expect(result.supplements.originalPrice).toBeCloseTo(13);
+        expect(result.supplements.ruleDiscount).toBeCloseTo(-2.2);
+        expect(result.supplements.stampDiscount).toBeCloseTo(-5.4);
+        expect(result.supplements.discountedPrice).toBeCloseTo(5.4);
       }
     });
 
@@ -603,6 +638,34 @@ describe('calculatePostage', () => {
         adviceOfReceipt: 0,
       });
       expect(getSupplementRates(undefined, destinationRates)).toEqual({});
+    });
+
+    it('omits a zero-priced advice of receipt from the calculation', () => {
+      const destinationRates = POSTAGE_RATES.CN.rates.domestic!;
+      const letter = destinationRates.letter as Rate;
+      const previousSupplements = letter.supplements;
+      letter.supplements = { ...previousSupplements, adviceOfReceipt: 0 };
+
+      try {
+        const result = calculatePostage(
+          'letter',
+          'CN-BJ',
+          'CN-SH',
+          20,
+          undefined,
+          true,
+          undefined,
+          undefined,
+          true,
+        );
+        expect(isError(result)).toBe(false);
+        if (!isError(result)) {
+          expect(result.supplements.adviceOfReceiptFee).toBeUndefined();
+          expect(result.supplements.originalPrice).toBeCloseTo(4.2);
+        }
+      } finally {
+        letter.supplements = previousSupplements;
+      }
     });
   });
 

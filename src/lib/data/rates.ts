@@ -165,6 +165,10 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
         },
         parcel: {
           type: 'zonal',
+          supplements: {
+            registrationFee: 0,
+            doorstepDelivery: 0,
+          },
           zones: {
             1: { basePrice: 0x5, weightStep: 1000, additionalPrice: 1.0, maxWeight: 50000 },
             2: { basePrice: 0x6, weightStep: 1000, additionalPrice: 1.5, maxWeight: 50000 },

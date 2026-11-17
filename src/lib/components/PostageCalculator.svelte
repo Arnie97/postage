@@ -63,18 +63,24 @@
     selectedMailCategory,
   );
   $: canRegister = availableSupplements.registrationFee !== undefined;
-  $: canDeliverToDoor = canRegister && availableSupplements.doorstepDelivery !== undefined;
+  $: registrationIncluded = availableSupplements.registrationFee === 0;
+  $: doorstepDeliveryIncluded = availableSupplements.doorstepDelivery === 0;
+  $: adviceOfReceiptIncluded = availableSupplements.adviceOfReceipt === 0;
+  $: canDeliverToDoor =
+    doorstepDeliveryIncluded ||
+    (canRegister && availableSupplements.doorstepDelivery !== undefined);
   $: canInsure =
     canRegister && getPricingModel(destinationRates?.insurance, selectedMailCategory) !== undefined;
   $: canRequestAdviceOfReceipt =
-    canRegister && availableSupplements.adviceOfReceipt !== undefined;
+    adviceOfReceiptIncluded || (canRegister && availableSupplements.adviceOfReceipt !== undefined);
   $: {
-    if (!canRegister) registeredMail = false;
-    if (!canDeliverToDoor) doorstepDelivery = false;
+    if (!canRegister || registrationIncluded) registeredMail = false;
+    if (!canDeliverToDoor || doorstepDeliveryIncluded) doorstepDelivery = false;
     if (!canInsure) isInsured = false;
-    if (!canRequestAdviceOfReceipt) adviceOfReceipt = false;
+    if (!canRequestAdviceOfReceipt || adviceOfReceiptIncluded) adviceOfReceipt = false;
   }
-  $: if (doorstepDelivery || isInsured || adviceOfReceipt) registeredMail = true;
+  $: if (!registrationIncluded && canRegister && (doorstepDelivery || isInsured || adviceOfReceipt))
+    registeredMail = true;
 
   // Get available discount rules for the current rate
   $: availableDiscountRules = getAvailableDiscountRules(
@@ -408,9 +414,11 @@
             <label class="checkbox-item">
               <input
                 type="checkbox"
-                bind:checked={registeredMail}
+                checked={registrationIncluded || registeredMail}
+                disabled={registrationIncluded}
                 name="registeredMail"
                 on:change={(event) => {
+                  registeredMail = event.currentTarget.checked;
                   if (!event.currentTarget.checked) {
                     doorstepDelivery = false;
                     isInsured = false;
@@ -423,7 +431,13 @@
           {/if}
           {#if canDeliverToDoor}
             <label class="checkbox-item">
-              <input type="checkbox" bind:checked={doorstepDelivery} name="doorstepDelivery" />
+              <input
+                type="checkbox"
+                checked={doorstepDeliveryIncluded || doorstepDelivery}
+                disabled={doorstepDeliveryIncluded}
+                name="doorstepDelivery"
+                on:change={(event) => (doorstepDelivery = event.currentTarget.checked)}
+              />
               <span>{t('mail.supplement.doorstep-delivery', currentLang)}</span>
             </label>
           {/if}
@@ -435,7 +449,13 @@
           {/if}
           {#if canRequestAdviceOfReceipt}
             <label class="checkbox-item">
-              <input type="checkbox" bind:checked={adviceOfReceipt} name="adviceOfReceipt" />
+              <input
+                type="checkbox"
+                checked={adviceOfReceiptIncluded || adviceOfReceipt}
+                disabled={adviceOfReceiptIncluded}
+                name="adviceOfReceipt"
+                on:change={(event) => (adviceOfReceipt = event.currentTarget.checked)}
+              />
               <span>{t('mail.supplement.advice-of-receipt', currentLang)}</span>
             </label>
           {/if}
@@ -506,7 +526,7 @@
         </div>
         <div class="result-details">
           {s('service', serviceData.nameKey, currentLang)} •
-          {#if registeredMail}{t('mail.supplement.registered', currentLang)}{/if}{s(
+          {#if registrationIncluded || registeredMail}{t('mail.supplement.registered', currentLang)}{/if}{s(
             'mail.type',
             selectedMailType,
             currentLang,
