@@ -4,7 +4,8 @@
   const LANGUAGES: { code: Language; name: string }[] = [
     { code: 'zh-TW', name: '繁' },
     { code: 'zh-CN', name: '简' },
-    { code: 'en', name: 'EN' },
+    { code: 'en', name: 'En' },
+    { code: 'fr', name: 'fr' },
   ];
 
   function handleLanguageChange(lang: Language) {

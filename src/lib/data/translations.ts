@@ -2,6 +2,7 @@ import type { Language } from '../utils/language';
 
 export type TranslationKey =
   | 'app.title'
+  | 'app.toggle-theme'
   | 'mail.type'
   | 'mail.type.letter'
   | 'mail.type.postcard'
@@ -68,6 +69,7 @@ export type TranslationKey =
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   'en': {
     'app.title': 'Postage Calculator',
+    'app.toggle-theme': 'Toggle theme',
     'mail.type': 'Mail Type',
     'mail.type.letter': 'Letter',
     'mail.type.postcard': 'Postcard',
@@ -82,7 +84,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.category.sal': 'Surface Air Lifted (SAL)',
     'mail.category.surface': 'Surface Mail',
     'mail.supplement': 'Supplementary Services',
-    'mail.supplement.registered': 'Registered ',
+    'mail.supplement.registered': 'Registered {}',
     'mail.supplement.doorstep-delivery': 'Doorstep Delivery by Appointment',
     'mail.supplement.insured': 'Insured',
     'mail.supplement.package-value': 'Package Value',
@@ -100,7 +102,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'continent.OC': 'Oceania',
     'continent.AN': 'Antarctica',
     'weight': 'Weight',
-    'weight.grams': 'grams',
+    'weight.grams': 'g',
     'service.china_post': 'China Post',
     'service.chunghwa_post': 'Chunghwa Post',
     'service.hongkong_post': 'Hongkong Post',
@@ -131,8 +133,75 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'footer.source-code': 'Source code',
     'footer.license': ' licensed under GNU AGPL v3',
   },
+  'fr': {
+    'app.title': 'Calculateur des frais d’affranchissement',
+    'app.toggle-theme': 'Changer de thème',
+    'mail.type': 'Type d’envoi',
+    'mail.type.letter': 'Lettre',
+    'mail.type.postcard': 'Carte postale',
+    'mail.type.aerogramme': 'Aérogramme',
+    'mail.type.printed_papers': 'Imprimés',
+    'mail.type.items_for_blind': 'Cécogrammes',
+    'mail.type.small_packet': 'Petit paquet',
+    'mail.type.m_bags': 'Sac M',
+    'mail.type.parcel': 'Colis postal',
+    'mail.category': 'Mode d’acheminement',
+    'mail.category.air': 'Courrier-avion',
+    'mail.category.sal': 'Courrier de surface transporté par voie aérienne (SAL)',
+    'mail.category.surface': 'Courrier de surface',
+    'mail.supplement': 'Services supplémentaires',
+    'mail.supplement.registered': '{} Recommandée',
+    'mail.supplement.doorstep-delivery': 'Distribution à domicile sur rendez-vous',
+    'mail.supplement.insured': 'Valeur déclarée',
+    'mail.supplement.package-value': 'Montant de la valeur déclarée',
+    'mail.supplement.advice-of-receipt': 'Avis de réception',
+    'sender': 'Origine',
+    'receiver': 'Destination',
+    'region.select': 'Choisir une région',
+    'region.mainland': 'Chine continentale',
+    'region.special': 'Hong Kong, Macao et Taïwan',
+    'continent.AS': 'Asie',
+    'continent.EU': 'Europe',
+    'continent.AF': 'Afrique',
+    'continent.NA': 'Amérique du Nord',
+    'continent.SA': 'Amérique du Sud',
+    'continent.OC': 'Océanie',
+    'continent.AN': 'Antarctique',
+    'weight': 'Poids',
+    'weight.grams': 'g',
+    'service.china_post': 'Poste chinoise',
+    'service.chunghwa_post': 'Poste de Taïwan',
+    'service.hongkong_post': 'Poste de Hong Kong',
+    'service.macau_post': 'Poste de Macao',
+    'currency.cny': 'CNY',
+    'currency.twd': 'TWD',
+    'currency.hkd': 'HKD',
+    'currency.mop': 'MOP',
+    'error.weight': 'Poids invalide',
+    'error.package_value': 'Valeur déclarée invalide',
+    'error.calculation': 'Impossible de calculer les frais d’affranchissement',
+    'error.service': 'Aucun opérateur postal disponible pour cette origine',
+    'error.route': 'Aucun acheminement disponible pour cette destination',
+    'error.mail_type': 'Ce type d’envoi n’est pas disponible pour l’acheminement choisi',
+    'error.mail_category': 'Ce mode d’acheminement n’est pas disponible pour cette destination',
+    'calculation.fixed-rate': 'Tarif fixe',
+    'calculation.base-weight': 'Poids de base',
+    'calculation.additional-weight': 'Poids supplémentaire',
+    'calculation.tier-range': 'Tranche de poids',
+    'calculation.registration-fee': 'Frais de recommandation',
+    'calculation.insurance-commission': 'Frais de traitement de la valeur déclarée',
+    'calculation.insurance-fee': 'Frais de valeur déclarée',
+    'calculation.no-discount': 'Aucune',
+    'calculation.max-discount': 'jusqu’à {} de réduction',
+    'calculation.rule-discount': 'Réductions pour certaines catégories de clients',
+    'calculation.stamp-discount': 'Réduction sur les timbres',
+    'footer.description': 'Calculateur des frais d’affranchissement pour la Grande Chine',
+    'footer.source-code': 'Code source',
+    'footer.license': ' sous licence GNU AGPL v3',
+  },
   'zh-TW': {
     'app.title': '郵費計算機',
+    'app.toggle-theme': '切換主題',
     'mail.type': '郵件類型',
     'mail.type.letter': '信件',
     'mail.type.postcard': '明信片',
@@ -147,7 +216,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.category.sal': '空運水陸路 (SAL)',
     'mail.category.surface': '水陸路郵件',
     'mail.supplement': '附加服務',
-    'mail.supplement.registered': '掛號',
+    'mail.supplement.registered': '掛號{}',
     'mail.supplement.doorstep-delivery': '約配服務',
     'mail.supplement.insured': '保價',
     'mail.supplement.package-value': '函件價值',
@@ -198,6 +267,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
   },
   'zh-CN': {
     'app.title': '邮费计算器',
+    'app.toggle-theme': '切换主题',
     'mail.type': '邮件类型',
     'mail.type.letter': '信件',
     'mail.type.postcard': '明信片',
@@ -212,7 +282,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'mail.category.sal': '空运水陆路 (SAL)',
     'mail.category.surface': '水陆路邮件',
     'mail.supplement': '附加业务',
-    'mail.supplement.registered': '挂号',
+    'mail.supplement.registered': '挂号{}',
     'mail.supplement.doorstep-delivery': '约投服务',
     'mail.supplement.insured': '保价',
     'mail.supplement.package-value': '函件价值',
@@ -263,8 +333,9 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
   },
 };
 
-export const t = (key: TranslationKey, lang: Language): string => {
-  return translations[lang][key] || translations['en'][key] || key;
+export const t = (key: TranslationKey, lang: Language, replacement?: string): string => {
+  const text = translations[lang][key] || translations['en'][key] || key;
+  return replacement != null ? text.replace('{}', replacement) : text;
 };
 
 export const s = (section: string, key: string, lang: Language): string => {

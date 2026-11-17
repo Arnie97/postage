@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 
-export type Language = 'en' | 'zh-TW' | 'zh-CN';
+export type Language = 'en' | 'fr' | 'zh-TW' | 'zh-CN';
 
 const DEFAULT_LANGUAGE: Language = 'en';
 
@@ -9,15 +9,22 @@ const getInitialLanguage = (): Language => {
   if (typeof window === 'undefined') return DEFAULT_LANGUAGE;
 
   const saved = localStorage.getItem('language') as Language;
-  if (saved && ['en', 'zh-TW', 'zh-CN'].includes(saved)) {
+  if (saved && ['en', 'fr', 'zh-TW', 'zh-CN'].includes(saved)) {
     return saved;
   }
 
   // Auto-detect from browser
-  const browserLang = navigator.language;
-  if (browserLang.startsWith('zh-TW') || browserLang === 'zh-Hant') return 'zh-TW';
-  if (browserLang.startsWith('zh-CN') || browserLang === 'zh-Hans') return 'zh-CN';
+  const browserLocale = navigator.language.toLowerCase();
+  const languageCode = browserLocale.split('-')[0];
+  const matchesBrowserLanguage = (languages: string[]): boolean =>
+    languages.some((language) => {
+      const pattern = language.toLowerCase();
+      return pattern.includes('-') ? browserLocale.startsWith(pattern) : languageCode === pattern;
+    });
 
+  if (matchesBrowserLanguage(['zh-Hant', 'zh-TW', 'zh-HK', 'zh-MO'])) return 'zh-TW';
+  if (matchesBrowserLanguage(['zh-Hans', 'zh-CN', 'zh-SG', 'zh-MY', 'zh'])) return 'zh-CN';
+  if (matchesBrowserLanguage(['fr', 'es', 'it', 'pt', 'ro', 'ca', 'gl', 'ht'])) return 'fr';
   return DEFAULT_LANGUAGE;
 };
 

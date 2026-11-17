@@ -1,5 +1,7 @@
 <script lang="ts">
   import { theme, setTheme, type Theme } from '../utils/theme';
+  import { language } from '../utils/language';
+  import { t } from '../data/translations';
 
   function toggleTheme() {
     const newTheme: Theme = $theme === 'light' ? 'dark' : 'light';
@@ -7,7 +9,13 @@
   }
 </script>
 
-<button class="theme-btn" on:click={toggleTheme} type="button" title="Toggle theme">
+<button
+  class="theme-btn"
+  on:click={toggleTheme}
+  type="button"
+  title={t('app.toggle-theme', $language)}
+  aria-label={t('app.toggle-theme', $language)}
+>
   {#if $theme === 'light'}
     ◐
   {:else}

@@ -6,6 +6,7 @@ export interface DiscountRule {
     'zh-CN': string;
     'zh-TW': string;
     'en': string;
+    'fr': string;
   };
   pricePercent: number;
   maxDiscount?: number;
@@ -121,6 +122,7 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
                 'zh-CN': '义务兵免费信件',
                 'zh-TW': '義務兵免費信件',
                 'en': 'Free Mail for PLA / PAP Conscripts',
+                'fr': 'Franchise postale pour les appelés de l’APL',
               },
               pricePercent: 0,
               maxDiscount: 1.2,
@@ -142,6 +144,7 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
                 'zh-CN': '义务兵免费信件',
                 'zh-TW': '義務兵免費信件',
                 'en': 'Free Mail for PLA / PAP Conscripts',
+                'fr': 'Franchise postale pour les appelés de l’APL',
               },
               pricePercent: 0,
               maxDiscount: 0.8,
@@ -183,6 +186,7 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
                 'zh-CN': '师生及新市民U+卡持卡人',
                 'zh-TW': '師生及新市民U+卡持卡人',
                 'en': 'Teachers, Students and U+ Cardholders',
+                'fr': 'Enseignants, étudiants et titulaires de la carte U+',
               },
               pricePercent: 80,
             },
@@ -191,6 +195,7 @@ export const POSTAGE_RATES: Record<RegionCode, PostalService> = {
                 'zh-CN': '解放军和武警官兵、文职及退役军人；残疾人',
                 'zh-TW': '解放軍和武警官兵、文職及退役軍人；殘障人士',
                 'en': 'Disabled People, PLA / PAP Military Personnel, and Veterans',
+                'fr': 'Personnes handicapées, militaires et anciens combattants de l’APL',
               },
               pricePercent: 70,
             },

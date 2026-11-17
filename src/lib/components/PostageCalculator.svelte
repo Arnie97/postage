@@ -199,6 +199,7 @@
 
   // Auto-calculate when inputs change
   $: {
+    void currentLang;
     void selectedMailCategory;
     void registeredMail;
     void doorstepDelivery;
@@ -391,8 +392,9 @@
                 />
                 <span>
                   {rule.name[currentLang]} ({rule.pricePercent}%{#if rule.maxDiscount},
-                    {t('calculation.max-discount', currentLang).replace(
-                      '{}',
+                    {t(
+                      'calculation.max-discount',
+                      currentLang,
                       `${rule.maxDiscount} ${currency}`,
                     )}{/if})
                 </span>
@@ -426,7 +428,7 @@
                   }
                 }}
               />
-              <span>{t('mail.supplement.registered', currentLang)}</span>
+              <span>{t('mail.supplement.registered', currentLang, '')}</span>
             </label>
           {/if}
           {#if canDeliverToDoor}
@@ -526,11 +528,15 @@
         </div>
         <div class="result-details">
           {s('service', serviceData.nameKey, currentLang)} •
-          {#if registrationIncluded || registeredMail}{t('mail.supplement.registered', currentLang)}{/if}{s(
-            'mail.type',
-            selectedMailType,
-            currentLang,
-          )}
+          {#if registrationIncluded || registeredMail}
+            {t(
+              'mail.supplement.registered',
+              currentLang,
+              s('mail.type', selectedMailType, currentLang),
+            )}
+          {:else}
+            {s('mail.type', selectedMailType, currentLang)}
+          {/if}
           {#if result.ruleId}
             • <a
               href={RATE_RULES[result.ruleId].url}
